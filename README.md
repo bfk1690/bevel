@@ -50,7 +50,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `Button` `SegmentedControl` `Input` `Select` `DateField` `Calendar` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
+| **Primitives** | `Text` `Button` `SegmentedControl` `Input` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `Card` `ListItem` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` |
@@ -137,6 +137,22 @@ The grid is always six rows, so paging between months does not move the
 buttons underneath out from under the user's thumb. `Calendar` is exported on
 its own for the times a field would be one tap too many.
 
+### TimeField
+
+```tsx
+<TimeField label="Alarm" value={time} onChange={setTime} minuteStep={5} />
+<TimeField minTime={{ hours: 9, minutes: 0 }} maxTime={{ hours: 17, minutes: 30 }} />
+```
+
+A snapping scroll wheel, not a platform picker: the native ones cannot be
+themed, differ from each other, and on Android a two-number decision takes
+over the whole screen.
+
+A time is a `{ hours, minutes }` pair rather than a `Date` — carrying a full
+date around for "half past two" drags a timezone and a calendar day into a
+value that has neither, which is how an alarm ends up an hour off after a
+clock change.
+
 ### Toast
 
 ```tsx
@@ -166,6 +182,7 @@ for a stale one to expire is how a toast becomes noise.
 | `shadow(preset)` `platformShadow(opts)` | Per-platform shadows |
 | `createMask` `applyMask` `unmask` | Pattern masking |
 | `addMonths` `buildMonthGrid` `toISODate` … | Calendar arithmetic, in local time |
+| `snapMinutes` `to12Hour` `parseTime` … | Time-of-day arithmetic, without a `Date` |
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
 
 ```tsx

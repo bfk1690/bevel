@@ -33,6 +33,8 @@ export {
 export { Skeleton, type SkeletonProps } from './primitives/skeleton'
 export { Switch, type SwitchProps } from './primitives/switch'
 export { Text, type BevelTextProps } from './primitives/text'
+export { TimeField, type TimeFieldProps } from './primitives/time-field'
+export { TimePicker, type TimePickerProps } from './primitives/time-picker'
 
 export { Modal, type ModalProps } from './feedback/modal'
 export { Toaster, type ToasterProps } from './feedback/toaster'
@@ -92,4 +94,24 @@ export {
   type MonthCell,
   type WeekStart,
 } from './utils/date'
+export {
+  buildHourOptions,
+  buildMinuteOptions,
+  clampTime,
+  compareTime,
+  dateWithTime,
+  formatTime,
+  from12Hour,
+  isSameTime,
+  minutesToTime,
+  normalizeTime,
+  parseTime,
+  prefers12Hour,
+  snapMinutes,
+  timeFromDate,
+  timeToMinutes,
+  to12Hour,
+  type Period,
+  type TimeValue,
+} from './utils/time'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'

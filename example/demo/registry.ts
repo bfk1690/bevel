@@ -14,6 +14,7 @@ import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SelectionDemo } from './selection'
 import { TextDemo } from './text'
+import { TimeDemo } from './time'
 import { ThemeDemo } from './theme'
 import { ToastDemo } from './toast'
 
@@ -62,6 +63,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Single, range, bounds, blocked days',
     group: 'Fields',
     Component: DateDemo,
+  },
+  {
+    key: 'time',
+    title: 'TimeField',
+    subtitle: 'A wheel that can be themed',
+    group: 'Fields',
+    Component: TimeDemo,
   },
   {
     key: 'selection',
