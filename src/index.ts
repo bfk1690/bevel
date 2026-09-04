@@ -3,8 +3,10 @@ export * from './theme'
 export { Avatar, type AvatarProps } from './primitives/avatar'
 export { Badge, type BadgeProps } from './primitives/badge'
 export { Button, type ButtonProps, type ButtonSlot } from './primitives/button'
+export { Calendar, type CalendarProps, type DateRange } from './primitives/calendar'
 export { Checkbox, type CheckboxProps } from './primitives/checkbox'
 export { Chip, type ChipProps } from './primitives/chip'
+export { DateField, type DateFieldProps } from './primitives/date-field'
 export { Divider, type DividerProps } from './primitives/divider'
 export { Input, type InputProps, type InputSlot } from './primitives/input'
 export { OtpInput, type OtpInputProps } from './primitives/otp-input'
@@ -69,4 +71,25 @@ export { ImageShower, type ImageShowerProps, type MediaItem } from './media/imag
 export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './utils/case'
 export { dismissKeyboard, useKeyboardVisible } from './utils/keyboard'
 export { applyMask, createMask, unmask, type Mask, type MaskFn } from './utils/mask'
+export {
+  addDays,
+  addMonths,
+  buildMonthGrid,
+  clampDate,
+  daysInMonth,
+  endOfMonth,
+  formatDate,
+  formatMonthYear,
+  fromISODate,
+  isAfter,
+  isBefore,
+  isSameDay,
+  isWithin,
+  startOfDay,
+  startOfMonth,
+  toISODate,
+  weekdayLabels,
+  type MonthCell,
+  type WeekStart,
+} from './utils/date'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'

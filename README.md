@@ -50,7 +50,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `Button` `SegmentedControl` `Input` `Select` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
+| **Primitives** | `Text` `Button` `SegmentedControl` `Input` `Select` `DateField` `Calendar` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `Card` `ListItem` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` |
@@ -119,6 +119,24 @@ under you — the exact moment it matters.
 `renderItem` swaps in a caching image component or a video player; the package
 itself decodes nothing beyond the core `Image`.
 
+### DateField
+
+```tsx
+<DateField label="Birthday" value={date} onChange={setDate} />
+<DateField label="Stay" range value={stay} onChange={setStay} />
+<DateField minDate={today} maxDate={addDays(today, 14)}
+           isDisabled={(d) => d.getDay() === 0} locale="tr-TR" />
+```
+
+A calendar in a sheet rather than a platform picker: the two platforms
+disagree on what a date picker is, and neither answer matches a themed app.
+Month and weekday names come from `Intl` where the runtime has it, falling
+back to English rather than throwing.
+
+The grid is always six rows, so paging between months does not move the
+buttons underneath out from under the user's thumb. `Calendar` is exported on
+its own for the times a field would be one tap too many.
+
 ### Toast
 
 ```tsx
@@ -147,6 +165,7 @@ for a stale one to expire is how a toast becomes noise.
 | `darken` `lighten` `alpha` `mix` `contrast` `readableOn` | Memoized color math |
 | `shadow(preset)` `platformShadow(opts)` | Per-platform shadows |
 | `createMask` `applyMask` `unmask` | Pattern masking |
+| `addMonths` `buildMonthGrid` `toISODate` … | Calendar arithmetic, in local time |
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
 
 ```tsx

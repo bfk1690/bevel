@@ -3,6 +3,7 @@ import type { ComponentType } from 'react'
 import { AccordionDemo } from './accordion'
 import { ButtonDemo } from './button'
 import { ContentDemo } from './content'
+import { DateDemo } from './date'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
 import { MediaDemo } from './media'
@@ -54,6 +55,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Single, multiple, searchable',
     group: 'Fields',
     Component: SelectDemo,
+  },
+  {
+    key: 'date',
+    title: 'DateField and Calendar',
+    subtitle: 'Single, range, bounds, blocked days',
+    group: 'Fields',
+    Component: DateDemo,
   },
   {
     key: 'selection',
