@@ -23,6 +23,11 @@ export {
   type SelectProps,
   type SingleSelectProps,
 } from './primitives/select'
+export {
+  SegmentedControl,
+  type SegmentedControlProps,
+  type SegmentOption,
+} from './primitives/segmented-control'
 export { Skeleton, type SkeletonProps } from './primitives/skeleton'
 export { Switch, type SwitchProps } from './primitives/switch'
 export { Text, type BevelTextProps } from './primitives/text'
@@ -42,6 +47,13 @@ export {
   type ToastTone,
 } from './feedback/toast-store'
 
+export {
+  Accordion,
+  AccordionItem,
+  type AccordionEntry,
+  type AccordionItemProps,
+  type AccordionProps,
+} from './layout/accordion'
 export { Card, type CardProps } from './layout/card'
 export { EmptyState, type EmptyStateProps } from './layout/empty-state'
 export { Header, type HeaderProps } from './layout/header'

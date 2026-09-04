@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 
+import { AccordionDemo } from './accordion'
 import { ButtonDemo } from './button'
 import { ContentDemo } from './content'
 import { InputDemo } from './input'
@@ -8,6 +9,7 @@ import { MediaDemo } from './media'
 import { ModalDemo } from './modal'
 import { OtpDemo } from './otp'
 import { ProgressDemo } from './progress'
+import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SelectionDemo } from './selection'
 import { TextDemo } from './text'
@@ -31,6 +33,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Variants, press behaviour, slots, states',
     group: 'Actions',
     Component: ButtonDemo,
+  },
+  {
+    key: 'segmented',
+    title: 'SegmentedControl',
+    subtitle: 'A sliding indicator over one axis of choice',
+    group: 'Actions',
+    Component: SegmentedDemo,
   },
   {
     key: 'input',
@@ -74,6 +83,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Surfaces, rows, markers and empty states',
     group: 'Content',
     Component: ContentDemo,
+  },
+  {
+    key: 'accordion',
+    title: 'Accordion',
+    subtitle: 'Disclosure rows with measured height',
+    group: 'Content',
+    Component: AccordionDemo,
   },
   {
     key: 'toast',

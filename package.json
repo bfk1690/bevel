@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit",
     "build": "bob build",
     "prepack": "yarn build",
-    "test": "node --experimental-strip-types scripts/test.mjs",
+    "test": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register.mjs scripts/test.mjs && node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register.mjs scripts/test-theme.mjs && BEVEL_TEST_WIDTH=360 BEVEL_TEST_HEIGHT=760 node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register.mjs scripts/test-theme.mjs && BEVEL_TEST_PLATFORM=android node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register.mjs scripts/test-theme.mjs",
     "verify": "yarn typecheck && yarn test && yarn build"
   },
   "peerDependencies": {

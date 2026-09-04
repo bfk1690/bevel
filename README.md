@@ -50,8 +50,8 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `Button` `Input` `Select` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `Card` `ListItem` `EmptyState` `KeyboardStickyFooter` |
+| **Primitives** | `Text` `Button` `SegmentedControl` `Input` `Select` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
+| **Layout** | `Screen` `Header` `Card` `ListItem` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` |
 
@@ -202,8 +202,16 @@ page per component showing every variant, state and edge case with the
 reasoning next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer only — color math, masking, casing. Anything that
-touches a native module is verified on a device rather than mocked.
+Tests cover the pure layer: color math, masking, casing, and the theme engine
+— how a partial theme merges into a complete one, and how style sheets resolve
+and cache per scheme. The suite runs four times, on a reference screen, a small
+one, and with the platform switched, because those are the paths where scaling
+and shadow rules diverge.
+
+React Native is stubbed with four pure functions for those runs and nothing
+more. Anything that needs a real native behaviour is verified on a device
+instead — a mock of it would only buy confidence that does not survive contact
+with a build.
 
 ## Status
 
