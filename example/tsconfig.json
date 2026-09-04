@@ -1,0 +1,19 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "bevel": [
+        "../src/index"
+      ],
+      "react": [
+        "./node_modules/@types/react"
+      ],
+      "react-native": [
+        "./node_modules/react-native"
+      ]
+    },
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0"
+  }
+}
