@@ -1,5 +1,5 @@
 {
-  "name": "bevel",
+  "name": "@bfkk/bevel",
   "version": "0.0.1",
   "description": "Themeable React Native UI primitives with data-driven variants",
   "license": "MIT",
@@ -83,5 +83,8 @@
     "ui",
     "design-system",
     "theme"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

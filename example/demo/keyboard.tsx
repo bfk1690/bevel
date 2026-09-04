@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
-import { Button, Input, KeyboardStickyFooter, Text, useTheme } from 'bevel'
+import { Button, Input, KeyboardStickyFooter, Text, useTheme } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 

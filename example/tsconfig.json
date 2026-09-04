@@ -3,14 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "bevel": [
-        "../src/index"
-      ],
       "react": [
         "./node_modules/@types/react"
       ],
       "react-native": [
         "./node_modules/react-native"
+      ],
+      "@bfkk/bevel": [
+        "../src/index"
       ]
     },
     "baseUrl": ".",

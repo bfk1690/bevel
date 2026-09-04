@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
-import { Card, Progress, Skeleton, Text, useTheme } from 'bevel'
+import { Card, Progress, Skeleton, Text, useTheme } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 

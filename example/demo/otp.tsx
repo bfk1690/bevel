@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { OtpInput, Text, toast } from 'bevel'
+import { OtpInput, Text, toast } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Image, Pressable, View } from 'react-native'
-import { Card, ImageShower, Text, useTheme } from 'bevel'
+import { Card, ImageShower, Text, useTheme } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 

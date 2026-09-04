@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Input, Modal, Text } from 'bevel'
+import { Button, Input, Modal, Text } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 

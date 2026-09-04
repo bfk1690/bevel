@@ -14,7 +14,7 @@ import {
   Toaster,
   defineTheme,
   useTheme,
-} from 'bevel'
+} from '@bfkk/bevel'
 
 import { DEMOS } from './demo/registry'
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
-import { Button, Text, useTheme } from 'bevel'
+import { Button, Text, useTheme } from '@bfkk/bevel'
 
 import { Demo, Row, Spec, Stack } from './ui'
 

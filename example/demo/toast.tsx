@@ -1,4 +1,4 @@
-import { Button, Text, toast, useTheme } from 'bevel'
+import { Button, Text, toast, useTheme } from '@bfkk/bevel'
 import { View } from 'react-native'
 
 import { Demo, Row, Stack } from './ui'

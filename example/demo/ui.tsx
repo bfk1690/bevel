@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { View } from 'react-native'
-import { Text, useTheme } from 'bevel'
+import { Text, useTheme } from '@bfkk/bevel'
 
 /**
  * One labelled block inside a demo page.

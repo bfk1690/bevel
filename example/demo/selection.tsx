@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Checkbox, Chip, Radio, RadioGroup, Switch } from 'bevel'
+import { Checkbox, Chip, Radio, RadioGroup, Switch } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 

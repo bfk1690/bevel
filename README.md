@@ -1,11 +1,11 @@
-# bevel
+# @bfkk/bevel
 
 Themeable React Native UI primitives. Every visual decision — sizes, radii,
 press behaviour, the variant tables — is theme **data**, so an app adapts the
 kit instead of forking it.
 
 ```bash
-yarn add bevel
+yarn add @bfkk/bevel
 ```
 
 **Zero runtime dependencies.** `react` and `react-native` are the only peers.
@@ -15,7 +15,7 @@ is injected by the app rather than imported by the package.
 ## Setup
 
 ```tsx
-import { BevelProvider, defineTheme, Toaster } from 'bevel'
+import { BevelProvider, defineTheme, Toaster } from '@bfkk/bevel'
 
 const theme = defineTheme({
   scale: 'moderate',            // or 'none' to work in raw dp

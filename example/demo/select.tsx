@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Select, Text } from 'bevel'
+import { Select, Text } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 

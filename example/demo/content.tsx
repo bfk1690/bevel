@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
-import { Avatar, Badge, Card, Divider, EmptyState, ListItem, Switch, Text, toast, useTheme } from 'bevel'
+import { Avatar, Badge, Card, Divider, EmptyState, ListItem, Switch, Text, toast, useTheme } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 

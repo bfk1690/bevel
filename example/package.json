@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@bfkk/bevel": "link:..",
     "expo": "~57.0.20",
+    "expo-linear-gradient": "~15.0.7",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3",
-    "bevel": "link:..",
-    "react-native-safe-area-context": "~5.6.0",
-    "expo-linear-gradient": "~15.0.7"
+    "react-native-safe-area-context": "~5.6.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",

@@ -10,7 +10,7 @@ import {
   readableOn,
   shadow,
   useTheme,
-} from 'bevel'
+} from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 

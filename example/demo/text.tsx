@@ -1,5 +1,5 @@
 import { View } from 'react-native'
-import { Text, upper, useTheme } from 'bevel'
+import { Text, upper, useTheme } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 
