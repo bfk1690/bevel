@@ -10,6 +10,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type GestureResponderEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native'
@@ -257,8 +258,43 @@ function ZoomPage({
    * compute the next one.
    */
   const view = useRef({ scale: 1, x: 0, y: 0 })
-  const start = useRef({ scale: 1, x: 0, y: 0, distance: 0, dismissing: false })
+  const start = useRef({
+    scale: 1,
+    x: 0,
+    y: 0,
+    distance: 0,
+    /** Where the gesture began, measured from the centre of the page */
+    focalX: 0,
+    focalY: 0,
+    dismissing: false,
+  })
   const lastTap = useRef(0)
+
+  /**
+   * Zoom around a POINT, not around the middle of the screen.
+   *
+   * Scaling about the centre pulls whatever the user was looking at out from
+   * under their fingers, so a detail in a corner runs away exactly when they
+   * try to inspect it. Keeping the focal point fixed is one equation: a point
+   * sits at `p * s + t` on screen, so holding it still across a scale change
+   * means
+   *
+   *   t1 = focus - (focusAtStart - t0) * (s1 / s0)
+   *
+   * Passing the CURRENT focus as the first term also gives two-finger panning
+   * for free: moving both fingers moves the image with them.
+   */
+  const focusedTranslate = useCallback(
+    (nextScale: number, focus: { x: number; y: number }) => {
+      const ratio = nextScale / start.current.scale
+      return {
+        scale: nextScale,
+        x: focus.x - (start.current.focalX - start.current.x) * ratio,
+        y: focus.y - (start.current.focalY - start.current.y) * ratio,
+      }
+    },
+    [],
+  )
 
   const apply = useCallback(
     (next: { scale: number; x: number; y: number }) => {
@@ -326,11 +362,14 @@ function ZoomPage({
         },
         onPanResponderGrant: (event) => {
           const touches = event.nativeEvent.touches
+          const focus = focalPoint(touches, width, height)
           start.current = {
             scale: view.current.scale,
             x: view.current.x,
             y: view.current.y,
             distance: touches.length === 2 ? distanceBetween(touches) : 0,
+            focalX: focus.x,
+            focalY: focus.y,
             dismissing: view.current.scale <= PINCH_SLOP && touches.length < 2,
           }
         },
@@ -339,15 +378,29 @@ function ZoomPage({
 
           if (touches.length === 2) {
             const distance = distanceBetween(touches)
+            const focus = focalPoint(touches, width, height)
+
+            // The second finger can land after the gesture began: restart the
+            // measurement from here instead of dividing by a zero distance.
             if (start.current.distance === 0) {
-              start.current = { ...start.current, distance, dismissing: false }
+              start.current = {
+                ...start.current,
+                scale: view.current.scale,
+                x: view.current.x,
+                y: view.current.y,
+                distance,
+                focalX: focus.x,
+                focalY: focus.y,
+                dismissing: false,
+              }
               return
             }
+
             const next = Math.min(
               maxScale,
               Math.max(1, (start.current.scale * distance) / start.current.distance),
             )
-            apply(clamp({ scale: next, x: start.current.x, y: start.current.y }))
+            apply(clamp(focusedTranslate(next, focus)))
             return
           }
 
@@ -384,27 +437,60 @@ function ZoomPage({
         },
         onPanResponderTerminationRequest: () => false,
       }),
-    [apply, backdrop, clamp, maxScale, onClose, onZoomChange, settle, translateY],
+    [
+      apply,
+      backdrop,
+      clamp,
+      focusedTranslate,
+      height,
+      maxScale,
+      onClose,
+      onZoomChange,
+      settle,
+      translateY,
+      width,
+    ],
   )
 
-  const onTap = useCallback(() => {
-    const now = Date.now()
-    if (now - lastTap.current < DOUBLE_TAP_MS) {
-      lastTap.current = 0
-      const zoomedIn = view.current.scale > PINCH_SLOP
-      settle(zoomedIn ? { scale: 1, x: 0, y: 0 } : { scale: doubleTapScale, x: 0, y: 0 })
-      onZoomChange(!zoomedIn)
-      return
-    }
-    lastTap.current = now
-    // A single tap only counts once the double-tap window has passed, so a
-    // double tap never also toggles the chrome.
-    setTimeout(() => {
-      if (lastTap.current !== 0 && Date.now() - lastTap.current >= DOUBLE_TAP_MS) {
-        onToggleChrome()
+  const onTap = useCallback(
+    (event: GestureResponderEvent) => {
+      const now = Date.now()
+      const point = {
+        x: event.nativeEvent.pageX - width / 2,
+        y: event.nativeEvent.pageY - height / 2,
       }
-    }, DOUBLE_TAP_MS)
-  }, [doubleTapScale, onToggleChrome, onZoomChange, settle])
+
+      if (now - lastTap.current < DOUBLE_TAP_MS) {
+        lastTap.current = 0
+        const zoomedIn = view.current.scale > PINCH_SLOP
+        if (zoomedIn) {
+          settle({ scale: 1, x: 0, y: 0 })
+        } else {
+          // Zoom towards what was tapped, the way a photo viewer does.
+          start.current = {
+            ...start.current,
+            scale: view.current.scale,
+            x: view.current.x,
+            y: view.current.y,
+            focalX: point.x,
+            focalY: point.y,
+          }
+          settle(clamp(focusedTranslate(doubleTapScale, point)))
+        }
+        onZoomChange(!zoomedIn)
+        return
+      }
+      lastTap.current = now
+      // A single tap only counts once the double-tap window has passed, so a
+      // double tap never also toggles the chrome.
+      setTimeout(() => {
+        if (lastTap.current !== 0 && Date.now() - lastTap.current >= DOUBLE_TAP_MS) {
+          onToggleChrome()
+        }
+      }, DOUBLE_TAP_MS)
+    },
+    [clamp, doubleTapScale, focusedTranslate, height, onToggleChrome, onZoomChange, settle, width],
+  )
 
   const reportTouches = useCallback(
     (count: number) => {
@@ -439,6 +525,19 @@ function distanceBetween(touches: readonly Touch[]): number {
   const [a, b] = touches
   if (!a || !b) return 0
   return Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY)
+}
+
+/** Midpoint of the active touches, measured from the centre of the page */
+function focalPoint(
+  touches: readonly Touch[],
+  width: number,
+  height: number,
+): { x: number; y: number } {
+  const [a, b] = touches
+  if (!a) return { x: 0, y: 0 }
+  const pageX = b ? (a.pageX + b.pageX) / 2 : a.pageX
+  const pageY = b ? (a.pageY + b.pageY) / 2 : a.pageY
+  return { x: pageX - width / 2, y: pageY - height / 2 }
 }
 
 const styles = StyleSheet.create({

@@ -50,14 +50,18 @@ function Overlay({ children }: { children: ReactNode }) {
 /**
  * Mount once, near the root and inside the theme provider.
  *
- * Only the first queued toast is shown; the rest wait. Stacking them competes
- * for the same corner of the screen and the user reads none of them.
+ * One toast is visible at a time and the newest wins. Stacking them competes
+ * for the same corner of the screen and the user reads none of them; queueing
+ * them delays the message that actually matters.
  */
 export function Toaster({ position = 'top', offset, renderToast, style }: ToasterProps) {
   const { colors, space, radius, sizes } = useTheme()
   const insets = useInsets()
-  const { queue } = useSyncExternalStore(toastStore.subscribe, toastStore.getSnapshot, toastStore.getSnapshot)
-  const item = queue[0]
+  const { current: item } = useSyncExternalStore(
+    toastStore.subscribe,
+    toastStore.getSnapshot,
+    toastStore.getSnapshot,
+  )
 
   const progress = useRef(new Animated.Value(0)).current
   const enter = useRef(new Animated.Value(0)).current

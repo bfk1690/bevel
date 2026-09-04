@@ -31,6 +31,7 @@ export { Modal, type ModalProps } from './feedback/modal'
 export { Toaster, type ToasterProps } from './feedback/toaster'
 export {
   clearToasts,
+  currentToast,
   dismissToast,
   showToast,
   toast,
@@ -54,6 +55,6 @@ export { Screen, type ScreenEdge, type ScreenProps } from './layout/screen'
 export { ImageShower, type ImageShowerProps, type MediaItem } from './media/image-shower'
 
 export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './utils/case'
-export { dismissKeyboard } from './utils/keyboard'
+export { dismissKeyboard, useKeyboardVisible } from './utils/keyboard'
 export { applyMask, createMask, unmask, type Mask, type MaskFn } from './utils/mask'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'

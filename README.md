@@ -111,6 +111,11 @@ to dismiss, single tap to hide the chrome. Built on `PanResponder` and the core
 animation driver, so **pinch works on Android too** — implementations that lean
 on the platform scroll view get zoom on iOS only.
 
+**Zoom follows the focal point**, not the centre of the screen: the pixel under
+your fingers stays under your fingers, and a double tap zooms towards what was
+tapped. Scaling about the centre pulls the detail you reached for out from
+under you — the exact moment it matters.
+
 `renderItem` swaps in a caching image component or a video player; the package
 itself decodes nothing beyond the core `Image`.
 
@@ -124,8 +129,12 @@ toast.error('Could not connect', { action: { label: 'Retry', onPress: retry } })
 ```
 
 Fired from anywhere — an interceptor, a queue, a catch block — because the
-store lives outside React and assumes no state library. On iOS with
-`react-native-screens` installed, toasts render above native modals.
+store lives outside React and assumes no state library.
+
+**One slot, newest wins.** Tapping retry while a success toast is still fading
+replaces it immediately, with a fresh countdown. Queueing was wrong: the
+message that matters is the one that just happened, and making the user wait
+for a stale one to expire is how a toast becomes noise.
 
 ## Theming API
 
@@ -188,9 +197,10 @@ yarn install
 yarn ios         # or: yarn android
 ```
 
-The example app is the living documentation: every component on one screen,
-with a light/dark switch in the header. Metro watches the package source, so
-editing a component reloads the example without a publish step.
+The example app is the living documentation: an index of components, and one
+page per component showing every variant, state and edge case with the
+reasoning next to it. Metro watches the package source, so editing a component
+reloads the example without a publish step.
 
 Tests cover the pure layer only — color math, masking, casing. Anything that
 touches a native module is verified on a device rather than mocked.

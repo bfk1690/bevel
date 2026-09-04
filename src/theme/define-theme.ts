@@ -133,7 +133,13 @@ export function defineTheme(input: ThemeInput = {}): Theme {
   const sizes: Sizes = {
     control: mergeSizeMap(defaultSizes.control, input.sizes?.control, mode),
     icon: mergeSizeMap(defaultSizes.icon, input.sizes?.icon, mode),
-    minTap: scaleValue(input.sizes?.minTap ?? defaultSizes.minTap, mode),
+    // A floor that scales is not a floor. On a large screen the target may
+    // grow, but on a small one it must never drop below the configured
+    // minimum - that value is an accessibility guarantee, not a proportion.
+    minTap: Math.max(
+      input.sizes?.minTap ?? defaultSizes.minTap,
+      scaleValue(input.sizes?.minTap ?? defaultSizes.minTap, mode),
+    ),
     hitSlop: scaleValue(input.sizes?.hitSlop ?? defaultSizes.hitSlop, mode),
     // Borders are never scaled: below 1dp some devices drop the hairline
     // entirely, above it the line reads heavy.

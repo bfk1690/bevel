@@ -13,6 +13,7 @@ import {
 
 import { Text } from '../primitives/text'
 import { useInsets, useTheme } from '../theme/provider'
+import { useKeyboardVisible } from '../utils/keyboard'
 
 export type ModalProps = {
   visible: boolean
@@ -52,6 +53,11 @@ function ModalBase({
 }: ModalProps) {
   const { colors, radius, space } = useTheme()
   const insets = useInsets()
+  const keyboardUp = useKeyboardVisible()
+
+  // While the keyboard is up it covers the home indicator, so its inset would
+  // only add dead space between the keyboard and the modal's own action.
+  const bottomInset = keyboardAware && keyboardUp ? 0 : insets.bottom
 
   const surface: ViewStyle = {
     backgroundColor: colors.sheet,
@@ -64,11 +70,11 @@ function ModalBase({
       ? {
           borderTopLeftRadius: radius.lg,
           borderTopRightRadius: radius.lg,
-          paddingBottom: insets.bottom + space(4),
+          paddingBottom: bottomInset + space(4),
         }
       : variant === 'center'
         ? { borderRadius: radius.lg, marginHorizontal: space(5) }
-        : { flex: 1, paddingTop: insets.top + space(2), paddingBottom: insets.bottom + space(4) }
+        : { flex: 1, paddingTop: insets.top + space(2), paddingBottom: bottomInset + space(4) }
 
   const body = (
     <View style={[surface, shape, style]}>

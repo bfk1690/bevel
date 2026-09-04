@@ -12,6 +12,7 @@ import {
 
 import { resolveColor } from '../theme/color'
 import { useInsets, useTheme } from '../theme/provider'
+import { useKeyboardVisible } from '../utils/keyboard'
 import type { ColorInput } from '../theme/types'
 
 export type ScreenEdge = 'top' | 'bottom'
@@ -71,13 +72,17 @@ function ScreenBase({
 }: ScreenProps) {
   const { colors, space } = useTheme()
   const insets = useInsets()
+  const keyboardUp = useKeyboardVisible()
 
   const paddingHorizontal = padding ?? space(4)
   const backgroundColor =
     background === 'none' ? 'transparent' : resolveColor(colors, background, colors.canvas)
 
   const top = edges.includes('top') ? insets.top : 0
-  const bottom = edges.includes('bottom') ? insets.bottom : 0
+  // The keyboard covers the home indicator, so its inset is dropped while a
+  // field is focused - otherwise a footer floats a finger's width too high.
+  const bottom =
+    edges.includes('bottom') && !(keyboardAware && keyboardUp) ? insets.bottom : 0
 
   const content = scrollable ? (
     <ScrollView

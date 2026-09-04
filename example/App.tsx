@@ -1,36 +1,22 @@
-import { useState, type ReactNode } from 'react'
-import { View } from 'react-native'
+import { useCallback, useEffect, useState } from 'react'
+import { BackHandler, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
 import {
-  Avatar,
-  Badge,
   BevelProvider,
   Button,
   Card,
-  Checkbox,
-  Chip,
-  Divider,
-  EmptyState,
   Header,
-  ImageShower,
-  Input,
   ListItem,
-  Modal,
-  OtpInput,
-  Progress,
-  RadioGroup,
   Screen,
-  Select,
-  Skeleton,
-  Switch,
   Text,
   Toaster,
   defineTheme,
-  toast,
   useTheme,
 } from 'bevel'
+
+import { DEMOS } from './demo/registry'
 
 /**
  * The theme an app would write.
@@ -56,12 +42,6 @@ const theme = defineTheme({
     },
   },
 })
-
-const PHOTOS = [
-  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200',
-  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1200',
-  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200',
-]
 
 export default function App() {
   return (
@@ -91,305 +71,96 @@ function Providers() {
           style={style}
         />
       )}>
-      <Showcase />
+      <Gallery />
       <Toaster />
     </BevelProvider>
   )
 }
 
-function Showcase() {
-  const { scheme, setPreference, space, colors } = useTheme()
+/**
+ * Index and detail, without a navigation library.
+ *
+ * One page per component beats one long wall: each screen can show every
+ * variant, state and edge case of one thing, with room for the reasoning.
+ */
+function Gallery() {
+  const { scheme, setPreference, space } = useTheme()
+  const [route, setRoute] = useState<string | null>(null)
 
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [password, setPassword] = useState('')
-  const [code, setCode] = useState('')
-  const [country, setCountry] = useState<string | null>(null)
-  const [tags, setTags] = useState<string[]>([])
-  const [plan, setPlan] = useState('monthly')
-  const [terms, setTerms] = useState(false)
-  const [alerts, setAlerts] = useState(true)
-  const [filters, setFilters] = useState<string[]>(['new'])
-  const [modal, setModal] = useState(false)
-  const [viewer, setViewer] = useState<number | null>(null)
-  const [loading, setLoading] = useState(false)
+  const back = useCallback(() => setRoute(null), [])
 
-  const toggleFilter = (key: string) =>
-    setFilters((prev) => (prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]))
+  useEffect(() => {
+    if (route == null) return
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      back()
+      return true
+    })
+    return () => sub.remove()
+  }, [back, route])
+
+  const demo = DEMOS.find((entry) => entry.key === route)
 
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Screen
-        header={
-          <Header
-            title="bevel"
-            subtitle={`${scheme} scheme`}
-            right={
-              <Button
-                label={scheme === 'dark' ? 'Light' : 'Dark'}
-                variant="secondary"
-                size="sm"
-                full={false}
-                onPress={() => setPreference(scheme === 'dark' ? 'light' : 'dark')}
-              />
-            }
-          />
-        }
-        footer={
-          <Button
-            label={loading ? 'Working' : 'Primary action'}
-            variant="hero"
-            loading={loading}
-            onPress={() => {
-              setLoading(true)
-              setTimeout(() => {
-                setLoading(false)
-                toast.success('Done', { action: { label: 'Undo', onPress: () => {} } })
-              }, 1400)
-            }}
-          />
-        }>
-        <View style={{ gap: space(8), paddingTop: space(2) }}>
-          <Section title="Buttons">
-            <Button label="Primary" />
-            <Button label="Secondary" variant="secondary" />
-            <Button label="Outline" variant="outline" />
-            <Button label="Danger" variant="danger" press="scale" />
-            <Button label="Ghost" variant="ghost" />
-            <View style={{ flexDirection: 'row', gap: space(2) }}>
-              <Button label="Small" size="sm" full={false} />
-              <Button label="Flat" press="none" full={false} variant="secondary" />
-              <Button label="Credits" tag="AI" trailing="49" full={false} />
-            </View>
-          </Section>
-
-          <Section title="Fields">
-            <Input
-              label="Name"
-              required
-              value={name}
-              onChangeText={setName}
-              placeholder="Ada Lovelace"
-            />
-            <Input
-              label="Phone"
-              mask="(###) ### ## ##"
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="number-pad"
-              helper="The masked value and the raw one are separate"
-            />
-            <Input
-              label="Password"
-              secureToggle
-              value={password}
-              onChangeText={setPassword}
-              error={password.length > 0 && password.length < 6 ? 'At least 6 characters' : null}
-            />
-            <Select
-              label="Country"
-              placeholder="Pick one"
-              searchable
-              value={country}
-              onChange={setCountry}
-              options={[
-                { value: 'tr', label: 'Turkiye' },
-                { value: 'de', label: 'Germany' },
-                { value: 'nl', label: 'Netherlands' },
-                { value: 'us', label: 'United States' },
-              ]}
-            />
-            <Select
-              label="Interests"
-              placeholder="Any"
-              multiple
-              value={tags}
-              onChange={setTags}
-              options={[
-                { value: 'design', label: 'Design' },
-                { value: 'code', label: 'Code' },
-                { value: 'photo', label: 'Photography' },
-              ]}
-            />
-            <View style={{ gap: space(2) }}>
-              <Text variant="caption" color="textMuted">
-                Verification code
-              </Text>
-              <OtpInput
-                value={code}
-                onChange={setCode}
-                onComplete={() => toast.info('Code ready')}
-              />
-            </View>
-          </Section>
-
-          <Section title="Selection">
-            <RadioGroup
-              value={plan}
-              onChange={setPlan}
-              options={[
-                { value: 'monthly', label: 'Monthly', description: 'Cancel anytime' },
-                { value: 'yearly', label: 'Yearly', description: 'Two months free' },
-              ]}
-            />
-            <Checkbox checked={terms} onChange={setTerms} label="I agree to the terms" />
-            <Switch
-              value={alerts}
-              onChange={setAlerts}
-              label="Alerts"
-              description="Push and email"
-            />
-            <View style={{ flexDirection: 'row', gap: space(2), flexWrap: 'wrap' }}>
-              {['new', 'popular', 'sale'].map((key) => (
-                <Chip
-                  key={key}
-                  label={key}
-                  selected={filters.includes(key)}
-                  onPress={() => toggleFilter(key)}
+      {demo ? (
+        <Screen
+          key={demo.key}
+          header={<Header title={demo.title} subtitle={demo.subtitle} onBack={back} divider />}
+          footer={demo.Footer ? <demo.Footer /> : undefined}>
+          <View style={{ paddingVertical: space(4) }}>
+            <demo.Component />
+          </View>
+        </Screen>
+      ) : (
+        <Screen
+          header={
+            <Header
+              title="bevel"
+              subtitle={`${DEMOS.length} components - ${scheme} scheme`}
+              right={
+                <Button
+                  label={scheme === 'dark' ? 'Light' : 'Dark'}
+                  variant="secondary"
+                  size="sm"
+                  full={false}
+                  onPress={() => setPreference(scheme === 'dark' ? 'light' : 'dark')}
                 />
-              ))}
-            </View>
-          </Section>
-
-          <Section title="Feedback">
-            <View style={{ flexDirection: 'row', gap: space(2), flexWrap: 'wrap' }}>
-              <Button
-                label="Success"
-                size="sm"
-                full={false}
-                onPress={() => toast.success('Saved')}
-              />
-              <Button
-                label="Error"
-                size="sm"
-                variant="danger"
-                full={false}
-                onPress={() =>
-                  toast.error('Could not connect', {
-                    action: { label: 'Retry', onPress: () => {} },
-                  })
-                }
-              />
-              <Button
-                label="Loading"
-                size="sm"
-                variant="secondary"
-                full={false}
-                onPress={() => {
-                  const id = toast.loading('Uploading')
-                  setTimeout(() => toast.dismiss(id), 1800)
-                }}
-              />
-              <Button
-                label="Sheet"
-                size="sm"
-                variant="outline"
-                full={false}
-                onPress={() => setModal(true)}
-              />
-            </View>
-            <Progress value={0.62} label="Storage" showValue />
-            <Progress label="Indeterminate" />
-            <Skeleton lines={3} />
-          </Section>
-
-          <Section title="Content">
-            <Card
-              title="Card"
-              subtitle="Surface, radius and shadow come from the theme"
-              right={<Badge label="new" />}>
-              <Text variant="caption" color="textMuted">
-                Adding a press handler turns it into a row without changing its shape.
-              </Text>
-            </Card>
-
-            <Card padding={0} gap={0}>
-              <ListItem
-                title="Ada Lovelace"
-                subtitle="Opens the viewer"
-                left={<Avatar name="Ada Lovelace" status="ok" />}
-                onPress={() => setViewer(0)}
-                divider
-                dividerInset={space(14)}
-              />
-              <ListItem
-                title="Notifications"
-                right={<Switch value={alerts} onChange={setAlerts} size="sm" />}
-                divider
-                dividerInset={space(4)}
-              />
-              <ListItem
-                title="Delete account"
-                destructive
-                onPress={() => toast.warning('Not really')}
-              />
-            </Card>
-
-            <View style={{ flexDirection: 'row', gap: space(2) }}>
-              <Badge label="soft" />
-              <Badge label="solid" variant="solid" tone="ok" />
-              <Badge label="outline" variant="outline" tone="danger" dot />
-            </View>
-
-            <Divider label="or" />
-
-            <EmptyState
-              compact
-              title="Nothing here yet"
-              message="An empty state carries the action that fixes it."
-              actionLabel="Add the first one"
-              onAction={() => toast.info('Tapped')}
+              }
             />
-          </Section>
-
-          <Section title="Media">
-            <View style={{ flexDirection: 'row', gap: space(2) }}>
-              {PHOTOS.map((uri, index) => (
-                <Card
-                  key={uri}
-                  padding={0}
-                  gap={0}
-                  onPress={() => setViewer(index)}
-                  style={{ flex: 1, height: space(20), overflow: 'hidden' }}>
-                  <View style={{ flex: 1, backgroundColor: colors.skeleton }} />
+          }>
+          <View style={{ gap: space(4), paddingVertical: space(3) }}>
+            {GROUPS.map((group) => (
+              <View key={group.title} style={{ gap: space(2) }}>
+                <Text variant="micro" color="textFaint">
+                  {group.title}
+                </Text>
+                <Card padding={0} gap={0}>
+                  {DEMOS.filter((entry) => entry.group === group.title).map((entry, index, list) => (
+                    <ListItem
+                      key={entry.key}
+                      title={entry.title}
+                      subtitle={entry.subtitle}
+                      onPress={() => setRoute(entry.key)}
+                      divider={index < list.length - 1}
+                      dividerInset={space(4)}
+                    />
+                  ))}
                 </Card>
-              ))}
-            </View>
-            <Text variant="caption" color="textFaint">
-              Pinch, pan, double tap, drag down to dismiss - on both platforms.
-            </Text>
-          </Section>
-        </View>
-      </Screen>
-
-      <Modal visible={modal} onClose={() => setModal(false)} title="Sheet" variant="sheet">
-        <Text variant="body" color="textMuted">
-          A sheet leaves the page behind it in place, which is why it suits pickers and
-          confirmations.
-        </Text>
-        <Button label="Close" variant="secondary" onPress={() => setModal(false)} />
-      </Modal>
-
-      <ImageShower
-        visible={viewer != null}
-        index={viewer ?? 0}
-        items={PHOTOS}
-        title="Unsplash"
-        onClose={() => setViewer(null)}
-      />
+              </View>
+            ))}
+          </View>
+        </Screen>
+      )}
     </>
   )
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  const { space } = useTheme()
-  return (
-    <View style={{ gap: space(3) }}>
-      <Text variant="micro" color="textFaint">
-        {title}
-      </Text>
-      {children}
-    </View>
-  )
-}
+const GROUPS = [
+  { title: 'Actions' },
+  { title: 'Fields' },
+  { title: 'Content' },
+  { title: 'Feedback' },
+  { title: 'Media' },
+  { title: 'Foundation' },
+]
