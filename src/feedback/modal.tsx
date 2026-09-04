@@ -1,12 +1,16 @@
-import { memo, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Modal as RNModal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
+  type LayoutChangeEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native'
@@ -38,6 +42,13 @@ export type ModalProps = {
   style?: StyleProp<ViewStyle>
 }
 
+/**
+ * Timings taken from the platform's own sheet presentation: a touch slower on
+ * the way in than out, easing off at the end rather than stopping flat.
+ */
+const IN_DURATION = 280
+const OUT_DURATION = 200
+
 function ModalBase({
   visible,
   onClose,
@@ -54,13 +65,54 @@ function ModalBase({
   const { colors, radius, space } = useTheme()
   const insets = useInsets()
   const keyboardUp = useKeyboardVisible()
+  const { height: windowHeight } = useWindowDimensions()
 
   // While the keyboard is up it covers the home indicator, so its inset would
   // only add dead space between the keyboard and the modal's own action.
   const bottomInset = keyboardAware && keyboardUp ? 0 : insets.bottom
 
+  /**
+   * The scrim and the surface animate SEPARATELY.
+   *
+   * React Native's own `animationType="slide"` moves the whole modal, scrim
+   * included, so the dark layer sweeps up from the bottom edge like a sheet of
+   * paper. No platform does that: the scrim fades in place while only the
+   * surface travels. Driving both from one value keeps them in step without
+   * pretending they are the same movement.
+   */
+  const progress = useRef(new Animated.Value(visible ? 1 : 0)).current
+  /** Stays mounted through the closing animation */
+  const [mounted, setMounted] = useState(visible)
+  const [surfaceHeight, setSurfaceHeight] = useState(0)
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true)
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: IN_DURATION,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start()
+      return
+    }
+
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: OUT_DURATION,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setMounted(false)
+    })
+  }, [progress, visible])
+
+  const onSurfaceLayout = useCallback((event: LayoutChangeEvent) => {
+    setSurfaceHeight(event.nativeEvent.layout.height)
+  }, [])
+
   const surface: ViewStyle = {
-    backgroundColor: colors.sheet,
+    backgroundColor: variant === 'full' ? colors.canvas : colors.sheet,
     padding: space(4),
     gap: space(3),
   }
@@ -76,8 +128,32 @@ function ModalBase({
         ? { borderRadius: radius.lg, marginHorizontal: space(5) }
         : { flex: 1, paddingTop: insets.top + space(2), paddingBottom: bottomInset + space(4) }
 
+  // A sheet travels its own height, so it is fully off screen before the
+  // measurement lands and never flashes in place on first open.
+  const travel = surfaceHeight > 0 ? surfaceHeight : windowHeight
+  const motion: Animated.WithAnimatedObject<ViewStyle> =
+    variant === 'center'
+      ? {
+          opacity: progress,
+          transform: [
+            { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) },
+          ],
+        }
+      : {
+          transform: [
+            {
+              translateY: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [travel, 0],
+              }),
+            },
+          ],
+        }
+
   const body = (
-    <View style={[surface, shape, style]}>
+    <Animated.View
+      onLayout={variant === 'full' ? undefined : onSurfaceLayout}
+      style={[surface, shape, motion, style]}>
       {variant === 'sheet' && handle && (
         <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
       )}
@@ -90,16 +166,15 @@ function ModalBase({
         children
       )}
       {footer}
-    </View>
+    </Animated.View>
   )
 
   return (
     <RNModal
-      visible={visible}
-      transparent={variant !== 'full'}
-      // Native transitions rather than hand-rolled ones: they run on the OS
-      // side and stay smooth while JS is busy rendering the content.
-      animationType={variant === 'center' ? 'fade' : 'slide'}
+      visible={mounted}
+      transparent
+      // The transitions are ours, so the platform must not add its own.
+      animationType="none"
       statusBarTranslucent
       onRequestClose={onClose}>
       <View
@@ -107,8 +182,13 @@ function ModalBase({
           styles.root,
           variant === 'sheet' && styles.bottom,
           variant === 'center' && styles.centered,
-          { backgroundColor: variant === 'full' ? colors.canvas : colors.overlay },
         ]}>
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: variant === 'full' ? colors.canvas : colors.overlay, opacity: progress },
+          ]}
+        />
         {variant !== 'full' && (
           // The scrim is a sibling of the surface, not its parent: nesting them
           // would make every tap inside the modal bubble out to the dismiss.
