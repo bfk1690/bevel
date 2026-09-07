@@ -5,6 +5,7 @@ import { ButtonDemo } from './button'
 import { AutocompleteDemo } from './autocomplete'
 import { ContentDemo } from './content'
 import { FilesDemo } from './files'
+import { InfiniteDemo } from './infinite'
 import { FormDemo } from './form'
 import { DateDemo } from './date'
 import { InputDemo } from './input'
@@ -153,6 +154,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Columns that scroll, events on a rail',
     group: 'Content',
     Component: TableDemo,
+  },
+  {
+    key: 'infinite',
+    title: 'InfiniteList',
+    subtitle: 'One fetch per page, whoever draws it',
+    group: 'Content',
+    Component: InfiniteDemo,
   },
   {
     key: 'state',

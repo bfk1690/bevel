@@ -67,7 +67,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 | | |
 | --- | --- |
 | **Primitives** | `Text` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `Card` `ListItem` `DataList` `FileRow` `Table` `Timeline` `StateView` `Accordion` `EmptyState` `KeyboardStickyFooter` |
+| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `Card` `ListItem` `DataList` `FileRow` `Table` `Timeline` `StateView` `InfiniteList` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` `Carousel` |
 
@@ -168,6 +168,25 @@ A time is a `{ hours, minutes }` pair rather than a `Date` — carrying a full
 date around for "half past two" drags a timezone and a calendar day into a
 value that has neither, which is how an alarm ends up an hour off after a
 clock change.
+
+### Lists that load as they run out
+
+```tsx
+<InfiniteList data={rows} keyExtractor={(r) => r.id} renderItem={renderRow}
+              loading={loading} loadingMore={loadingMore} hasMore={hasMore}
+              error={error} onLoadMore={loadNext} onRetry={loadNext} />
+```
+
+`onEndReached` is not a request for the next page — it is a report that the end
+is near, and it fires again on every scroll that keeps it near. The guard turns
+that into one fetch per page, and it refuses to retry a failed page on its own:
+scrolling near the end again would hammer a server that just said no.
+
+**FlashList is one prop, not a dependency.** Pass
+`ListComponent={FlashList}` and it draws with that instead. A bundler cannot
+resolve a module conditionally, so an optional native dependency is either
+forced on everyone or fails to build for whoever skipped it — the choice stays
+with the app that pays for it.
 
 ### Keyboards
 

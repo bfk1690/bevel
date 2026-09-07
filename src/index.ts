@@ -85,6 +85,11 @@ export { Table, type TableColumn, type TableProps } from './layout/table'
 export { TabView, type TabViewItem, type TabViewProps } from './layout/tab-view'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
 export { Header, type HeaderProps } from './layout/header'
+export {
+  InfiniteList,
+  type InfiniteListProps,
+  type ListComponentProps,
+} from './layout/infinite-list'
 export { LargeTitle, type LargeTitleProps } from './layout/large-title'
 export { ScrollContext, useScrollOffset, type ScrollOffset } from './layout/scroll-context'
 export { ListItem, type ListItemProps } from './layout/list-item'
@@ -124,6 +129,12 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  appendPage,
+  isLastPage,
+  shouldLoadMore,
+  type PagingState,
+} from './utils/pagination'
 export {
   foldText,
   rankSuggestions,

@@ -7,7 +7,8 @@ import { errorMessage, resolveViewState } from '../utils/state'
 import { EmptyState } from './empty-state'
 
 export type StateViewProps = {
-  children: ReactNode
+  /** Optional: used on its own it renders only the placeholder faces */
+  children?: ReactNode
   loading?: boolean
   error?: unknown
   empty?: boolean
@@ -111,5 +112,5 @@ export function StateView({
     )
   }
 
-  return <>{children}</>
+  return <>{children ?? null}</>
 }
