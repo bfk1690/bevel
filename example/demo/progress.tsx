@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
-import { Card, Progress, Skeleton, Text, useTheme } from '@bfkk/bevel'
+import { Button, Card, Progress, Skeleton, Text, useTheme } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 
 export function ProgressDemo() {
   const [value, setValue] = useState(0.1)
+  const [known, setKnown] = useState<number | undefined>(undefined)
   const { space } = useTheme()
 
   useEffect(() => {
@@ -23,8 +24,23 @@ export function ProgressDemo() {
         <Progress value={1} tone="ok" label="Done" showValue />
       </Demo>
 
-      <Demo title="Indeterminate" note="For work with no measurable end.">
+      <Demo title="Indeterminate" note="For work with no measurable end. The sweep is measured against the track it is in rather than a fixed distance, which is what stops it overshooting on a wide screen and stopping short on a narrow one.">
         <Progress label="Connecting" />
+      </Demo>
+
+      <Demo
+        title="Learning the size mid-task"
+        note="The common case: work starts before anyone knows how much of it there is. Both modes drive the same two values rather than two different transforms, so the sweeping segment slides home to the left edge and settles at the real figure instead of cutting to it.">
+        <Progress value={known} label="Downloading" showValue />
+        <Row>
+          <Button
+            label={known == null ? 'Content-Length arrives' : 'Back to unknown'}
+            variant="tinted"
+            size="sm"
+            full={false}
+            onPress={() => setKnown((current) => (current == null ? 0.72 : undefined))}
+          />
+        </Row>
       </Demo>
 
       <Demo title="Thickness and tone" row={false}>

@@ -1,5 +1,13 @@
-import { memo, useEffect, useRef } from 'react'
-import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native'
 
 import { resolveColor } from '../theme/color'
 import { useTheme } from '../theme/provider'
@@ -24,6 +32,11 @@ export type ProgressProps = {
  * Both modes animate `scaleX` rather than `width`, which keeps them on the
  * native driver: a determinate bar filling during a heavy upload should not
  * stutter because JavaScript is busy.
+ *
+ * The two modes are the SAME two values rather than two different transforms,
+ * so learning the real figure mid-task animates - the sweeping segment slides
+ * home to the left edge and settles at the number - instead of cutting. That
+ * moment is the common one: work usually starts before its size is known.
  */
 function ProgressBase({
   value,
@@ -35,38 +48,70 @@ function ProgressBase({
   style,
 }: ProgressProps) {
   const { colors, space } = useTheme()
-  const fill = useRef(new Animated.Value(value ?? 0)).current
-  const sweep = useRef(new Animated.Value(0)).current
-
   const indeterminate = value == null
+
+  /** How much of the track the segment covers, 0 to 1 */
+  const size = useRef(new Animated.Value(indeterminate ? SWEEP_SIZE : (value ?? 0))).current
+  /** Where its left edge sits, in points */
+  const slide = useRef(new Animated.Value(0)).current
+  const [track, setTrack] = useState(0)
+
+  const onTrackLayout = useCallback((event: LayoutChangeEvent) => {
+    const measured = event.nativeEvent.layout.width
+    setTrack((previous) => (previous === measured ? previous : measured))
+  }, [])
 
   useEffect(() => {
     if (indeterminate) return
-    Animated.timing(fill, {
-      toValue: Math.min(1, Math.max(0, value)),
-      duration: 260,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start()
-  }, [fill, indeterminate, value])
-
-  useEffect(() => {
-    if (!indeterminate) return
-    const loop = Animated.loop(
-      Animated.timing(sweep, {
-        toValue: 1,
-        duration: 1100,
-        easing: Easing.inOut(Easing.quad),
+    Animated.parallel([
+      Animated.timing(size, {
+        toValue: Math.min(1, Math.max(0, value)),
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
+      // Wherever the sweep had got to, it comes back to the left edge
+      Animated.timing(slide, {
+        toValue: 0,
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [indeterminate, size, slide, value])
+
+  useEffect(() => {
+    // Nothing to sweep across until the track has been measured. Interpolating
+    // a guess is what makes a bar overshoot on a wide screen and stop short on
+    // a narrow one.
+    if (!indeterminate || track === 0) return
+
+    size.setValue(SWEEP_SIZE)
+    const segment = track * SWEEP_SIZE
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(slide, {
+          toValue: track,
+          duration: 1100,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        // Jumps back off the leading edge rather than sliding back, which would
+        // read as the work having gone into reverse
+        Animated.timing(slide, {
+          toValue: -segment,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ]),
     )
-    sweep.setValue(0)
+    slide.setValue(-segment)
     loop.start()
     return () => loop.stop()
-  }, [indeterminate, sweep])
+  }, [indeterminate, size, slide, track])
 
   const accent = resolveColor(colors, tone, colors.accent)
-  const track = resolveColor(colors, trackColor, colors.sunk)
+  const trackFill = resolveColor(colors, trackColor, colors.sunk)
 
   return (
     <View style={[{ gap: space(1.5) }, style]}>
@@ -85,24 +130,24 @@ function ProgressBase({
 
       <View
         accessibilityRole="progressbar"
-        accessibilityValue={value != null ? { now: Math.round(value * 100), min: 0, max: 100 } : undefined}
-        style={{ height, borderRadius: height / 2, backgroundColor: track, overflow: 'hidden' }}>
+        accessibilityValue={
+          value != null ? { now: Math.round(value * 100), min: 0, max: 100 } : undefined
+        }
+        onLayout={onTrackLayout}
+        style={{
+          height,
+          borderRadius: height / 2,
+          backgroundColor: trackFill,
+          overflow: 'hidden',
+        }}>
         <Animated.View
           style={[
             styles.bar,
             {
               backgroundColor: accent,
-              transform: indeterminate
-                ? [
-                    { scaleX: 0.35 },
-                    {
-                      translateX: sweep.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-200, 200],
-                      }),
-                    },
-                  ]
-                : [{ scaleX: fill }],
+              // Translate before scale, so the slide is in points rather than
+              // in whatever fraction the bar happens to be showing
+              transform: [{ translateX: slide }, { scaleX: size }],
             },
           ]}
         />
@@ -110,6 +155,9 @@ function ProgressBase({
     </View>
   )
 }
+
+/** How much of the track the indeterminate segment covers */
+const SWEEP_SIZE = 0.35
 
 const styles = StyleSheet.create({
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

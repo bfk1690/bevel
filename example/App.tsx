@@ -5,6 +5,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { StatusBar } from 'expo-status-bar'
 import {
   BevelProvider,
+  DialogHost,
   Button,
   Card,
   EmptyState,
@@ -78,6 +79,7 @@ function Providers() {
         />
       )}>
       <Gallery />
+      <DialogHost />
       <Toaster />
     </BevelProvider>
   )

@@ -8,6 +8,7 @@ import { FilesDemo } from './files'
 import { InfiniteDemo } from './infinite'
 import { FormDemo } from './form'
 import { DateDemo } from './date'
+import { DialogDemo } from './dialog'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
 import { CarouselDemo } from './carousel'
@@ -197,6 +198,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'What just happened, and what is still true',
     group: 'Feedback',
     Component: ToastDemo,
+  },
+  {
+    key: 'dialog',
+    title: 'Dialog',
+    subtitle: 'Questions raised from anywhere, and awaited',
+    group: 'Feedback',
+    Component: DialogDemo,
   },
   {
     key: 'menu',

@@ -53,6 +53,18 @@ export { TimePicker, type TimePickerProps } from './primitives/time-picker'
 export { ActionSheet, type ActionSheetAction, type ActionSheetProps } from './feedback/action-sheet'
 export { Banner, type BannerProps } from './feedback/banner'
 export { Menu, type MenuItem, type MenuProps } from './feedback/menu'
+export { DialogHost, type DialogHostProps } from './feedback/dialog-host'
+export {
+  dialog,
+  dialogStore,
+  clearDialogs,
+  currentDialog,
+  resolveDialog,
+  type DialogKind,
+  type DialogOptions,
+  type DialogRequest,
+  type DialogResult,
+} from './feedback/dialog-store'
 export { Modal, type ModalProps } from './feedback/modal'
 export { Popover, type PopoverProps } from './feedback/popover'
 export { Tooltip, type TooltipProps } from './feedback/tooltip'
