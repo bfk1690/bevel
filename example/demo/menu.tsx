@@ -17,7 +17,7 @@ export function MenuDemo() {
     <Stack>
       <Demo
         title="Menu"
-        note="Choosing an item closes the menu without the caller saying so - leaving it open means dismissing something already finished with.">
+        note="Choosing an item closes the menu without the caller saying so - leaving it open means dismissing something already finished with. Headings group the actions; a rule under each of four items would turn a short menu into a grid.">
         <View ref={plain} collapsable={false} style={{ alignSelf: 'flex-start' }}>
           <Button label="Actions" variant="secondary" full={false} onPress={() => setOpen('plain')} />
         </View>
@@ -26,9 +26,11 @@ export function MenuDemo() {
           onClose={() => setOpen(null)}
           anchorRef={plain}
           items={[
+            { section: 'This item' },
             { label: 'Share', onPress: () => toast.info('Shared') },
             { label: 'Duplicate', onPress: () => toast.info('Duplicated') },
             { label: 'Rename', onPress: () => toast.info('Renamed'), disabled: true },
+            { section: 'Careful' },
             { label: 'Delete', onPress: () => toast.warning('Deleted'), destructive: true },
           ]}
         />

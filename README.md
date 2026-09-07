@@ -192,6 +192,10 @@ store lives outside React and assumes no state library.
 
 Swipe a toast back the way it came to dismiss it early.
 
+`toast.update(id, patch)` changes a toast that is still on screen — a loading
+toast becoming a success, without a second entrance. One the user already
+dismissed is not brought back.
+
 **One slot, newest wins.** Tapping retry while a success toast is still fading
 replaces it immediately, with a fresh countdown. Queueing was wrong: the
 message that matters is the one that just happened, and making the user wait

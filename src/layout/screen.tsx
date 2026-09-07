@@ -1,5 +1,6 @@
-import { memo, type ReactNode } from 'react'
+import { memo, useMemo, useRef, type ReactNode } from 'react'
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -12,6 +13,7 @@ import {
 } from 'react-native'
 
 import { resolveColor } from '../theme/color'
+import { ScrollContext } from './scroll-context'
 import { useInsets, useTheme } from '../theme/provider'
 import { useKeyboardVisible } from '../utils/keyboard'
 import type { ColorInput } from '../theme/types'
@@ -87,6 +89,20 @@ function ScreenBase({
   const insets = useInsets()
   const keyboardUp = useKeyboardVisible()
 
+  /**
+   * Published for whatever is drawn over the content - a header that shrinks,
+   * a bar that appears. Driven natively, so reacting to it costs nothing.
+   */
+  const scrollY = useRef(new Animated.Value(0)).current
+  const offset = useMemo(() => ({ y: scrollY }), [scrollY])
+  const onScroll = useMemo(
+    () =>
+      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+        useNativeDriver: true,
+      }),
+    [scrollY],
+  )
+
   const paddingHorizontal = padding ?? space(4)
   const backgroundColor =
     background === 'none' ? 'transparent' : resolveColor(colors, background, colors.canvas)
@@ -110,9 +126,11 @@ function ScreenBase({
     ) : undefined)
 
   const content = scrollable ? (
-    <ScrollView
+    <Animated.ScrollView
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
       refreshControl={pull}
       contentContainerStyle={[
         { paddingHorizontal, paddingBottom: footer ? space(4) : bottom + space(4) },
@@ -120,7 +138,7 @@ function ScreenBase({
       ]}
       {...scrollProps}>
       {children}
-    </ScrollView>
+    </Animated.ScrollView>
   ) : (
     <View
       style={[
@@ -144,6 +162,7 @@ function ScreenBase({
   )
 
   return (
+    <ScrollContext.Provider value={offset}>
     <View style={[styles.fill, { backgroundColor }, style]}>
       {keyboardAware ? (
         <KeyboardAvoidingView
@@ -157,6 +176,7 @@ function ScreenBase({
         body
       )}
     </View>
+    </ScrollContext.Provider>
   )
 }
 

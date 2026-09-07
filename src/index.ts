@@ -58,6 +58,7 @@ export {
   clearToasts,
   currentToast,
   dismissToast,
+  updateToast,
   showToast,
   toast,
   toastStore,
@@ -82,6 +83,7 @@ export { StateView, type StateViewProps } from './layout/state-view'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
 export { Header, type HeaderProps } from './layout/header'
+export { ScrollContext, useScrollOffset, type ScrollOffset } from './layout/scroll-context'
 export { ListItem, type ListItemProps } from './layout/list-item'
 export {
   KeyboardStickyFooter,

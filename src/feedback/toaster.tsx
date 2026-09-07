@@ -72,16 +72,29 @@ export function Toaster({ position = 'top', offset, renderToast, style }: Toaste
   /** How far the finger has pushed the toast away from its resting place */
   const drag = useRef(new Animated.Value(0)).current
 
-  useEffect(() => {
-    if (!item) return
+  /** The toast the entrance last played for, so an update does not replay it */
+  const entered = useRef<string | null>(null)
 
-    enter.setValue(0)
+  useEffect(() => {
+    if (!item) {
+      entered.current = null
+      return
+    }
+
+    // An updated toast keeps its place: replaying the entrance would make one
+    // finished job look like two separate events.
+    const isNew = entered.current !== item.id
+    entered.current = item.id
+
+    if (isNew) {
+      enter.setValue(0)
+      drag.setValue(0)
+    }
     progress.setValue(1)
-    drag.setValue(0)
 
     const animation = Animated.timing(enter, {
       toValue: 1,
-      duration: 220,
+      duration: isNew ? 220 : 0,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     })

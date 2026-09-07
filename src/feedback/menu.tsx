@@ -6,6 +6,11 @@ import { useTheme } from '../theme/provider'
 import type { Placement } from '../utils/placement'
 import { Popover } from './popover'
 
+export type MenuSection = {
+  /** A heading rather than a choice. Nothing happens when it is pressed */
+  section: string
+}
+
 export type MenuItem = {
   label: string
   onPress: () => void
@@ -17,11 +22,17 @@ export type MenuItem = {
   disabled?: boolean
 }
 
+export type MenuEntry = MenuItem | MenuSection
+
+function isSection(entry: MenuEntry): entry is MenuSection {
+  return 'section' in entry
+}
+
 export type MenuProps = {
   visible: boolean
   onClose: () => void
   anchorRef: RefObject<View | null>
-  items: readonly MenuItem[]
+  items: readonly MenuEntry[]
   placement?: Placement | 'auto'
   minWidth?: number
   maxWidth?: number
@@ -58,11 +69,28 @@ export function Menu({
       maxWidth={maxWidth}
       arrow={false}
       style={{ padding: space(1), minWidth }}>
-      {items.map((item, index) => (
+      {items.map((item, index) => {
+        if (isSection(item)) {
+          return (
+            <View
+              key={`${item.section}-${index}`}
+              style={{
+                paddingHorizontal: space(2.5),
+                paddingTop: index === 0 ? space(1.5) : space(3),
+                paddingBottom: space(1),
+              }}>
+              <Text variant="micro" color="textFaint">
+                {item.section}
+              </Text>
+            </View>
+          )
+        }
+
+        // No rule between every pair: a line under each of four items turns a
+        // short menu into a grid. Section headings do the grouping instead,
+        // and only where the grouping actually changes.
+        return (
         <Fragment key={`${item.label}-${index}`}>
-          {index > 0 && (
-            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
-          )}
           <Pressable
             onPress={() => {
               if (item.disabled) return
@@ -93,7 +121,8 @@ export function Menu({
             {item.right}
           </Pressable>
         </Fragment>
-      ))}
+        )
+      })}
     </Popover>
   )
 }

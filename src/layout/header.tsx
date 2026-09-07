@@ -1,10 +1,18 @@
-import { memo, type ReactNode } from 'react'
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native'
+import { memo, useMemo, type ReactNode } from 'react'
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native'
 
 import { Text } from '../primitives/text'
 import { resolveColor } from '../theme/color'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
+import { useScrollOffset } from './scroll-context'
 
 export type HeaderProps = {
   title?: string
@@ -22,6 +30,13 @@ export type HeaderProps = {
   bg?: ColorInput | 'none'
   /** Hairline under the bar. Off when the screen below is a plain surface */
   divider?: boolean
+  /**
+   * Draws the title large beneath the bar and collapses it into the bar as the
+   * screen scrolls. Needs a `Screen` above it to supply the scroll position.
+   */
+  large?: boolean
+  /** How far the screen must scroll for the collapse to finish */
+  collapseDistance?: number
   style?: StyleProp<ViewStyle>
 }
 
@@ -34,9 +49,31 @@ function HeaderBase({
   align = 'left',
   bg = 'none',
   divider = false,
+  large = false,
+  collapseDistance = 48,
   style,
 }: HeaderProps) {
   const { colors, space, sizes } = useTheme()
+  const { y } = useScrollOffset()
+
+  /**
+   * The two titles CROSSFADE, they do not resize.
+   *
+   * Font size cannot run on the native driver, so animating it would put the
+   * one thing the eye is following on the JS thread. Two titles - one large
+   * below, one small in the bar - trading opacity and sliding a few points is
+   * the same effect built from what the native driver can carry, and it is
+   * what the platform does too.
+   */
+  const collapse = useMemo(
+    () =>
+      y.interpolate({
+        inputRange: [0, Math.max(1, collapseDistance)],
+        outputRange: [0, 1],
+        extrapolate: 'clamp',
+      }),
+    [collapseDistance, y],
+  )
 
   const backgroundColor = bg === 'none' ? 'transparent' : resolveColor(colors, bg, colors.canvas)
 
@@ -46,31 +83,42 @@ function HeaderBase({
   // when only one of them is present.
   const sideWidth = align === 'center' ? sizes.control.sm : undefined
 
-  return (
+  const barTitle =
+    title != null ? (
+      large ? (
+        <Animated.View style={{ opacity: collapse }}>
+          <Text variant="heading" numberOfLines={1}>
+            {title}
+          </Text>
+        </Animated.View>
+      ) : (
+        <Text variant="heading" numberOfLines={1}>
+          {title}
+        </Text>
+      )
+    ) : null
+
+  const bar = (
     <View
       style={[
         styles.bar,
         {
-          backgroundColor,
+          backgroundColor: large ? 'transparent' : backgroundColor,
           paddingHorizontal: space(4),
           paddingVertical: space(2),
           gap: space(2),
-          borderBottomWidth: divider ? StyleSheet.hairlineWidth : 0,
+          borderBottomWidth: !large && divider ? StyleSheet.hairlineWidth : 0,
           borderBottomColor: colors.border,
         },
-        style,
+        !large && style,
       ]}>
       {(leading != null || sideWidth != null) && (
         <View style={[styles.side, sideWidth != null && { width: sideWidth }]}>{leading}</View>
       )}
 
       <View style={[styles.titles, align === 'center' && styles.centered]}>
-        {title != null && (
-          <Text variant="heading" numberOfLines={1}>
-            {title}
-          </Text>
-        )}
-        {subtitle != null && (
+        {barTitle}
+        {subtitle != null && !large && (
           <Text variant="caption" color="textMuted" numberOfLines={1}>
             {subtitle}
           </Text>
@@ -82,6 +130,41 @@ function HeaderBase({
           {right}
         </View>
       )}
+    </View>
+  )
+
+  if (!large) return bar
+
+  return (
+    <View
+      style={[
+        {
+          backgroundColor,
+          borderBottomWidth: divider ? StyleSheet.hairlineWidth : 0,
+          borderBottomColor: colors.border,
+        },
+        style,
+      ]}>
+      {bar}
+      <Animated.View
+        style={{
+          paddingHorizontal: space(4),
+          paddingBottom: space(3),
+          gap: 2,
+          opacity: collapse.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+          transform: [
+            { translateY: collapse.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) },
+          ],
+        }}>
+        <Text variant="title" numberOfLines={1}>
+          {title}
+        </Text>
+        {subtitle != null && (
+          <Text variant="caption" color="textMuted" numberOfLines={1}>
+            {subtitle}
+          </Text>
+        )}
+      </Animated.View>
     </View>
   )
 }

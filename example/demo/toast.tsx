@@ -85,17 +85,38 @@ export function ToastDemo() {
       </Demo>
 
       <Demo
-        title="Loading"
-        note="A loading toast has no countdown - it ends when the work does, so dismiss it by id.">
+        title="Loading, then an answer"
+        note="Updating in place keeps one event looking like one event. Raising a second toast would replace the first with a fresh countdown and a fresh entrance, which reads as two things happening. A toast the user has already dismissed is not brought back - they closed it, and the work finishing does not overrule that.">
         <Button
-          label="Run a task"
+          label="Upload something"
           variant="secondary"
           onPress={() => {
             const id = toast.loading('Uploading')
-            setTimeout(() => {
-              toast.dismiss(id)
-              toast.success('Uploaded')
-            }, 2000)
+            setTimeout(() => toast.update(id, { tone: 'success', message: 'Uploaded' }), 1800)
+          }}
+        />
+        <Button
+          label="Upload something that fails"
+          variant="secondary"
+          onPress={() => {
+            const id = toast.loading('Uploading')
+            setTimeout(
+              () =>
+                toast.update(id, {
+                  tone: 'error',
+                  message: 'Upload failed',
+                  action: { label: 'Retry', onPress: () => toast.success('Uploaded') },
+                }),
+              1800,
+            )
+          }}
+        />
+        <Button
+          label="Dismiss it before it finishes"
+          variant="ghost"
+          onPress={() => {
+            const id = toast.loading('Swipe or tap me away')
+            setTimeout(() => toast.update(id, { tone: 'success', message: 'Would have said this' }), 2500)
           }}
         />
       </Demo>

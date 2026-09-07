@@ -93,6 +93,36 @@ export function currentToast(): ToastItem | null {
   return state.current
 }
 
+/**
+ * Changes a toast that is still on screen.
+ *
+ * For the shape every upload has: a loading toast that becomes a success or a
+ * failure. Raising a second toast would replace the first with a fresh
+ * countdown and a fresh entrance, which reads as two separate events rather
+ * than one that finished.
+ *
+ * A toast the user has already dismissed is NOT brought back. They closed it;
+ * the work finishing is not a reason to overrule that.
+ */
+export function updateToast(id: string, patch: Partial<Omit<ToastOptions, 'id'>>): boolean {
+  const current = state.current
+  if (current == null || current.id !== id) return false
+
+  const tone = patch.tone ?? current.tone
+  emit({
+    current: {
+      ...current,
+      ...patch,
+      tone,
+      // A loading toast has no countdown; the thing it becomes needs one
+      duration:
+        patch.duration ??
+        (current.tone === 'loading' && tone !== 'loading' ? DEFAULT_DURATION : current.duration),
+    },
+  })
+  return true
+}
+
 function tone(tone: ToastTone) {
   return (message: string, options?: Omit<ToastOptions, 'message' | 'tone'>) =>
     showToast({ ...options, message, tone })
@@ -112,6 +142,7 @@ export const toast = {
   warning: tone('warning'),
   info: tone('info'),
   loading: tone('loading'),
+  update: updateToast,
   dismiss: dismissToast,
   clear: clearToasts,
   current: currentToast,

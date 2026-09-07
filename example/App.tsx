@@ -116,7 +116,12 @@ function Gallery() {
         </Screen>
       ) : (
         <Screen
-          header={<Header title="bevel" subtitle="Themeable primitives" right={<ThemeToggle />} />}
+          header={
+            // Large collapses into the bar as the list scrolls. The two titles
+            // crossfade rather than resize, because font size cannot run on the
+            // native driver.
+            <Header title="bevel" subtitle="Themeable primitives" right={<ThemeToggle />} large />
+          }
           refreshing={refreshing}
           onRefresh={() => {
             // Screen builds the RefreshControl and tints it from the theme -
