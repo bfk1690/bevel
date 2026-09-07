@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 
 import { AccordionDemo } from './accordion'
 import { ButtonDemo } from './button'
+import { AutocompleteDemo } from './autocomplete'
 import { ContentDemo } from './content'
 import { FilesDemo } from './files'
 import { FormDemo } from './form'
@@ -67,6 +68,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Masking, errors, secure entry, accessory bar',
     group: 'Fields',
     Component: InputDemo,
+  },
+  {
+    key: 'autocomplete',
+    title: 'Autocomplete',
+    subtitle: 'Suggestions that survive a missing accent',
+    group: 'Fields',
+    Component: AutocompleteDemo,
   },
   {
     key: 'select',

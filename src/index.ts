@@ -1,6 +1,7 @@
 export * from './theme'
 
 export { Avatar, type AvatarProps } from './primitives/avatar'
+export { Autocomplete, type AutocompleteProps } from './primitives/autocomplete'
 export { AvatarGroup, type AvatarGroupItem, type AvatarGroupProps } from './primitives/avatar-group'
 export { Badge, type BadgeProps } from './primitives/badge'
 export { Button, type ButtonProps, type ButtonSlot } from './primitives/button'
@@ -123,6 +124,13 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  foldText,
+  rankSuggestions,
+  scoreMatch,
+  type RankOptions,
+  type Ranked,
+} from './utils/search'
 export {
   countCharacters,
   email,
