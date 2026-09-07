@@ -2,6 +2,7 @@ import { memo, type ReactNode } from 'react'
 import {
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -47,7 +48,17 @@ export type ScreenProps = {
   /** Which safe-area edges to respect. Screens with their own full-bleed
    * header usually drop `'top'` */
   edges?: readonly ScreenEdge[]
-  /** Typed off `ScrollViewProps` so the element type stays correct across React Native versions */
+  /**
+   * Pull to refresh.
+   *
+   * Offered as a callback rather than leaving the caller to build a
+   * `RefreshControl`, because the one thing that always gets forgotten there
+   * is the tint - the default spinner is grey on iOS and blue on Android, and
+   * neither belongs to the app it is spinning in.
+   */
+  onRefresh?: () => void
+  refreshing?: boolean
+  /** Full control, when the built-in one is not enough */
   refreshControl?: ScrollViewProps['refreshControl']
   contentContainerStyle?: StyleProp<ViewStyle>
   style?: StyleProp<ViewStyle>
@@ -65,6 +76,8 @@ function ScreenBase({
   background = 'canvas',
   padding,
   edges = DEFAULT_EDGES,
+  onRefresh,
+  refreshing = false,
   refreshControl,
   contentContainerStyle,
   style,
@@ -84,11 +97,23 @@ function ScreenBase({
   const bottom =
     edges.includes('bottom') && !(keyboardAware && keyboardUp) ? insets.bottom : 0
 
+  const pull =
+    refreshControl ??
+    (onRefresh != null ? (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        tintColor={colors.textMuted}
+        colors={[colors.accent]}
+        progressBackgroundColor={colors.surface}
+      />
+    ) : undefined)
+
   const content = scrollable ? (
     <ScrollView
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      refreshControl={refreshControl}
+      refreshControl={pull}
       contentContainerStyle={[
         { paddingHorizontal, paddingBottom: footer ? space(4) : bottom + space(4) },
         contentContainerStyle,

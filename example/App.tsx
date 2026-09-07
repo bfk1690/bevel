@@ -87,6 +87,7 @@ function Providers() {
 function Gallery() {
   const { scheme, setPreference, space } = useTheme()
   const [route, setRoute] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   const back = useCallback(() => setRoute(null), [])
 
@@ -115,7 +116,14 @@ function Gallery() {
         </Screen>
       ) : (
         <Screen
-          header={<Header title="bevel" subtitle="Themeable primitives" right={<ThemeToggle />} />}>
+          header={<Header title="bevel" subtitle="Themeable primitives" right={<ThemeToggle />} />}
+          refreshing={refreshing}
+          onRefresh={() => {
+            // Screen builds the RefreshControl and tints it from the theme -
+            // the tint is the part that always gets forgotten otherwise
+            setRefreshing(true)
+            setTimeout(() => setRefreshing(false), 900)
+          }}>
           <View style={{ gap: space(4), paddingVertical: space(3) }}>
             {GROUPS.map((group) => {
               const entries = DEMOS.filter((entry) => entry.group === group.title)

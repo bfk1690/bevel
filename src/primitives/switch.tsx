@@ -1,5 +1,14 @@
-import { memo, useEffect, useRef } from 'react'
-import { Animated, Easing, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import {
+  Animated,
+  Easing,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native'
 
 import { resolveColor } from '../theme/color'
 import { useTheme } from '../theme/provider'
@@ -28,6 +37,11 @@ const TRACK: Record<SizeToken, { width: number; height: number }> = {
  *
  * The thumb is driven by one animated value on the native driver, so flipping
  * it stays smooth while the screen behind it re-renders in response.
+ *
+ * It can be dragged as well as tapped. The platform switch has always worked
+ * that way, and a finger that lands on the thumb and pushes is making a
+ * perfectly clear statement - refusing it and waiting for a tap feels like the
+ * control did not notice.
  */
 function SwitchBase({
   value,
@@ -46,6 +60,8 @@ function SwitchBase({
   const travel = track.width - thumb - inset * 2
 
   const position = useRef(new Animated.Value(value ? 1 : 0)).current
+  /** True once a drag has moved far enough to count, so the tap is not fired too */
+  const dragged = useRef(false)
 
   useEffect(() => {
     Animated.timing(position, {
@@ -55,6 +71,51 @@ function SwitchBase({
       useNativeDriver: true,
     }).start()
   }, [position, value])
+
+  const settle = useCallback(
+    (next: boolean) => {
+      if (next !== value) onChange?.(next)
+      else {
+        // Snapped back to where it started: the spring still has to play out
+        Animated.timing(position, {
+          toValue: value ? 1 : 0,
+          duration: 140,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }).start()
+      }
+    },
+    [onChange, position, value],
+  )
+
+  const drag = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        // Only once the finger has actually travelled: claiming the gesture on
+        // touch would swallow the tap.
+        onMoveShouldSetPanResponder: (_event, gesture) => !disabled && Math.abs(gesture.dx) > 4,
+        onPanResponderGrant: () => {
+          dragged.current = true
+        },
+        onPanResponderMove: (_event, gesture) => {
+          const from = value ? 1 : 0
+          position.setValue(Math.min(1, Math.max(0, from + gesture.dx / travel)))
+        },
+        onPanResponderRelease: (_event, gesture) => {
+          const from = value ? 1 : 0
+          const ratio = from + gesture.dx / travel
+          settle(ratio >= 0.5)
+          // Cleared on the next tick so the tap that follows the release is
+          // still recognised as part of this gesture
+          setTimeout(() => {
+            dragged.current = false
+          }, 0)
+        },
+        onPanResponderTerminationRequest: () => false,
+      }),
+    [disabled, position, settle, travel, value],
+  )
 
   const accent = resolveColor(colors, tone, colors.accent)
 
@@ -84,7 +145,7 @@ function SwitchBase({
 
   return (
     <Pressable
-      onPress={disabled ? undefined : () => onChange?.(!value)}
+      onPress={disabled || dragged.current ? undefined : () => onChange?.(!value)}
       disabled={disabled}
       hitSlop={sizes.hitSlop}
       accessibilityRole="switch"
@@ -94,7 +155,8 @@ function SwitchBase({
         styles.row,
         { gap: space(3), opacity: disabled ? 0.5 : pressed ? 0.8 : 1 },
         style,
-      ]}>
+      ]}
+      {...drag.panHandlers}>
       {(label != null || description != null) && (
         <View style={styles.body}>
           {label != null && <Text variant="body">{label}</Text>}

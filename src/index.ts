@@ -72,6 +72,7 @@ export {
 export { Card, type CardProps } from './layout/card'
 export { DataList, type DataListProps, type DataRow } from './layout/data-list'
 export { EmptyState, type EmptyStateProps } from './layout/empty-state'
+export { FileRow, type FileRowProps, type FileState } from './layout/file-row'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
 export { Header, type HeaderProps } from './layout/header'
@@ -95,11 +96,24 @@ export {
   type Disclosure,
 } from './utils/hooks'
 export {
+  compareValues,
+  nextSort,
   overflowsRow,
   resolveColumnWidths,
+  sortRows,
   DEFAULT_MIN_COLUMN,
   type ColumnSpec,
+  type SortDirection,
+  type TableSort,
 } from './utils/table'
+export {
+  fileExtension,
+  fileKind,
+  formatBytes,
+  formatCount,
+  truncateMiddle,
+  type FileKind,
+} from './utils/format'
 export { applyMask, createMask, unmask, type Mask, type MaskFn } from './utils/mask'
 export {
   addDays,

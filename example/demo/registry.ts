@@ -3,6 +3,7 @@ import type { ComponentType } from 'react'
 import { AccordionDemo } from './accordion'
 import { ButtonDemo } from './button'
 import { ContentDemo } from './content'
+import { FilesDemo } from './files'
 import { DateDemo } from './date'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
@@ -135,6 +136,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Columns that scroll, events on a rail',
     group: 'Content',
     Component: TableDemo,
+  },
+  {
+    key: 'files',
+    title: 'FileRow',
+    subtitle: 'Uploads, sizes and names that fit',
+    group: 'Content',
+    Component: FilesDemo,
   },
   {
     key: 'accordion',

@@ -72,7 +72,9 @@ export function SelectionDemo() {
         <Radio selected={false} disabled label="Disabled" />
       </Demo>
 
-      <Demo title="Switch">
+      <Demo
+        title="Switch"
+        note="Drag it as well as tap it. The platform switch has always worked that way, and a finger that lands on the thumb and pushes is making a clear statement - waiting for a tap instead feels like the control did not notice.">
         <Switch value={alerts} onChange={setAlerts} label="Alerts" description="Push and email" />
         <Row>
           <Switch value size="sm" onChange={() => {}} />
