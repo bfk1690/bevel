@@ -24,6 +24,7 @@ import {
   type ViewStyle,
 } from 'react-native'
 
+import { trailingAlign } from '../theme/direction'
 import { resolveColor } from '../theme/color'
 import { useTheme } from '../theme/provider'
 import type { ColorInput, InputVariantSpec, RadiusToken, SizeToken } from '../theme/types'
@@ -330,7 +331,7 @@ function InputBase(
             </Text>
           )}
           {message != null && (
-            <Text variant={config.helperVariant} color="danger" numberOfLines={1} style={styles.message}>
+            <Text variant={config.helperVariant} color="danger" numberOfLines={1} style={[styles.message, { textAlign: trailingAlign() }]}>
               {message}
             </Text>
           )}
@@ -422,7 +423,7 @@ function EyeGlyph({ visible, size, color }: { visible: boolean; size: number; co
 const styles = StyleSheet.create({
   container: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  message: { flex: 1, textAlign: 'right' },
+  message: { flex: 1 },
   field: { flexDirection: 'row', overflow: 'hidden' },
   input: { flex: 1, padding: 0, margin: 0 },
   accessory: {

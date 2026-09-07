@@ -12,6 +12,7 @@ import {
 
 import { Text } from '../primitives/text'
 import { resolveColor } from '../theme/color'
+import { leadingSide, trailingSide } from '../theme/direction'
 import { useInsets, useTheme } from '../theme/provider'
 import { shadow as shadowStyle } from '../theme/shadow'
 import type { ColorInput } from '../theme/types'
@@ -25,7 +26,12 @@ export type FabProps = {
   label?: string
   /** Required when there is no label */
   accessibilityLabel?: string
-  position?: 'left' | 'right' | 'center'
+  /**
+   * `end` is the thumb's corner and mirrors in a right-to-left layout, which
+   * is what a floating button is expected to do. `left` and `right` are the
+   * escape hatch for a layout that must not move.
+   */
+  position?: 'start' | 'end' | 'center' | 'left' | 'right'
   /** Distance from the bottom safe area */
   offset?: number
   /** Distance from the side. Ignored when centred */
@@ -67,7 +73,7 @@ function FabBase({
   icon,
   label,
   accessibilityLabel,
-  position = 'right',
+  position = 'end',
   offset = 16,
   inset = 16,
   size = 'md',
@@ -156,12 +162,15 @@ function FabBase({
   // Built as one object rather than layered: a later `left: undefined` in a
   // style array overwrites an earlier `left: 0` instead of deferring to it,
   // which is how a centred button ends up pinned to the right
+  const side =
+    position === 'start'
+      ? leadingSide()
+      : position === 'end'
+        ? trailingSide()
+        : position
+
   const placement: ViewStyle =
-    position === 'center'
-      ? { left: 0, right: 0, alignItems: 'center' }
-      : position === 'left'
-        ? { left: inset }
-        : { right: inset }
+    side === 'center' ? { left: 0, right: 0, alignItems: 'center' } : { [side]: inset }
 
   return (
     <Animated.View
@@ -231,7 +240,7 @@ const styles = StyleSheet.create({
   root: { position: 'absolute' },
   button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   labelClip: { overflow: 'hidden' },
-  measure: { paddingLeft: 8 },
+  measure: { paddingStart: 8 },
   plus: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
 })
 

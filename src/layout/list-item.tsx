@@ -77,7 +77,7 @@ function ListItemBase({
           style={{
             height: StyleSheet.hairlineWidth,
             backgroundColor: colors.border,
-            marginLeft: dividerInset ?? 0,
+            marginStart: dividerInset ?? 0,
           }}
         />
       )}

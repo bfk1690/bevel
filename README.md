@@ -426,6 +426,21 @@ Not a checklist item here, and a few of the decisions are load-bearing:
   and reachable through the row's own accessibility actions in the meantime —
   a gesture nobody can perform is not an interface.
 
+## Right to left
+
+Layout properties are written as `start` and `end` rather than `left` and
+`right`, so a row, an inset or an overlapping avatar stack mirrors on its own
+when `I18nManager.isRTL` is set.
+
+`textAlign` does not mirror — it takes physical sides — so anything aligned to
+the trailing edge asks for it: `trailingAlign()`. A value pinned right in
+Arabic sits where the line *begins*, and reads as a mistake.
+
+`Fab` takes `start` / `end` for the same reason and defaults to `end`, with
+`left` / `right` kept as the escape hatch for a layout that must not move.
+Gesture components take physical sides, because a swipe is a direction of
+travel rather than a side of the page.
+
 ## Color roles
 
 Roles say where a color belongs so components never guess. The surface ladder

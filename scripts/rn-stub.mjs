@@ -36,7 +36,11 @@ export const StyleSheet = {
   flatten: (style) => (Array.isArray(style) ? Object.assign({}, ...style.flat()) : style),
 }
 
+// Mutable, because a right-to-left run is the only way to test the direction
+// helpers and it is fixed for the life of a real launch
+export const I18nManager = { isRTL: false }
+
 export const Keyboard = { dismiss: () => {}, addListener: () => ({ remove: () => {} }) }
 export const Appearance = { getColorScheme: () => 'light' }
 
-export default { Dimensions, PixelRatio, Platform, StyleSheet, Keyboard, Appearance }
+export default { Dimensions, I18nManager, PixelRatio, Platform, StyleSheet, Keyboard, Appearance }

@@ -1,6 +1,7 @@
 export { alpha, contrast, darken, lighten, luminance, mix, parseColor, readableOn, resolveColor } from './color'
 export { createBrandTheme, ensureContrast, type BrandInput } from './brand'
 export { defaultTheme, defineTheme, type ThemeInput } from './define-theme'
+export { isRTL, leadingAlign, leadingSide, trailingAlign, trailingSide } from './direction'
 export {
   BevelProvider,
   useInsets,

@@ -2,6 +2,7 @@ import { memo, type ReactNode } from 'react'
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native'
 
 import { Text } from '../primitives/text'
+import { trailingAlign } from '../theme/direction'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
 
@@ -57,7 +58,9 @@ function DataListBase({ rows, divider = false, style }: DataListProps) {
               <Text
                 variant={row.total ? 'bodyStrong' : 'body'}
                 color={row.tone ?? 'text'}
-                style={styles.value}>
+                // Trailing, not right: in Arabic a value on the right sits
+                // where the line begins
+                style={[styles.value, { textAlign: trailingAlign() }]}>
                 {row.value ?? ''}
               </Text>
             )}
@@ -71,7 +74,7 @@ function DataListBase({ rows, divider = false, style }: DataListProps) {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   label: { flex: 1 },
-  value: { textAlign: 'right' },
+  value: {},
 })
 
 export const DataList = memo(DataListBase)

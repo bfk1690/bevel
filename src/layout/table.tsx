@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 
 import { Text } from '../primitives/text'
+import { trailingAlign } from '../theme/direction'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
 import {
@@ -139,7 +140,7 @@ export function Table<T>({
 
   const cell = (column: TableColumn<T>, row: T) =>
     column.render ? column.render(row) : (
-      <Text variant="caption" numberOfLines={2} style={column.align === 'right' ? styles.right : undefined}>
+      <Text variant="caption" numberOfLines={2} style={column.align === 'right' ? [styles.right, { textAlign: trailingAlign() }] : undefined}>
         {column.value ? column.value(row) : ''}
       </Text>
     )
@@ -181,7 +182,7 @@ export function Table<T>({
   const headerState = selectable ? selectionState(visibleKeys, selected) : 'none'
 
   const selectColumn = (row: T, index: number) => (
-    <View style={{ paddingLeft: space(2), paddingRight: space(1) }}>
+    <View style={{ paddingStart: space(2), paddingEnd: space(1) }}>
       <Checkbox
         size="sm"
         checked={selected?.has(rowKey(row, index)) === true}
@@ -195,7 +196,7 @@ export function Table<T>({
     <View>
       <View style={[styles.headerRow, { paddingBottom: space(2), borderBottomColor: colors.border }]}>
         {selectable && sticky == null && (
-          <View style={{ paddingLeft: space(2), paddingRight: space(1) }}>
+          <View style={{ paddingStart: space(2), paddingEnd: space(1) }}>
             <Checkbox
               size="sm"
               checked={headerState === 'all'}
@@ -245,7 +246,7 @@ export function Table<T>({
                   { paddingBottom: space(2), borderBottomColor: colors.border },
                 ]}>
                 {selectable && (
-                  <View style={{ paddingLeft: space(2), paddingRight: space(1) }}>
+                  <View style={{ paddingStart: space(2), paddingEnd: space(1) }}>
                     <Checkbox
                       size="sm"
                       checked={headerState === 'all'}
@@ -339,7 +340,7 @@ const styles = StyleSheet.create({
   grow: { flexGrow: 0 },
   headerRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth },
-  right: { textAlign: 'right', width: '100%' },
+  right: { width: '100%' },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
   headerRight: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' },
   markDot: { width: 4, height: 4, borderRadius: 2 },

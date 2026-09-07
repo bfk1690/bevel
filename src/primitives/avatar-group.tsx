@@ -65,7 +65,7 @@ function AvatarGroupBase({
         <View
           key={`${item.name ?? 'face'}-${index}`}
           style={{
-            marginLeft: index === 0 ? 0 : step - size,
+            marginStart: index === 0 ? 0 : step - size,
             borderRadius,
             borderWidth: ringWidth,
             borderColor: ringColor,
@@ -79,7 +79,7 @@ function AvatarGroupBase({
       {remaining > 0 && (
         <View
           style={{
-            marginLeft: step - size,
+            marginStart: step - size,
             width: size,
             height: size,
             borderRadius,

@@ -73,3 +73,5 @@ platform switched, because that is where scaling and shadow rules diverge.
   suggestion at a time — five at once are answered with `Password1!`.
 - A sheet's flick moves one snap point, not all of them, so it cannot skip the
   size the reader was reaching for.
+- Layout is written in `start`/`end`, which mirrors itself; `textAlign` is not,
+  which is why the direction helpers exist.

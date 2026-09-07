@@ -175,7 +175,7 @@ function BackControl({ onPress, color }: { onPress: () => void; color: string })
           borderBottomWidth: 2,
           borderColor: color,
           transform: [{ rotate: '45deg' }],
-          marginLeft: size * 0.15,
+          marginStart: size * 0.15,
         }}
       />
     </Pressable>
