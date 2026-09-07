@@ -66,9 +66,9 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `ExpandableText` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `Card` `ListItem` `DataList` `FileRow` `Table` `Timeline` `StateView` `InfiniteList` `Accordion` `EmptyState` `KeyboardStickyFooter` |
-| **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` + the imperative `toast` |
+| **Primitives** | `Text` `ExpandableText` `RelativeTime` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
+| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `Fab` `KeyboardStickyFooter` |
+| **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
 | **Media** | `ImageShower` `Carousel` |
 
 ### Button
@@ -252,6 +252,57 @@ replaces it immediately, with a fresh countdown. Queueing was wrong: the
 message that matters is the one that just happened, and making the user wait
 for a stale one to expire is how a toast becomes noise.
 
+### Dialog
+
+```tsx
+if (await dialog.confirm({ title: 'Delete the archive?', destructive: true })) remove()
+const name = await dialog.prompt({ title: 'Rename', defaultValue: current })
+```
+
+Mount `<DialogHost />` once near the root. Raised from anywhere, like a toast,
+and for the same reason: a question asked from an interceptor has no component
+to live in.
+
+**Dialogs queue where toasts replace.** Each one has somebody awaiting its
+answer, so taking the screen from the one already up would leave that promise
+unresolved forever — and the caller is usually holding a spinner or a
+half-finished save while it waits. `dialog.clear()` answers everything as
+cancelled rather than dropping it, because every caller is inside an `await`.
+
+A rejected `prompt` value keeps the dialog up: closing it would throw away what
+was typed along with the reason it was refused.
+
+### Swipeable rows
+
+```tsx
+<SwipeableRow actions={[{ key: 'delete', label: 'Delete', onPress: remove }]} fullSwipe>
+  <ListItem title={message.from} subtitle={message.preview} />
+</SwipeableRow>
+```
+
+Where it lands when the finger lifts is decided by distance **and** speed: a
+quick short flick is as clear an instruction as a slow long pull, and demanding
+the pull as well asks the hand to do the animation's work. Closing an open row
+needs less travel than opening one.
+
+`fullSwipe` lets a long drag run the edge action outright. It is opt-in because
+it quietly promotes whichever action happens to sit at the edge — right for
+deleting a message, wrong when the actions are equals.
+
+### Grid
+
+```tsx
+<Grid data={photos} keyExtractor={(p) => p.id} minItemWidth={110} gap={6} aspectRatio={1}
+  renderItem={(photo) => <Image source={{ uri: photo.uri }} style={fill} />} />
+```
+
+Widths are points, never percentages. Three items of 33.33% can total 100.01%
+in a wrapping row, which drops the third onto its own line at some screen sizes
+and not others.
+
+Not a list — everything given to it is rendered. For a long collection put a
+grid row inside `InfiniteList`.
+
 ## Theming API
 
 | Export | Purpose |
@@ -324,6 +375,9 @@ Not a checklist item here, and a few of the decisions are load-bearing:
   button.
 - Small buttons keep a 44dp touch target through hit slop rather than growing.
 - The skeleton pulse honours the system reduce-motion setting.
+- A row's swipe actions are hidden from a screen reader until the row is open,
+  and reachable through the row's own accessibility actions in the meantime —
+  a gesture nobody can perform is not an interface.
 
 ## Color roles
 
@@ -349,11 +403,13 @@ page per component showing every variant, state and edge case with the
 reasoning next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer: color math, masking, casing, and the theme engine
-— how a partial theme merges into a complete one, and how style sheets resolve
-and cache per scheme. The suite runs four times, on a reference screen, a small
-one, and with the platform switched, because those are the paths where scaling
-and shadow rules diverge.
+Tests cover the pure layer — eighteen modules, 265 assertions: color math,
+masking, casing, calendar and clock arithmetic, swipe and step decisions,
+relative time, grid division, the dialog queue, and the theme engine itself —
+how a partial theme merges into a complete one, and how style sheets resolve
+and cache per scheme. The suite runs on a reference screen, a small one, and
+with the platform switched, because those are the paths where scaling and
+shadow rules diverge.
 
 React Native is stubbed with four pure functions for those runs and nothing
 more. Anything that needs a real native behaviour is verified on a device

@@ -21,24 +21,26 @@ fails the build for everyone who has not installed it.
 
 ### Components
 
-- **Actions** — `Button` `SegmentedControl` `Tabs`
+- **Actions** — `Button` `SegmentedControl` `Tabs` `Fab`
 - **Fields** — `Input` `SearchField` `Autocomplete` `Select` `DateField`
   `Calendar` `TimeField` `TimePicker` `Slider` `Rating` `Checkbox` `Radio`
   `Switch` `Stepper` `OtpInput` `Chip`
-- **Content** — `Card` `ListItem` `DataList` `FileRow` `Table` `Timeline`
-  `Accordion` `Badge` `Avatar` `AvatarGroup` `EmptyState` `StateView`
-- **Feedback** — `Toast` `Banner` `Modal` `ActionSheet` `Menu` `Popover`
-  `Tooltip` `Progress` `Skeleton`
+- **Content** — `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid`
+  `Table` `Timeline` `Steps` `Accordion` `Badge` `Avatar` `AvatarGroup`
+  `EmptyState` `StateView` `RelativeTime`
+- **Feedback** — `Toast` `Dialog` `Banner` `Modal` `ActionSheet` `Menu`
+  `Popover` `Tooltip` `Progress` `Skeleton`
 - **Media** — `ImageShower` `Carousel`
 - **Layout** — `Screen` `Header` `LargeTitle` `TabView` `KeyboardStickyFooter`
 
 ### The pure layer
 
-Eleven modules with no React Native imports, and 213 tests aimed at the cases a
-device only shows by accident: colour math, masking, locale-safe casing, search
-folding, calendar and clock arithmetic, anchored placement, slider and rating
-scales, column widths and sorting, validation, view state, and the theme engine
-itself. The suite runs on a reference screen, a small one, and with the
+Eighteen modules with no React Native imports, and 265 tests aimed at the cases
+a device only shows by accident: colour math, masking, locale-safe casing,
+search folding, calendar and clock arithmetic, anchored placement, slider and
+rating scales, column widths and sorting, validation, view state, swipe and
+step arithmetic, relative time, grid division, the dialog queue, and the theme
+engine itself. The suite runs on a reference screen, a small one, and with the
 platform switched, because that is where scaling and shadow rules diverge.
 
 ### Decisions worth knowing
@@ -57,3 +59,13 @@ platform switched, because that is where scaling and shadow rules diverge.
   header leaves the gap it occupied.
 - Search folds the two Turkish i letters together; display casing keeps them
   apart. Both are correct, for different jobs.
+- Dialogs queue where toasts replace: every dialog has a caller inside an
+  `await`, and a toast does not.
+- A swipe is answered by speed as well as distance, and closing an open row
+  asks for less travel than opening one.
+- Relative time redraws on a clock sized to the unit it is showing, and stops
+  entirely once it becomes a date.
+- Grid columns are divided in points. Percentages in a wrapping row round
+  independently and can add up to more than the row.
+- The step you are on does not fill the progress bar, because you have not
+  finished it.
