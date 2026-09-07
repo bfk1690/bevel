@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.2.2
+
+### Fixed
+
+**`ImageShower` — the rest of the pinch.** 0.2.1 stopped the pager from
+swallowing a pinch outright; these are the four faults underneath it, which
+between them made the gesture read as intermittent. A single image never showed
+any of it, because paging is off with one item.
+
+- Suspending `scrollEnabled` at touch-down cannot be the whole defence: a prop
+  change waits for a render, and on iOS a scroll already running is not
+  cancelled by it either. The page now **claims** the gesture as the second
+  finger lands, before any movement. A second finger is never a pager swipe.
+- The pinch branch tested for *exactly* two touches. Re-gripping puts down a
+  third, and the gesture fell back to panning mid-zoom.
+- The pinch flag was cleared by subtracting one from the touch count, and the
+  platforms disagree about whether the finger that just left is still listed.
+  The gesture clears its own flag now.
+- React Native reports a release only when the **last** finger lifts, so
+  lifting one after a pinch left the maths running against a baseline taken at
+  the pinch's start — the photo jumped. Any change in the finger count
+  re-measures from where it is.
+
+The zoom maths moved to `utils/zoom` with 13 tests behind it. The focal-point
+case only looks wrong on a picture pinched in a corner, which is not something
+anyone tries by hand.
+
+The package also declares its repository now:
+[bfk1690/bevel](https://github.com/bfk1690/bevel).
+
+## 0.2.1
+
+### Fixed
+
+**`ImageShower` — a pinch on a multi-page gallery did nothing**; the pager
+scrolled instead. `scrollEnabled` was suspended on a flag set when the pan
+responder *grants*, which is too late: on iOS the scroll view's native
+recogniser begins the moment the fingers move. Suspending it at touch-down
+lands in time. See 0.2.2 for the faults this left behind.
+
 ## 0.2.0
 
 Eleven components, and two bugs found while adding them.
