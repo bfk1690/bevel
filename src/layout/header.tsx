@@ -31,8 +31,11 @@ export type HeaderProps = {
   /** Hairline under the bar. Off when the screen below is a plain surface */
   divider?: boolean
   /**
-   * Draws the title large beneath the bar and collapses it into the bar as the
-   * screen scrolls. Needs a `Screen` above it to supply the scroll position.
+   * Holds the bar title back until the screen has scrolled.
+   *
+   * Pair it with a `LargeTitle` at the top of the content: that one scrolls
+   * away, this one fades in as it leaves, and the two never both read as the
+   * title of the page.
    */
   large?: boolean
   /** How far the screen must scroll for the collapse to finish */
@@ -57,13 +60,11 @@ function HeaderBase({
   const { y } = useScrollOffset()
 
   /**
-   * The two titles CROSSFADE, they do not resize.
+   * The bar title fades in as the large one scrolls away.
    *
-   * Font size cannot run on the native driver, so animating it would put the
-   * one thing the eye is following on the JS thread. Two titles - one large
-   * below, one small in the bar - trading opacity and sliding a few points is
-   * the same effect built from what the native driver can carry, and it is
-   * what the platform does too.
+   * Both are real titles at their own size rather than one being resized: font
+   * size cannot run on the native driver, and animating it would put the one
+   * thing the eye follows on the JS thread.
    */
   const collapse = useMemo(
     () =>
@@ -133,40 +134,7 @@ function HeaderBase({
     </View>
   )
 
-  if (!large) return bar
-
-  return (
-    <View
-      style={[
-        {
-          backgroundColor,
-          borderBottomWidth: divider ? StyleSheet.hairlineWidth : 0,
-          borderBottomColor: colors.border,
-        },
-        style,
-      ]}>
-      {bar}
-      <Animated.View
-        style={{
-          paddingHorizontal: space(4),
-          paddingBottom: space(3),
-          gap: 2,
-          opacity: collapse.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-          transform: [
-            { translateY: collapse.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) },
-          ],
-        }}>
-        <Text variant="title" numberOfLines={1}>
-          {title}
-        </Text>
-        {subtitle != null && (
-          <Text variant="caption" color="textMuted" numberOfLines={1}>
-            {subtitle}
-          </Text>
-        )}
-      </Animated.View>
-    </View>
-  )
+  return bar
 }
 
 /**

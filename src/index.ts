@@ -83,6 +83,7 @@ export { StateView, type StateViewProps } from './layout/state-view'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
 export { Header, type HeaderProps } from './layout/header'
+export { LargeTitle, type LargeTitleProps } from './layout/large-title'
 export { ScrollContext, useScrollOffset, type ScrollOffset } from './layout/scroll-context'
 export { ListItem, type ListItemProps } from './layout/list-item'
 export {

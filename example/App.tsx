@@ -8,6 +8,7 @@ import {
   Button,
   Card,
   Header,
+  LargeTitle,
   ListItem,
   Screen,
   Text,
@@ -116,12 +117,7 @@ function Gallery() {
         </Screen>
       ) : (
         <Screen
-          header={
-            // Large collapses into the bar as the list scrolls. The two titles
-            // crossfade rather than resize, because font size cannot run on the
-            // native driver.
-            <Header title="bevel" subtitle="Themeable primitives" right={<ThemeToggle />} large />
-          }
+          header={<Header title="bevel" right={<ThemeToggle />} large />}
           refreshing={refreshing}
           onRefresh={() => {
             // Screen builds the RefreshControl and tints it from the theme -
@@ -129,7 +125,10 @@ function Gallery() {
             setRefreshing(true)
             setTimeout(() => setRefreshing(false), 900)
           }}>
-          <View style={{ gap: space(4), paddingVertical: space(3) }}>
+          <View style={{ gap: space(4), paddingTop: space(2), paddingBottom: space(3) }}>
+            {/* Inside the scroll content, so it takes its space with it when
+                it goes. In the header it would fade and leave the gap behind. */}
+            <LargeTitle title="bevel" subtitle="Themeable primitives" />
             {GROUPS.map((group) => {
               const entries = DEMOS.filter((entry) => entry.group === group.title)
               return (
