@@ -21,6 +21,7 @@ import { RatingDemo } from './rating'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SliderDemo } from './slider'
+import { SwipeDemo } from './swipe'
 import { StateDemo } from './state'
 import { SelectionDemo } from './selection'
 import { HooksDemo } from './hooks'
@@ -147,6 +148,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Surfaces, rows, markers and empty states',
     group: 'Content',
     Component: ContentDemo,
+  },
+  {
+    key: 'swipe',
+    title: 'SwipeableRow',
+    subtitle: 'Actions behind a row, and a full swipe to run one',
+    group: 'Content',
+    Component: SwipeDemo,
   },
   {
     key: 'table',

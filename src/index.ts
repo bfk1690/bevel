@@ -83,6 +83,11 @@ export { DataList, type DataListProps, type DataRow } from './layout/data-list'
 export { EmptyState, type EmptyStateProps } from './layout/empty-state'
 export { FileRow, type FileRowProps, type FileState } from './layout/file-row'
 export { StateView, type StateViewProps } from './layout/state-view'
+export {
+  SwipeableRow,
+  type SwipeAction,
+  type SwipeableRowProps,
+} from './layout/swipeable-row'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { TabView, type TabViewItem, type TabViewProps } from './layout/tab-view'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
@@ -140,6 +145,15 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  isFullSwipe,
+  resistPast,
+  resolveSwipeSnap,
+  swipeTravel,
+  FLICK_VELOCITY,
+  type SwipeSide,
+  type SwipeSnapInput,
+} from './utils/swipe'
 export {
   appendPage,
   isLastPage,
