@@ -19,6 +19,7 @@ import { MediaDemo } from './media'
 import { MenuDemo } from './menu'
 import { ModalDemo } from './modal'
 import { OtpDemo } from './otp'
+import { PasswordDemo } from './password'
 import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
 import { RatingDemo } from './rating'
@@ -93,6 +94,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Suggestions that survive a missing accent',
     group: 'Fields',
     Component: AutocompleteDemo,
+  },
+  {
+    key: 'password',
+    title: 'PasswordField',
+    subtitle: 'A meter that advises instead of ruling',
+    group: 'Fields',
+    Component: PasswordDemo,
   },
   {
     key: 'select',

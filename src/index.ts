@@ -15,6 +15,7 @@ export { Countdown, type CountdownProps } from './primitives/countdown'
 export { Divider, type DividerProps } from './primitives/divider'
 export { Input, type InputProps, type InputSlot } from './primitives/input'
 export { OtpInput, type OtpInputProps } from './primitives/otp-input'
+export { PasswordField, type PasswordFieldProps } from './primitives/password-field'
 export { Progress, type ProgressProps } from './primitives/progress'
 export { Rating, type RatingProps } from './primitives/rating'
 export { RelativeTime, type RelativeTimeProps } from './primitives/relative-time'
@@ -166,6 +167,13 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  passwordStrength,
+  type PasswordAssessment,
+  type PasswordOptions,
+  type PasswordScore,
+  type SuggestionKey,
+} from './utils/password'
 export {
   durationParts,
   formatDuration,

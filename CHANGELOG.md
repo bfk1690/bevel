@@ -22,7 +22,7 @@ fails the build for everyone who has not installed it.
 ### Components
 
 - **Actions** — `Button` `SegmentedControl` `Tabs` `TabBar` `Fab`
-- **Fields** — `Input` `SearchField` `Autocomplete` `Select` `DateField`
+- **Fields** — `Input` `PasswordField` `SearchField` `Autocomplete` `Select` `DateField`
   `Calendar` `TimeField` `TimePicker` `Slider` `Rating` `Checkbox` `Radio`
   `Switch` `Stepper` `OtpInput` `Chip`
 - **Content** — `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid`
@@ -69,3 +69,5 @@ platform switched, because that is where scaling and shadow rules diverge.
   independently and can add up to more than the row.
 - The step you are on does not fill the progress bar, because you have not
   finished it.
+- Password strength weighs length far above character classes, and gives one
+  suggestion at a time — five at once are answered with `Password1!`.

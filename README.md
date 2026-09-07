@@ -66,7 +66,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `ExpandableText` `RelativeTime` `Countdown` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
+| **Primitives** | `Text` `ExpandableText` `RelativeTime` `Countdown` `Button` `SegmentedControl` `Tabs` `Input` `PasswordField` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `Fab` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
 | **Media** | `ImageShower` `Carousel` |
@@ -302,6 +302,25 @@ and not others.
 
 Not a list — everything given to it is rendered. For a long collection put a
 grid row inside `InfiniteList`.
+
+### Password strength
+
+```tsx
+<PasswordField label="Password" value={value} onChangeText={setValue}
+  blocklist={[email, BRAND.name]} />
+```
+
+The meter advises; the form decides what to refuse. `tooShort` is reported
+separately from the score for that reason — a minimum length is a rule, and
+everything else is an opinion.
+
+Length is weighted far above character classes, because that is what actually
+costs an attacker time. Demanding a symbol produces `Password1!` — a common
+word with two predictable decorations, which the blocklist and common-word
+checks cost more than the symbol earned.
+
+**One suggestion at a time.** Five rules at once are read as a wall and
+answered with the password above.
 
 ## Theming API
 
