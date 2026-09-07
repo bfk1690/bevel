@@ -22,6 +22,32 @@ export function dismissKeyboard(): void {
  * iOS reports `will` events ahead of the animation, so the layout settles in
  * the same frame the keyboard starts moving; Android only reports after.
  */
+/**
+ * How much of the screen the keyboard is covering, in points.
+ *
+ * Zero when it is closed. Read from the frame the platform reports rather than
+ * assumed, because it changes with the language, the suggestion strip and
+ * whether a hardware keyboard is attached.
+ */
+export function useKeyboardHeight(): number {
+  const [height, setHeight] = useState(0)
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillChangeFrame' : 'keyboardDidShow'
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+    const show = Keyboard.addListener(showEvent, (event) => {
+      setHeight(event?.endCoordinates?.height ?? 0)
+    })
+    const hide = Keyboard.addListener(hideEvent, () => setHeight(0))
+    return () => {
+      show.remove()
+      hide.remove()
+    }
+  }, [])
+
+  return height
+}
+
 export function useKeyboardVisible(): boolean {
   const [visible, setVisible] = useState(false)
 

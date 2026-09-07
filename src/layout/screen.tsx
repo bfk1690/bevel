@@ -50,8 +50,11 @@ export type ScreenProps = {
    */
   hideFooterOnScroll?: boolean
   /**
-   * Lifts the content above the keyboard. Required on any screen with a text
-   * field; skip it elsewhere so the layout does not shift for no reason.
+   * Keeps the focused field above the keyboard.
+   *
+   * ON by default. A field disappearing under the keyboard is never what
+   * anyone wanted, and leaving it opt-in means every screen that grows a text
+   * field later starts out broken - which is exactly how it went here.
    */
   keyboardAware?: boolean
   background?: ColorInput | 'none'
@@ -85,7 +88,7 @@ function ScreenBase({
   footer,
   scrollable = true,
   hideFooterOnScroll = false,
-  keyboardAware = false,
+  keyboardAware = true,
   background = 'canvas',
   padding,
   edges = DEFAULT_EDGES,
@@ -160,6 +163,16 @@ function ScreenBase({
       showsVerticalScrollIndicator={false}
       onScroll={onScroll}
       scrollEventThrottle={16}
+      // iOS inserts the keyboard as a scroll inset AND scrolls the focused
+      // field into view. Lifting the whole screen with a padding behaviour
+      // does neither: it moves everything up and leaves the field wherever it
+      // was in the list.
+      //
+      // Android needs nothing here: the window itself resizes, the list gets
+      // shorter, and the focused field is scrolled into what is left. Adding
+      // the keyboard height as padding as well would leave a gap the size of a
+      // keyboard at the end of every list.
+      automaticallyAdjustKeyboardInsets={keyboardAware}
       refreshControl={pull}
       contentContainerStyle={[
         {
@@ -219,11 +232,11 @@ function ScreenBase({
   return (
     <ScrollContext.Provider value={offset}>
     <View style={[styles.fill, { backgroundColor }, style]}>
-      {keyboardAware ? (
+      {keyboardAware && !scrollable ? (
+        // Only a screen with nothing to scroll needs the whole layout lifted;
+        // where there is a list, moving it is worse than adjusting it.
         <KeyboardAvoidingView
           style={styles.fill}
-          // Android resizes the window itself; adding padding on top of that
-          // double-counts the keyboard and leaves a gap above it.
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           {body}
         </KeyboardAvoidingView>

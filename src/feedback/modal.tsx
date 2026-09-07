@@ -171,6 +171,7 @@ function ModalBase({
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets={keyboardAware}
           style={{ maxHeight: windowHeight * maxHeightRatio }}>
           {children}
         </ScrollView>

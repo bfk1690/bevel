@@ -103,7 +103,7 @@ export {
 } from './media/image-shower'
 
 export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './utils/case'
-export { dismissKeyboard, useKeyboardVisible } from './utils/keyboard'
+export { dismissKeyboard, useKeyboardHeight, useKeyboardVisible } from './utils/keyboard'
 export {
   useDebouncedValue,
   useDisclosure,

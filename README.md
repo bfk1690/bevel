@@ -169,6 +169,22 @@ date around for "half past two" drags a timezone and a calendar day into a
 value that has neither, which is how an alarm ends up an hour off after a
 clock change.
 
+### Keyboards
+
+`Screen` keeps the focused field above the keyboard by default. On iOS the
+keyboard is added as a scroll inset, which both makes room and scrolls the
+field into view; on Android the window resizes and the list does the rest.
+
+Lifting the whole screen with a padding behaviour — the usual first attempt —
+does neither: it moves everything up and leaves the field wherever it was in
+the list. That behaviour is now used only where there is nothing to scroll.
+
+An app whose Android window is set to pan rather than resize should say so:
+
+```json
+{ "expo": { "android": { "softwareKeyboardLayoutMode": "resize" } } }
+```
+
 ### Forms
 
 ```tsx
