@@ -188,6 +188,8 @@ export function Select<T>(props: SelectProps<T>) {
         accessibilityRole="button"
         accessibilityState={{ disabled, expanded: open }}
         accessibilityLabel={label}
+        // What it holds now, so the field is not announced as an empty button
+        accessibilityValue={{ text: selectedLabel ?? placeholder }}
         style={({ pressed }) => [
           styles.field,
           {

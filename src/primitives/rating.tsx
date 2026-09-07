@@ -95,6 +95,14 @@ export function Rating({
         accessibilityRole={interactive ? 'adjustable' : 'image'}
         accessibilityLabel={`${shown} of ${count}`}
         accessibilityValue={{ now: shown, min: 0, max: count }}
+        // Only a row that can be changed claims the actions that go with it
+        accessibilityActions={interactive ? ACCESSIBILITY_ACTIONS : undefined}
+        onAccessibilityAction={(event) => {
+          if (!interactive) return
+          const amount = allowHalf ? 0.5 : 1
+          const direction = event.nativeEvent.actionName === 'increment' ? 1 : -1
+          onChange?.(snapRating(shown + direction * amount, count, allowHalf))
+        }}
         onLayout={onRowLayout}
         style={styles.row}
         {...responder.panHandlers}>
@@ -140,6 +148,11 @@ function Star({ character, color, size }: { character: string; color: string; si
     </Text>
   )
 }
+
+const ACCESSIBILITY_ACTIONS = [
+  { name: 'increment' as const },
+  { name: 'decrement' as const },
+]
 
 const styles = StyleSheet.create({
   root: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },

@@ -139,7 +139,7 @@ export function Popover({
 
   return (
     <RNModal visible transparent animationType="none" statusBarTranslucent onRequestClose={onClose}>
-      <View style={styles.root}>
+      <View style={styles.root} accessibilityViewIsModal>
         <Pressable
           style={[StyleSheet.absoluteFill, scrim && { backgroundColor: colors.overlay }]}
           disabled={!dismissOnBackdrop}

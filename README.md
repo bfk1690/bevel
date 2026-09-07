@@ -308,6 +308,23 @@ the provider:
 
 Nothing here is required, and nothing throws when it is missing.
 
+## Accessibility
+
+Not a checklist item here, and a few of the decisions are load-bearing:
+
+- A control that declares `adjustable` also implements increment and decrement.
+  The role without the actions tells a screen reader the value can be changed
+  and then offers no way to change it — worse than a plain view.
+- A field's visible label is announced as the field's own name, and its error
+  or helper follows as the hint. Nothing connects a separate label view to an
+  input on its own.
+- Modals and popovers mark themselves as such, so a screen reader cannot swipe
+  into the page behind the scrim.
+- Pickers announce what they currently hold rather than reading as an empty
+  button.
+- Small buttons keep a 44dp touch target through hit slop rather than growing.
+- The skeleton pulse honours the system reduce-motion setting.
+
 ## Color roles
 
 Roles say where a color belongs so components never guess. The surface ladder

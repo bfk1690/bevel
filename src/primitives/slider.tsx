@@ -16,7 +16,9 @@ import {
   nearestBound,
   orderRange,
   positionOfValue,
+  ratioOfValue,
   valueOfPosition,
+  valueOfRatio,
   type SliderScale,
 } from '../utils/slider'
 import { Text } from './text'
@@ -171,7 +173,25 @@ export function Slider(props: SliderProps) {
 
       <View
         accessibilityRole="adjustable"
-        accessibilityValue={{ now: Math.round(end), min, max }}
+        accessibilityLabel={label}
+        accessibilityValue={{ now: Math.round(end), min, max, text: print(end) }}
+        /**
+         * A role of `adjustable` PROMISES these two actions. Declaring the
+         * role without them tells a screen reader the control can be changed
+         * and then offers no way to change it, which is worse than a plain
+         * view.
+         */
+        accessibilityActions={ACCESSIBILITY_ACTIONS}
+        onAccessibilityAction={(event) => {
+          const amount = step > 0 ? step : (max - min) / 10
+          const direction = event.nativeEvent.actionName === 'increment' ? 1 : -1
+          const [currentStart, currentEnd] = latest.current
+          const next = valueOfRatio(
+            ratioOfValue(currentEnd + direction * amount, scale),
+            scale,
+          )
+          report([currentStart, next], true)
+        }}
         onLayout={onTrackLayout}
         // The touch area is taller than the line: a 4pt track is not a target,
         // and padding here is cheaper than a transparent overlay.
@@ -238,6 +258,12 @@ function Thumb({
     />
   )
 }
+
+/** Shared, since the array identity is compared on every render */
+const ACCESSIBILITY_ACTIONS = [
+  { name: 'increment' as const },
+  { name: 'decrement' as const },
+]
 
 const styles = StyleSheet.create({
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

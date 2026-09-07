@@ -104,7 +104,18 @@ function StepperBase({
   return (
     <View
       accessibilityRole="adjustable"
-      accessibilityValue={{ now: value, min, max }}
+      accessibilityValue={{
+        now: value,
+        min,
+        max,
+        text: formatValue ? formatValue(value) : undefined,
+      }}
+      // The role promises these; without them it is a lie told to a screen
+      // reader
+      accessibilityActions={ACCESSIBILITY_ACTIONS}
+      onAccessibilityAction={(event) => {
+        apply(event.nativeEvent.actionName === 'increment' ? 1 : -1)
+      }}
       style={[
         styles.root,
         {
@@ -195,6 +206,11 @@ function Step({
     </Pressable>
   )
 }
+
+const ACCESSIBILITY_ACTIONS = [
+  { name: 'increment' as const },
+  { name: 'decrement' as const },
+]
 
 const styles = StyleSheet.create({
   root: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },

@@ -191,6 +191,12 @@ function ModalBase({
       statusBarTranslucent
       onRequestClose={onClose}>
       <View
+        /**
+         * Stops a screen reader wandering into the page behind. Without it the
+         * content under the scrim is still reachable by swiping, which is how
+         * someone ends up operating a screen they cannot see is covered.
+         */
+        accessibilityViewIsModal
         style={[
           styles.root,
           variant === 'sheet' && styles.bottom,

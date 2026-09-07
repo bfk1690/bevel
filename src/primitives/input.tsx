@@ -242,6 +242,17 @@ function InputBase(
         onFocus={handleFocus}
         onBlur={handleBlur}
         editable={editable}
+        /**
+         * The visible label is a separate view, so nothing connects the two on
+         * its own: a screen reader lands on the field and announces "text
+         * field", with the word that says what to type in it left behind.
+         * The message and the helper follow as the hint, which is where a
+         * screen reader expects the sentence about a field rather than its
+         * name.
+         */
+        accessibilityLabel={label}
+        accessibilityHint={hasError ? (error ?? undefined) : helper}
+        accessibilityState={{ disabled: !editable }}
         multiline={multiline}
         maxLength={maxLength}
         secureTextEntry={secure}

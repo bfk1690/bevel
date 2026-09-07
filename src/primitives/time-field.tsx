@@ -115,6 +115,8 @@ export function TimeField({
         accessibilityRole="button"
         accessibilityState={{ disabled, expanded: open }}
         accessibilityLabel={label}
+        // What it holds now, so the field is not announced as an empty button
+        accessibilityValue={{ text: display ?? placeholder }}
         style={({ pressed }) => [
           styles.field,
           {
