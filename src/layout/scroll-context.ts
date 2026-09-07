@@ -4,6 +4,14 @@ import { Animated } from 'react-native'
 export type ScrollOffset = {
   /** Distance scrolled, driven natively by the screen that owns the list */
   y: Animated.Value
+  /**
+   * Sends the screen back to the top.
+   *
+   * The scroll view belongs to the screen, so anything drawn over it - a
+   * header, a tab bar - can only ask. A no-op outside a screen, rather than a
+   * missing function every caller has to check for.
+   */
+  scrollToTop: () => void
 }
 
 /**
@@ -17,8 +25,16 @@ export type ScrollOffset = {
  * The default is a still value, so a header used outside a screen simply does
  * not move rather than crashing.
  */
-export const ScrollContext = createContext<ScrollOffset>({ y: new Animated.Value(0) })
+export const ScrollContext = createContext<ScrollOffset>({
+  y: new Animated.Value(0),
+  scrollToTop: () => {},
+})
 
 export function useScrollOffset(): ScrollOffset {
   return useContext(ScrollContext)
+}
+
+/** Just the action, for a header or a tab bar that only wants to send it home */
+export function useScrollToTop(): () => void {
+  return useContext(ScrollContext).scrollToTop
 }

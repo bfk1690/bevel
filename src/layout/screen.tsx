@@ -108,7 +108,11 @@ function ScreenBase({
    * a bar that appears. Driven natively, so reacting to it costs nothing.
    */
   const scrollY = useRef(new Animated.Value(0)).current
-  const offset = useMemo(() => ({ y: scrollY }), [scrollY])
+  const scroller = useRef<ScrollView>(null)
+  const scrollToTop = useCallback(() => {
+    scroller.current?.scrollTo({ y: 0, animated: true })
+  }, [])
+  const offset = useMemo(() => ({ y: scrollY, scrollToTop }), [scrollToTop, scrollY])
   const onScroll = useMemo(
     () =>
       Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
@@ -159,6 +163,7 @@ function ScreenBase({
 
   const content = scrollable ? (
     <Animated.ScrollView
+      ref={scroller}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       onScroll={onScroll}

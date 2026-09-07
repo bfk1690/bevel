@@ -273,6 +273,7 @@ for a stale one to expire is how a toast becomes noise.
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
 | `foldText` `rankSuggestions` `scoreMatch` | Matching that survives a missing accent |
 | `useDebouncedValue` `useDisclosure` `usePrevious` `useIsMounted` | The hooks every app rewrites |
+| `useScrollToTop()` `useScrollOffset()` | What the screen's scroll view is doing |
 | `useForm` `required` `email` `minLength` … | Validation, with the app's own wording |
 | `resolveViewState` `errorMessage` | Which of the four faces a list shows |
 | `resolveColumnWidths` `nextSort` `sortRows` | Column widths and sorting |

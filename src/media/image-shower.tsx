@@ -370,7 +370,13 @@ function ZoomPage({
     [scale, translateX, translateY],
   )
 
-  /** Keeps the image from being dragged off screen once it is zoomed in */
+  /**
+   * Keeps the image from being dragged off screen once it is zoomed in.
+   *
+   * The bounds follow the CURRENT scale, including a scale borrowed past the
+   * maximum: clamping to the settled size while the image is still stretched
+   * would drag it sideways under the fingers.
+   */
   const clamp = useCallback(
     (value: { scale: number; x: number; y: number }) => {
       const limitX = Math.max(0, (width * value.scale - width) / 2)
@@ -448,10 +454,16 @@ function ZoomPage({
               return
             }
 
-            const next = Math.min(
-              maxScale,
-              Math.max(1, (start.current.scale * distance) / start.current.distance),
-            )
+            const raw = (start.current.scale * distance) / start.current.distance
+            // Past either limit the image keeps moving, but only a little.
+            // A hard stop feels like the gesture broke; resistance says the
+            // limit is real and the finger is still being heard.
+            const next =
+              raw > maxScale
+                ? maxScale + (raw - maxScale) * 0.2
+                : raw < 1
+                  ? 1 - (1 - raw) * 0.35
+                  : raw
             apply(clamp(focusedTranslate(next, focus)))
             return
           }
@@ -483,8 +495,10 @@ function ZoomPage({
             return
           }
 
-          const zoomedIn = view.current.scale > PINCH_SLOP
-          settle(zoomedIn ? clamp(view.current) : { scale: 1, x: 0, y: 0 })
+          // Whatever was borrowed past the limits is given back here
+          const settled = Math.min(maxScale, Math.max(1, view.current.scale))
+          const zoomedIn = settled > PINCH_SLOP
+          settle(zoomedIn ? clamp({ ...view.current, scale: settled }) : { scale: 1, x: 0, y: 0 })
           onZoomChange(zoomedIn)
         },
         onPanResponderTerminationRequest: () => false,

@@ -40,6 +40,14 @@ export type HeaderProps = {
   large?: boolean
   /** How far the screen must scroll for the collapse to finish */
   collapseDistance?: number
+  /**
+   * Usually `useScrollToTop()`.
+   *
+   * Left explicit rather than wired up automatically: a title that silently
+   * does something when tapped is a control nobody knows is there, and one
+   * that jumps the list under a reader who only brushed it.
+   */
+  onTitlePress?: () => void
   style?: StyleProp<ViewStyle>
 }
 
@@ -54,6 +62,7 @@ function HeaderBase({
   divider = false,
   large = false,
   collapseDistance = 48,
+  onTitlePress,
   style,
 }: HeaderProps) {
   const { colors, space, sizes } = useTheme()
@@ -117,14 +126,19 @@ function HeaderBase({
         <View style={[styles.side, sideWidth != null && { width: sideWidth }]}>{leading}</View>
       )}
 
-      <View style={[styles.titles, align === 'center' && styles.centered]}>
+      <Pressable
+        onPress={onTitlePress}
+        disabled={onTitlePress == null}
+        accessibilityRole={onTitlePress ? 'button' : 'header'}
+        accessibilityLabel={title}
+        style={[styles.titles, align === 'center' && styles.centered]}>
         {barTitle}
         {subtitle != null && !large && (
           <Text variant="caption" color="textMuted" numberOfLines={1}>
             {subtitle}
           </Text>
         )}
-      </View>
+      </Pressable>
 
       {(right != null || sideWidth != null) && (
         <View style={[styles.side, styles.trailing, sideWidth != null && { width: sideWidth }]}>

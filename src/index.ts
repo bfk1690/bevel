@@ -91,7 +91,12 @@ export {
   type ListComponentProps,
 } from './layout/infinite-list'
 export { LargeTitle, type LargeTitleProps } from './layout/large-title'
-export { ScrollContext, useScrollOffset, type ScrollOffset } from './layout/scroll-context'
+export {
+  ScrollContext,
+  useScrollOffset,
+  useScrollToTop,
+  type ScrollOffset,
+} from './layout/scroll-context'
 export { ListItem, type ListItemProps } from './layout/list-item'
 export {
   KeyboardStickyFooter,

@@ -17,6 +17,7 @@ import {
   Toaster,
   defineTheme,
   rankSuggestions,
+  useScrollToTop,
   useTheme,
 } from '@bfkk/bevel'
 
@@ -125,7 +126,7 @@ function Gallery() {
       {demo ? (
         <Screen
           key={demo.key}
-          header={<Header title={demo.title} subtitle={demo.subtitle} onBack={back} divider />}
+          header={<DemoHeader title={demo.title} subtitle={demo.subtitle} onBack={back} />}
           footer={demo.Footer ? <demo.Footer /> : undefined}>
           <View style={{ paddingVertical: space(4) }}>
             <demo.Component />
@@ -201,6 +202,27 @@ function Gallery() {
         </Screen>
       )}
     </>
+  )
+}
+
+/**
+ * Tapping the title sends the page back to the top.
+ *
+ * It has to be its own component: `useScrollToTop` reads the screen's context,
+ * and an element built in the parent is created outside it.
+ */
+function DemoHeader({
+  title,
+  subtitle,
+  onBack,
+}: {
+  title: string
+  subtitle: string
+  onBack: () => void
+}) {
+  const scrollToTop = useScrollToTop()
+  return (
+    <Header title={title} subtitle={subtitle} onBack={onBack} onTitlePress={scrollToTop} divider />
   )
 }
 
