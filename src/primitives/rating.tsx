@@ -101,7 +101,14 @@ export function Rating({
         {Array.from({ length: count }, (_, index) => {
           const fill = starFill(index, shown)
           return (
-            <View key={index} style={{ width: size, height: size }}>
+            <View
+              key={index}
+              // The stars must not be touchable themselves. On the first touch
+              // `locationX` is measured against whatever view was hit, so a tap
+              // on the third star would report a few points instead of the
+              // distance along the row - and every tap would mean one star.
+              pointerEvents="none"
+              style={{ width: size, height: size }}>
               <Star character={HOLLOW} color={empty} size={size} />
               {fill !== 'empty' && (
                 // A half is the solid star clipped down the middle, so both

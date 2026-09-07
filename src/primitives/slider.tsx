@@ -177,8 +177,14 @@ export function Slider(props: SliderProps) {
         // and padding here is cheaper than a transparent overlay.
         style={[styles.touch, { height: thumb + space(2) }]}
         {...responder.panHandlers}>
-        <View style={[styles.track, { height, borderRadius: height, backgroundColor: track }]} />
+        {/* Same reason as the thumbs: a touch landing on the filled part of a
+            range would otherwise be measured from where that fill begins. */}
         <View
+          pointerEvents="none"
+          style={[styles.track, { height, borderRadius: height, backgroundColor: track }]}
+        />
+        <View
+          pointerEvents="none"
           style={[
             styles.fill,
             {
