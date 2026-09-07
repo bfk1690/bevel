@@ -14,6 +14,7 @@ import { DialogDemo } from './dialog'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
 import { CarouselDemo } from './carousel'
+import { CountdownDemo } from './countdown'
 import { MediaDemo } from './media'
 import { MenuDemo } from './menu'
 import { ModalDemo } from './modal'
@@ -282,6 +283,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Type scale, color roles, casing',
     group: 'Foundation',
     Component: TextDemo,
+  },
+  {
+    key: 'countdown',
+    title: 'Countdown',
+    subtitle: 'A clock that reaches zero when the time does',
+    group: 'Foundation',
+    Component: CountdownDemo,
   },
   {
     key: 'relative',

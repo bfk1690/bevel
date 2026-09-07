@@ -11,6 +11,7 @@ export { Chip, type ChipProps } from './primitives/chip'
 export { ChipGroup, type ChipGroupProps, type ChipOption } from './primitives/chip-group'
 export { ExpandableText, type ExpandableTextProps } from './primitives/expandable-text'
 export { DateField, type DateFieldProps } from './primitives/date-field'
+export { Countdown, type CountdownProps } from './primitives/countdown'
 export { Divider, type DividerProps } from './primitives/divider'
 export { Input, type InputProps, type InputSlot } from './primitives/input'
 export { OtpInput, type OtpInputProps } from './primitives/otp-input'
@@ -138,10 +139,13 @@ export {
 export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './utils/case'
 export { dismissKeyboard, useKeyboardHeight, useKeyboardVisible } from './utils/keyboard'
 export {
+  useCountdown,
   useDebouncedValue,
   useDisclosure,
   useIsMounted,
   usePrevious,
+  type CountdownOptions,
+  type CountdownState,
   type Disclosure,
 } from './utils/hooks'
 export {
@@ -161,6 +165,15 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  durationParts,
+  formatDuration,
+  nextSecondIn,
+  remaining,
+  type DurationOptions,
+  type DurationParts,
+  type DurationStyle,
+} from './utils/duration'
 export {
   resolveGrid,
   rowsOf,

@@ -76,3 +76,84 @@ export function useIsMounted(): () => boolean {
 
   return useCallback(() => mounted.current, [])
 }
+
+export type CountdownOptions = {
+  /** Fired once, when the time runs out */
+  onEnd?: () => void
+  /** Pauses without losing the target */
+  running?: boolean
+}
+
+export type CountdownState = {
+  /** Milliseconds left, never negative */
+  msLeft: number
+  done: boolean
+  /** Puts the same length of time back on the clock, from now */
+  restart: (durationMs: number) => void
+}
+
+/**
+ * Counts down to a moment.
+ *
+ * Ticks are aimed at the next second boundary rather than set to 1000ms: each
+ * tick of a plain interval is a little late, the error accumulates, and a
+ * whole second eventually disappears from the display.
+ *
+ * The remaining time is recomputed from the clock every tick rather than
+ * subtracted from itself, so a phone that slept through half the countdown
+ * comes back with the right number instead of the one it went away with.
+ */
+export function useCountdown(
+  target: Date | number | null,
+  { onEnd, running = true }: CountdownOptions = {},
+): CountdownState {
+  const [end, setEnd] = useState<number | null>(() =>
+    target == null ? null : target instanceof Date ? target.getTime() : target,
+  )
+
+  useEffect(() => {
+    setEnd(target == null ? null : target instanceof Date ? target.getTime() : target)
+  }, [target])
+
+  const [msLeft, setMsLeft] = useState(() => (end == null ? 0 : Math.max(0, end - Date.now())))
+  const ended = useRef(false)
+
+  useEffect(() => {
+    ended.current = false
+  }, [end])
+
+  useEffect(() => {
+    if (end == null || !running) return
+
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    const tick = () => {
+      const left = Math.max(0, end - Date.now())
+      setMsLeft(left)
+
+      if (left === 0) {
+        if (!ended.current) {
+          ended.current = true
+          onEnd?.()
+        }
+        return
+      }
+
+      const remainder = left % 1000
+      timer = setTimeout(tick, remainder === 0 ? 1000 : remainder)
+    }
+
+    tick()
+
+    return () => {
+      if (timer != null) clearTimeout(timer)
+    }
+  }, [end, onEnd, running])
+
+  const restart = useCallback((durationMs: number) => {
+    ended.current = false
+    setEnd(Date.now() + Math.max(0, durationMs))
+  }, [])
+
+  return { msLeft, done: end != null && msLeft === 0, restart }
+}
