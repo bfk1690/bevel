@@ -132,3 +132,45 @@ function SkeletonBase({
 }
 
 export const Skeleton = memo(SkeletonBase)
+
+export type SkeletonRowsProps = {
+  /** How many rows to draw */
+  count?: number
+  /** Leading circle, for a list of people or files */
+  avatar?: boolean
+  avatarSize?: number
+  gap?: number
+  style?: StyleProp<ViewStyle>
+}
+
+/**
+ * A stand-in for a list.
+ *
+ * The point of a placeholder is the SHAPE, not the fact that something is
+ * loading - a spinner already says that. Rows the size of the rows to come
+ * mean the screen does not jump when they arrive.
+ */
+export function SkeletonRows({
+  count = 3,
+  avatar = false,
+  avatarSize = 40,
+  gap,
+  style,
+}: SkeletonRowsProps) {
+  const { space } = useTheme()
+  const rowGap = gap ?? space(4)
+
+  return (
+    <View style={[{ gap: rowGap }, style]}>
+      {Array.from({ length: count }, (_, row) => (
+        <View key={row} style={{ flexDirection: 'row', alignItems: 'center', gap: space(3) }}>
+          {avatar && <Skeleton circle height={avatarSize} />}
+          <View style={{ flex: 1, gap: space(2) }}>
+            <Skeleton height={13} width="55%" />
+            <Skeleton height={11} width="80%" />
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}

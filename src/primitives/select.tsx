@@ -33,6 +33,15 @@ type Common<T> = {
   searchPlaceholder?: string
   emptyLabel?: string
   doneLabel?: string
+  /**
+   * Offers a select-all row above the options.
+   *
+   * Only for multi-select, and only worth it past a handful: below that the
+   * row costs a line to save one tap. It reflects the CURRENT filter, so
+   * "select all" after a search means the matches rather than the whole list -
+   * anything else quietly selects options the user cannot see.
+   */
+  selectAllLabel?: string
   size?: SizeToken
   variant?: string
   radius?: RadiusToken | number
@@ -87,6 +96,7 @@ export function Select<T>(props: SelectProps<T>) {
     searchPlaceholder,
     emptyLabel = 'No results',
     doneLabel = 'Done',
+    selectAllLabel,
     size = 'md',
     variant,
     radius,
@@ -119,6 +129,25 @@ export function Select<T>(props: SelectProps<T>) {
     const needle = query.trim().toLocaleLowerCase()
     return options.filter((option) => option.label.toLocaleLowerCase().includes(needle))
   }, [options, query, searchable])
+
+  const selectableVisible = visible.filter((option) => !option.disabled)
+  const allVisibleSelected =
+    selectableVisible.length > 0 &&
+    selectableVisible.every((option) => selectedValues.includes(option.value))
+  const someVisibleSelected = selectableVisible.some((option) =>
+    selectedValues.includes(option.value),
+  )
+
+  const toggleAll = () => {
+    if (!multiple) return
+    const visibleValues = selectableVisible.map((option) => option.value)
+    // Only what is on screen is touched. A search narrows the list, and
+    // clearing options the user cannot see is not what they asked for.
+    const next = allVisibleSelected
+      ? selectedValues.filter((value) => !visibleValues.includes(value))
+      : [...selectedValues, ...visibleValues.filter((value) => !selectedValues.includes(value))]
+    props.onChange(next as T[])
+  }
 
   const radiusToken = radius ?? spec.radius ?? config.radius
   const borderRadius =
@@ -215,6 +244,19 @@ export function Select<T>(props: SelectProps<T>) {
         )}
 
         <View style={{ paddingBottom: space(1) }}>
+          {multiple && selectAllLabel != null && visible.length > 1 && (
+            <>
+              <Checkbox
+                checked={allVisibleSelected}
+                indeterminate={someVisibleSelected && !allVisibleSelected}
+                onChange={toggleAll}
+                label={selectAllLabel}
+                style={{ paddingVertical: space(2.5) }}
+              />
+              <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+            </>
+          )}
+
           {visible.length === 0 && (
             <Text variant="caption" color="textFaint" style={{ paddingVertical: space(3) }}>
               {emptyLabel}

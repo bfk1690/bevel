@@ -51,6 +51,8 @@ export function SelectDemo() {
           label="Interests"
           placeholder="Any"
           multiple
+          searchable
+          selectAllLabel="Select all"
           value={many}
           onChange={setMany}
           doneLabel="Done"
@@ -59,8 +61,14 @@ export function SelectDemo() {
             { value: 'code', label: 'Code' },
             { value: 'photo', label: 'Photography' },
             { value: 'music', label: 'Music' },
+            { value: 'film', label: 'Film' },
+            { value: 'food', label: 'Food' },
           ]}
         />
+        <Text variant="caption" color="textFaint">
+          Search for something first, then select all: it takes the matches, not the whole list.
+          Selecting options the user cannot see is not what they asked for.
+        </Text>
         <Text variant="caption" color="textMuted">
           {`selected: ${many.join(', ') || '-'}`}
         </Text>

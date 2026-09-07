@@ -19,6 +19,7 @@ import { RatingDemo } from './rating'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SliderDemo } from './slider'
+import { StateDemo } from './state'
 import { SelectionDemo } from './selection'
 import { HooksDemo } from './hooks'
 import { TableDemo } from './table'
@@ -144,6 +145,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Columns that scroll, events on a rail',
     group: 'Content',
     Component: TableDemo,
+  },
+  {
+    key: 'state',
+    title: 'StateView',
+    subtitle: 'Loading, failed, empty, content',
+    group: 'Content',
+    Component: StateDemo,
   },
   {
     key: 'files',
