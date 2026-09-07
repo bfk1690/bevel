@@ -7,7 +7,7 @@ import { useTheme } from '../theme/provider'
 import type { ColorInput, InputVariantSpec, RadiusToken, SizeToken } from '../theme/types'
 import { Button } from './button'
 import { Checkbox } from './checkbox'
-import { Input } from './input'
+import { SearchField } from './search-field'
 import { Radio } from './radio'
 import { Text } from './text'
 
@@ -204,21 +204,11 @@ export function Select<T>(props: SelectProps<T>) {
               the sheet reads as a list with an odd first item. Small, with a
               mark of its own, it reads as a control over the list.
             */}
-            <Input
-              size="sm"
-              variant="pill"
+            <SearchField
               value={query}
               onChangeText={setQuery}
               placeholder={searchPlaceholder}
-              autoCorrect={false}
-              autoCapitalize="none"
-              left={({ size: glyphSize, color }) => <SearchGlyph size={glyphSize} color={color} />}
-              right={
-                query.length > 0
-                  ? ({ size: glyphSize, color }) => <ClearGlyph size={glyphSize} color={color} />
-                  : undefined
-              }
-              onRightPress={() => setQuery('')}
+              onClear={() => setQuery('')}
             />
             <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
           </View>
@@ -271,53 +261,6 @@ export function Select<T>(props: SelectProps<T>) {
         {/* Single choice closes on pick; a multi-select needs an explicit end */}
         {multiple && <Button label={doneLabel} onPress={() => setOpen(false)} />}
       </Modal>
-    </View>
-  )
-}
-
-/** Magnifier, drawn rather than imported */
-function SearchGlyph({ size, color }: { size: number; color: string }) {
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View
-        style={{
-          width: size * 0.62,
-          height: size * 0.62,
-          borderRadius: size,
-          borderWidth: 1.5,
-          borderColor: color,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          right: size * 0.1,
-          bottom: size * 0.14,
-          width: size * 0.28,
-          height: 1.5,
-          borderRadius: 1,
-          backgroundColor: color,
-          transform: [{ rotate: '45deg' }],
-        }}
-      />
-    </View>
-  )
-}
-
-function ClearGlyph({ size, color }: { size: number; color: string }) {
-  return (
-    <View
-      style={{
-        width: size * 0.8,
-        height: size * 0.8,
-        borderRadius: size,
-        backgroundColor: color,
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0.55,
-      }}>
-      <View style={{ position: 'absolute', width: size * 0.36, height: 1.5, backgroundColor: 'white', transform: [{ rotate: '45deg' }] }} />
-      <View style={{ position: 'absolute', width: size * 0.36, height: 1.5, backgroundColor: 'white', transform: [{ rotate: '-45deg' }] }} />
     </View>
   )
 }

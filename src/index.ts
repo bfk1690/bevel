@@ -12,6 +12,7 @@ export { Divider, type DividerProps } from './primitives/divider'
 export { Input, type InputProps, type InputSlot } from './primitives/input'
 export { OtpInput, type OtpInputProps } from './primitives/otp-input'
 export { Progress, type ProgressProps } from './primitives/progress'
+export { Rating, type RatingProps } from './primitives/rating'
 export {
   Radio,
   RadioGroup,
@@ -19,6 +20,7 @@ export {
   type RadioOption,
   type RadioProps,
 } from './primitives/radio'
+export { SearchField, type SearchFieldProps } from './primitives/search-field'
 export {
   Select,
   type MultiSelectProps,
@@ -68,6 +70,7 @@ export {
   type AccordionProps,
 } from './layout/accordion'
 export { Card, type CardProps } from './layout/card'
+export { DataList, type DataListProps, type DataRow } from './layout/data-list'
 export { EmptyState, type EmptyStateProps } from './layout/empty-state'
 export { Header, type HeaderProps } from './layout/header'
 export { ListItem, type ListItemProps } from './layout/list-item'
@@ -77,6 +80,7 @@ export {
 } from './layout/keyboard-sticky-footer'
 export { Screen, type ScreenEdge, type ScreenProps } from './layout/screen'
 
+export { Carousel, type CarouselProps } from './media/carousel'
 export { ImageShower, type ImageShowerProps, type MediaItem } from './media/image-shower'
 
 export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './utils/case'
@@ -124,6 +128,14 @@ export {
   type TimeValue,
 } from './utils/time'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'
+export { dotWindow, pageFromOffset, type Dot } from './utils/carousel'
+export {
+  clampRating,
+  ratingFromRatio,
+  snapRating,
+  starFill,
+  type StarFill,
+} from './utils/rating'
 export {
   clampValue,
   nearestBound,

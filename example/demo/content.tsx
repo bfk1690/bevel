@@ -5,6 +5,7 @@ import {
   AvatarGroup,
   Badge,
   Card,
+  DataList,
   Divider,
   EmptyState,
   ListItem,
@@ -112,6 +113,31 @@ export function ContentDemo() {
           <Text variant="caption" color="textMuted">
             On a card, the ring takes the card colour.
           </Text>
+        </Card>
+      </Demo>
+
+      <Demo
+        title="Label and value pairs"
+        note="Values are right-aligned so their digits line up in a column - a list of prices left-aligned against ragged labels cannot be scanned or compared.">
+        <Card title="Order summary">
+          <DataList
+            rows={[
+              { label: 'Subtotal', value: '1.240,00 TL' },
+              { label: 'Delivery', value: '49,90 TL' },
+              { label: 'Discount applied at checkout', value: '-120,00 TL', tone: 'ok' },
+              { label: 'Total', value: '1.169,90 TL', total: true },
+            ]}
+          />
+        </Card>
+        <Card title="With dividers">
+          <DataList
+            divider
+            rows={[
+              { label: 'Order number', value: 'HJ-88421' },
+              { label: 'Placed', value: '4 September, 16:20' },
+              { label: 'Status', content: <Badge label="on the way" tone="ok" /> },
+            ]}
+          />
         </Card>
       </Demo>
 

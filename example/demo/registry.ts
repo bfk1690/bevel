@@ -6,12 +6,14 @@ import { ContentDemo } from './content'
 import { DateDemo } from './date'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
+import { CarouselDemo } from './carousel'
 import { MediaDemo } from './media'
 import { MenuDemo } from './menu'
 import { ModalDemo } from './modal'
 import { OtpDemo } from './otp'
 import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
+import { RatingDemo } from './rating'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SliderDemo } from './slider'
@@ -90,6 +92,13 @@ export const DEMOS: readonly DemoEntry[] = [
     Component: SliderDemo,
   },
   {
+    key: 'rating',
+    title: 'Rating',
+    subtitle: 'Stars you can drag across',
+    group: 'Fields',
+    Component: RatingDemo,
+  },
+  {
     key: 'selection',
     title: 'Checkbox, Radio, Switch, Chip',
     subtitle: 'Every selection control',
@@ -166,6 +175,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Pinch, pan, page, dismiss',
     group: 'Media',
     Component: MediaDemo,
+  },
+  {
+    key: 'carousel',
+    title: 'Carousel',
+    subtitle: 'Pages, and dots that slide',
+    group: 'Media',
+    Component: CarouselDemo,
   },
   {
     key: 'text',

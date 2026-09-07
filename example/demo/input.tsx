@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
-import { Input, Text, unmask, useTheme } from '@bfkk/bevel'
+import { Input, SearchField, Text, unmask, useTheme } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 
@@ -93,6 +93,17 @@ export function InputDemo() {
         <Input label="default" placeholder="A well you type into" />
         <Input variant="pill" placeholder="Search" value={search} onChangeText={setSearch} />
         <Input variant="plain" placeholder="Chromeless, for inline editing" />
+      </Demo>
+
+      <Demo
+        title="Search"
+        note="The magnifier and the clear button are drawn into the component: every search field in an app wearing a different icon is the kind of difference nobody decides on, it just accumulates.">
+        <SearchField
+          value={search}
+          onChangeText={setSearch}
+          onClear={() => setSearch('')}
+          placeholder="Search"
+        />
       </Demo>
 
       <Demo title="Sizes">
