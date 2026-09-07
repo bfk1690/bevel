@@ -72,6 +72,8 @@ export {
 export { Card, type CardProps } from './layout/card'
 export { DataList, type DataListProps, type DataRow } from './layout/data-list'
 export { EmptyState, type EmptyStateProps } from './layout/empty-state'
+export { Table, type TableColumn, type TableProps } from './layout/table'
+export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
 export { Header, type HeaderProps } from './layout/header'
 export { ListItem, type ListItemProps } from './layout/list-item'
 export {
@@ -85,6 +87,19 @@ export { ImageShower, type ImageShowerProps, type MediaItem } from './media/imag
 
 export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './utils/case'
 export { dismissKeyboard, useKeyboardVisible } from './utils/keyboard'
+export {
+  useDebouncedValue,
+  useDisclosure,
+  useIsMounted,
+  usePrevious,
+  type Disclosure,
+} from './utils/hooks'
+export {
+  overflowsRow,
+  resolveColumnWidths,
+  DEFAULT_MIN_COLUMN,
+  type ColumnSpec,
+} from './utils/table'
 export { applyMask, createMask, unmask, type Mask, type MaskFn } from './utils/mask'
 export {
   addDays,

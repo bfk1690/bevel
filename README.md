@@ -51,7 +51,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 | | |
 | --- | --- |
 | **Primitives** | `Text` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `Card` `ListItem` `DataList` `Accordion` `EmptyState` `KeyboardStickyFooter` |
+| **Layout** | `Screen` `Header` `Card` `ListItem` `DataList` `Table` `Timeline` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` `Carousel` |
 
@@ -189,6 +189,8 @@ for a stale one to expire is how a toast becomes noise.
 | `snapToStep` `valueOfPosition` … | Slider arithmetic, edges included |
 | `ratingFromRatio` `starFill` `dotWindow` `loopedIndex` … | Rating and paging arithmetic |
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
+| `useDebouncedValue` `useDisclosure` `usePrevious` `useIsMounted` | The hooks every app rewrites |
+| `resolveColumnWidths` | Column widths that scroll rather than squeeze |
 
 ```tsx
 const styles = createThemedStyles(({ colors, space, radius }) => ({

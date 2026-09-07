@@ -18,6 +18,8 @@ import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SliderDemo } from './slider'
 import { SelectionDemo } from './selection'
+import { HooksDemo } from './hooks'
+import { TableDemo } from './table'
 import { TabsDemo } from './tabs'
 import { TextDemo } from './text'
 import { TimeDemo } from './time'
@@ -128,6 +130,13 @@ export const DEMOS: readonly DemoEntry[] = [
     Component: ContentDemo,
   },
   {
+    key: 'table',
+    title: 'Table and Timeline',
+    subtitle: 'Columns that scroll, events on a rail',
+    group: 'Content',
+    Component: TableDemo,
+  },
+  {
     key: 'accordion',
     title: 'Accordion',
     subtitle: 'Disclosure rows with measured height',
@@ -189,6 +198,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Type scale, color roles, casing',
     group: 'Foundation',
     Component: TextDemo,
+  },
+  {
+    key: 'hooks',
+    title: 'Hooks',
+    subtitle: 'Debounced values and disclosure',
+    group: 'Foundation',
+    Component: HooksDemo,
   },
   {
     key: 'theme',
