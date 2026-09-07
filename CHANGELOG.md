@@ -28,7 +28,7 @@ fails the build for everyone who has not installed it.
 - **Content** — `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid`
   `Table` `Timeline` `Steps` `Accordion` `Badge` `Avatar` `AvatarGroup`
   `EmptyState` `StateView` `RelativeTime` `Countdown`
-- **Feedback** — `Toast` `Dialog` `Banner` `Modal` `ActionSheet` `Menu`
+- **Feedback** — `Toast` `Dialog` `Banner` `Modal` `Sheet` `ActionSheet` `Menu`
   `Popover` `Tooltip` `Progress` `Skeleton`
 - **Media** — `ImageShower` `Carousel`
 - **Layout** — `Screen` `Header` `LargeTitle` `TabView` `KeyboardStickyFooter`
@@ -71,3 +71,5 @@ platform switched, because that is where scaling and shadow rules diverge.
   finished it.
 - Password strength weighs length far above character classes, and gives one
   suggestion at a time — five at once are answered with `Password1!`.
+- A sheet's flick moves one snap point, not all of them, so it cannot skip the
+  size the reader was reaching for.

@@ -26,6 +26,7 @@ import { RatingDemo } from './rating'
 import { RelativeDemo } from './relative'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
+import { SheetDemo } from './sheet'
 import { SliderDemo } from './slider'
 import { SwipeDemo } from './swipe'
 import { StateDemo } from './state'
@@ -264,6 +265,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Sheet, dialog, full screen',
     group: 'Feedback',
     Component: ModalDemo,
+  },
+  {
+    key: 'sheet',
+    title: 'Sheet',
+    subtitle: 'Snap points, and a flick that moves one step',
+    group: 'Feedback',
+    Component: SheetDemo,
   },
   {
     key: 'popover',

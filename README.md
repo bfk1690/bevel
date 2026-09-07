@@ -68,7 +68,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 | --- | --- |
 | **Primitives** | `Text` `ExpandableText` `RelativeTime` `Countdown` `Button` `SegmentedControl` `Tabs` `Input` `PasswordField` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `Fab` `KeyboardStickyFooter` |
-| **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
+| **Feedback** | `Modal` `Sheet` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
 | **Media** | `ImageShower` `Carousel` |
 
 ### Button
@@ -309,6 +309,27 @@ and not others.
 
 Not a list — everything given to it is rendered. For a long collection put a
 grid row inside `InfiniteList`.
+
+### Sheet
+
+```tsx
+<Sheet visible={open} onClose={close} snapPoints={['25%', '55%', '90%']}>
+  {nearby.map((place) => <ListItem key={place.id} {...place} />)}
+</Sheet>
+```
+
+Where a `Modal` asks something and leaves, a `Sheet` is a place to live: it
+stays up while the screen behind it is used, and the reader resizes it to suit
+what they are doing.
+
+A percentage is of the room the sheet **has** — under the status bar, over the
+home indicator — because half of the screen is not half of what is left. The
+sheet itself is one view of the tallest size, moved: animating its height would
+put a layout pass on every frame of a gesture.
+
+A flick moves **one** snap point. Thrown from peek to full, it would skip the
+size the reader was reaching for. The drag is limited to the handle, because a
+sheet that resizes from anywhere fights the list inside it.
 
 ### Password strength
 

@@ -69,6 +69,7 @@ export {
   type DialogResult,
 } from './feedback/dialog-store'
 export { Modal, type ModalProps } from './feedback/modal'
+export { Sheet, type SheetProps } from './feedback/sheet'
 export { Popover, type PopoverProps } from './feedback/popover'
 export { Tooltip, type TooltipProps } from './feedback/tooltip'
 export { Toaster, type ToasterProps } from './feedback/toaster'
@@ -170,6 +171,14 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  nearestSnapIndex,
+  resolveSnapPoints,
+  DISMISS,
+  SHEET_FLICK_VELOCITY,
+  type SnapInput,
+  type SnapPoint,
+} from './utils/sheet'
 export {
   passwordStrength,
   type PasswordAssessment,
