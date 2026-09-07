@@ -4,6 +4,7 @@ import { AccordionDemo } from './accordion'
 import { ButtonDemo } from './button'
 import { AutocompleteDemo } from './autocomplete'
 import { ContentDemo } from './content'
+import { FabDemo, FabDemoOverlay } from './fab'
 import { FilesDemo } from './files'
 import { InfiniteDemo } from './infinite'
 import { FormDemo } from './form'
@@ -25,6 +26,7 @@ import { SelectDemo } from './select'
 import { SliderDemo } from './slider'
 import { SwipeDemo } from './swipe'
 import { StateDemo } from './state'
+import { StepsDemo } from './steps'
 import { SelectionDemo } from './selection'
 import { HooksDemo } from './hooks'
 import { TableDemo } from './table'
@@ -42,6 +44,8 @@ export type DemoEntry = {
   Component: ComponentType
   /** Rendered as the screen footer, for components that live at the bottom edge */
   Footer?: ComponentType
+  /** Drawn over the scroll area, for components that float above it */
+  Overlay?: ComponentType
 }
 
 export const DEMOS: readonly DemoEntry[] = [
@@ -159,6 +163,13 @@ export const DEMOS: readonly DemoEntry[] = [
     Component: SwipeDemo,
   },
   {
+    key: 'steps',
+    title: 'Steps',
+    subtitle: 'Where you are in a flow, drawn or counted',
+    group: 'Content',
+    Component: StepsDemo,
+  },
+  {
     key: 'table',
     title: 'Table and Timeline',
     subtitle: 'Columns that scroll, events on a rail',
@@ -206,6 +217,14 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Questions raised from anywhere, and awaited',
     group: 'Feedback',
     Component: DialogDemo,
+  },
+  {
+    key: 'fab',
+    title: 'Fab',
+    subtitle: 'One floating action, out of the way while you read',
+    group: 'Actions',
+    Component: FabDemo,
+    Overlay: FabDemoOverlay,
   },
   {
     key: 'menu',

@@ -101,9 +101,11 @@ export {
   type SwipeAction,
   type SwipeableRowProps,
 } from './layout/swipeable-row'
+export { Steps, type Step, type StepsProps } from './layout/steps'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { TabView, type TabViewItem, type TabViewProps } from './layout/tab-view'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
+export { Fab, type FabProps } from './layout/fab'
 export { Header, type HeaderProps } from './layout/header'
 export {
   InfiniteList,
@@ -158,6 +160,13 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  clampStep,
+  shouldCompact,
+  stepProgress,
+  stepStatus,
+  type StepStatus,
+} from './utils/steps'
 export {
   formatRelative,
   relativeTickMs,

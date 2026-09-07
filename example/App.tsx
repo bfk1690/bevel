@@ -129,7 +129,8 @@ function Gallery() {
         <Screen
           key={demo.key}
           header={<DemoHeader title={demo.title} subtitle={demo.subtitle} onBack={back} />}
-          footer={demo.Footer ? <demo.Footer /> : undefined}>
+          footer={demo.Footer ? <demo.Footer /> : undefined}
+          overlay={demo.Overlay ? <demo.Overlay /> : undefined}>
           <View style={{ paddingVertical: space(4) }}>
             <demo.Component />
           </View>

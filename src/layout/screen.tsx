@@ -39,6 +39,15 @@ export type ScreenProps = {
    * area simply takes the space that is left.
    */
   footer?: ReactNode
+  /**
+   * Drawn over the scroll area without taking any of its space.
+   *
+   * Where a floating button belongs. Inside the scroll context, so anything
+   * put here can react to the scrolling underneath it; laid out over the
+   * content, so it does not shorten the list. Touches pass through everywhere
+   * except what is actually drawn.
+   */
+  overlay?: ReactNode
   scrollable?: boolean
   /**
    * Slides the footer away as the screen scrolls down, and brings it back the
@@ -86,6 +95,7 @@ function ScreenBase({
   children,
   header,
   footer,
+  overlay,
   scrollable = true,
   hideFooterOnScroll = false,
   keyboardAware = true,
@@ -229,7 +239,18 @@ function ScreenBase({
     <>
       {header != null && <View style={{ paddingTop: top }}>{header}</View>}
       {header == null && top > 0 ? <View style={{ height: top }} /> : null}
-      {content}
+      {overlay == null ? (
+        content
+      ) : (
+        // Wrapped only when there is something to lay over, so a screen
+        // without one keeps exactly the layout it had
+        <View style={styles.fill}>
+          {content}
+          <View pointerEvents="box-none" style={styles.overlay}>
+            {overlay}
+          </View>
+        </View>
+      )}
       {footer != null &&
         (hideFooterOnScroll ? (
           // Laid over the content rather than beside it: a bar that slides away
@@ -275,6 +296,9 @@ function ScreenBase({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   floatingFooter: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  // Covers the scrolling area only. Above the header it would put a floating
+  // control on top of the back button
+  overlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
 })
 
 export const Screen = memo(ScreenBase)
