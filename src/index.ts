@@ -128,7 +128,15 @@ export {
   type TimeValue,
 } from './utils/time'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'
-export { dotWindow, pageFromOffset, type Dot } from './utils/carousel'
+export {
+  dotWindow,
+  loopCorrection,
+  loopedIndex,
+  loopedOffset,
+  pageFromOffset,
+  type Dot,
+  type DotWindow,
+} from './utils/carousel'
 export {
   clampRating,
   ratingFromRatio,

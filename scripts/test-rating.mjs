@@ -7,7 +7,13 @@
 import assert from 'node:assert/strict'
 
 import { clampRating, ratingFromRatio, snapRating, starFill } from '../src/utils/rating.ts'
-import { dotWindow, pageFromOffset } from '../src/utils/carousel.ts'
+import {
+  dotWindow,
+  loopCorrection,
+  loopedIndex,
+  loopedOffset,
+  pageFromOffset,
+} from '../src/utils/carousel.ts'
 
 let passed = 0
 let failed = 0
@@ -75,39 +81,74 @@ test('an unmeasured pager reports the first page, not NaN', () => {
 })
 
 test('few pages get one dot each', () => {
-  assert.deepEqual(
-    dotWindow(1, 4, 5).map((dot) => dot.index),
-    [0, 1, 2, 3],
-  )
-  assert.ok(dotWindow(1, 4, 5).every((dot) => dot.scale === 1))
-  assert.deepEqual(dotWindow(0, 0, 5), [])
+  const { dots } = dotWindow(1, 4, 5)
+  assert.deepEqual(dots.map((dot) => dot.index), [0, 1, 2, 3])
+  assert.ok(dots.every((dot) => dot.scale === 1))
+  assert.deepEqual(dotWindow(0, 0, 5).dots, [])
 })
 
-test('many pages get a window that follows the active one', () => {
-  const start = dotWindow(0, 12, 5)
-  assert.equal(start.length, 5)
-  assert.deepEqual(start.map((dot) => dot.index), [0, 1, 2, 3, 4])
-
-  const middle = dotWindow(6, 12, 5)
-  assert.deepEqual(middle.map((dot) => dot.index), [4, 5, 6, 7, 8])
-
-  const end = dotWindow(11, 12, 5)
-  assert.deepEqual(end.map((dot) => dot.index), [7, 8, 9, 10, 11])
+test('the active dot travels through the window instead of sitting in it', () => {
+  // Centring the window every time pins the highlight in the middle, and
+  // paging through a long list then looks like nothing is happening.
+  let start = 0
+  const positions = []
+  for (let active = 0; active < 8; active += 1) {
+    const window = dotWindow(active, 12, 5, start)
+    start = window.start
+    positions.push(window.dots.findIndex((dot) => dot.index === active))
+  }
+  assert.deepEqual(positions.slice(0, 4), [0, 1, 2, 3], 'it moves across at first')
+  assert.ok(new Set(positions).size > 1, 'and never freezes in one place')
 })
 
-test('the window shrinks its dots only where more pages continue', () => {
-  const start = dotWindow(0, 12, 5)
-  assert.equal(start[0].scale, 1, 'the true first page stays full size')
-  assert.equal(start[4].scale, 0.45, 'the far edge says there is more')
+test('the window only shifts once the active page reaches its edge', () => {
+  const first = dotWindow(2, 12, 5, 0)
+  assert.equal(first.start, 0, 'still inside, so it holds still')
 
-  const end = dotWindow(11, 12, 5)
-  assert.equal(end[0].scale, 0.45)
-  assert.equal(end[4].scale, 1, 'the true last page stays full size')
+  const shifted = dotWindow(4, 12, 5, 0)
+  assert.equal(shifted.start, 1, 'at the edge, so it moves by one')
 
-  const middle = dotWindow(6, 12, 5)
-  assert.equal(middle[0].scale, 0.45)
-  assert.equal(middle[1].scale, 0.7)
-  assert.equal(middle[2].scale, 1)
+  const back = dotWindow(1, 12, 5, 3)
+  assert.equal(back.start, 0, 'and back the other way')
+})
+
+test('the window stops at both ends of the list', () => {
+  assert.equal(dotWindow(0, 12, 5, 0).start, 0)
+  assert.equal(dotWindow(11, 12, 5, 6).start, 7)
+  assert.equal(dotWindow(11, 12, 5, 99).start, 7, 'a stale start is pulled back in')
+})
+
+test('edge dots shrink only where pages continue, and never the active one', () => {
+  const middle = dotWindow(6, 12, 5, 4)
+  assert.equal(middle.dots[0].scale, 0.45)
+  assert.equal(middle.dots[1].scale, 0.7)
+  assert.equal(middle.dots.find((dot) => dot.index === 6).scale, 1)
+
+  const atStart = dotWindow(0, 12, 5, 0)
+  assert.equal(atStart.dots[0].scale, 1, 'the true first page is not a stub')
+  assert.equal(atStart.dots[4].scale, 0.45)
+
+  const atEnd = dotWindow(11, 12, 5, 7)
+  assert.equal(atEnd.dots[4].scale, 1, 'nor the true last one')
+  assert.equal(atEnd.dots[0].scale, 0.45)
+})
+
+test('an endless pager maps its clones onto real pages', () => {
+  // The pager renders [last, ...pages, first]
+  assert.equal(loopedIndex(1, 4), 0)
+  assert.equal(loopedIndex(4, 4), 3)
+  assert.equal(loopedIndex(0, 4), 3, 'the clone before the start is the last page')
+  assert.equal(loopedIndex(5, 4), 0, 'and the one after the end is the first')
+  assert.equal(loopedOffset(0), 1)
+  assert.equal(loopedOffset(3), 4)
+})
+
+test('landing on a clone asks for a silent jump to the real page', () => {
+  assert.equal(loopCorrection(0, 4), 4, 'from the leading clone to the real last')
+  assert.equal(loopCorrection(5, 4), 1, 'from the trailing clone to the real first')
+  assert.equal(loopCorrection(2, 4), null, 'a real page needs no correction')
+  assert.equal(loopCorrection(1, 4), null)
+  assert.equal(loopCorrection(4, 4), null)
 })
 
 console.log(`rating: ${passed} passed, ${failed} failed`)

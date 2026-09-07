@@ -187,7 +187,7 @@ for a stale one to expire is how a toast becomes noise.
 | `snapMinutes` `to12Hour` `parseTime` … | Time-of-day arithmetic, without a `Date` |
 | `resolvePlacement` | Where an anchored bubble goes, and which way it flips |
 | `snapToStep` `valueOfPosition` … | Slider arithmetic, edges included |
-| `ratingFromRatio` `starFill` `dotWindow` … | Rating and paging arithmetic |
+| `ratingFromRatio` `starFill` `dotWindow` `loopedIndex` … | Rating and paging arithmetic |
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
 
 ```tsx

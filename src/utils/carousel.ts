@@ -1,8 +1,8 @@
 /**
  * Carousel paging.
  *
- * Which page a scroll offset lands on, and which dots to draw when there are
- * more pages than a row of dots can hold.
+ * Which page an offset lands on, how an endless pager maps onto a finite list,
+ * and which dots to draw when there are more pages than dots.
  */
 
 export function pageFromOffset(offset: number, pageWidth: number, count: number): number {
@@ -11,39 +11,101 @@ export function pageFromOffset(offset: number, pageWidth: number, count: number)
   return Math.min(count - 1, Math.max(0, Math.round(offset / pageWidth)))
 }
 
-export type Dot = {
-  index: number
-  /** 1 at full size, smaller for the dots that stand for pages further away */
-  scale: number
+/**
+ * Endless paging, done with two clones.
+ *
+ * The pager renders `[last, ...pages, first]`. Scrolling past either end lands
+ * on a copy of the page at the other end, and the scroll position is then
+ * moved - without animation - to the real one. The user swipes in one
+ * direction forever and never sees the seam.
+ *
+ * Cloning is the only approach a paged scroll view supports: it has no notion
+ * of wrapping, and re-ordering the data mid-gesture moves the page under the
+ * finger.
+ */
+export function loopedIndex(raw: number, count: number): number {
+  if (count <= 0) return 0
+  if (raw <= 0) return count - 1
+  if (raw > count) return 0
+  return raw - 1
+}
+
+/** Where a real page sits in the cloned list */
+export function loopedOffset(index: number): number {
+  return index + 1
 }
 
 /**
- * A sliding window of dots.
+ * The page to jump to after landing on a clone, or null when none is needed.
  *
- * Past a handful, one dot per page becomes a ruler nobody reads and a row that
- * no longer fits. A window that follows the active page keeps the row a fixed
- * width, and shrinking the dots at its edges says there is more in that
- * direction without spelling out how much.
+ * Returned separately from `loopedIndex` because the jump has to happen
+ * without animation and after the momentum has finished - doing it during the
+ * scroll fights the gesture.
  */
-export function dotWindow(active: number, count: number, max = 5): Dot[] {
-  if (count <= 0) return []
+export function loopCorrection(raw: number, count: number): number | null {
+  if (count <= 0) return null
+  if (raw <= 0) return count
+  if (raw > count) return 1
+  return null
+}
+
+export type Dot = {
+  index: number
+  /** 1 at full size, smaller for the dots standing for pages further away */
+  scale: number
+}
+
+export type DotWindow = {
+  /** First page in the window, to be fed back in on the next call */
+  start: number
+  dots: Dot[]
+}
+
+/**
+ * A window of dots that the active page moves THROUGH.
+ *
+ * Centring the window on the active page every time is the obvious approach
+ * and it is wrong: the highlighted dot then sits in the middle for ever while
+ * the indices shuffle underneath, so paging through the middle of a long list
+ * looks like nothing is happening.
+ *
+ * Instead the window holds still and the active dot travels across it. The
+ * window only shifts when the active page reaches its edge, and then by just
+ * enough to keep one page of lookahead - which is the moment the movement
+ * should read as "the row itself moved on".
+ */
+export function dotWindow(active: number, count: number, max = 5, previousStart = 0): DotWindow {
+  if (count <= 0) return { start: 0, dots: [] }
+
   if (count <= max) {
-    return Array.from({ length: count }, (_, index) => ({ index, scale: 1 }))
+    return {
+      start: 0,
+      dots: Array.from({ length: count }, (_, index) => ({ index, scale: 1 })),
+    }
   }
 
-  const half = Math.floor(max / 2)
-  const start = Math.min(Math.max(0, active - half), count - max)
+  const last = count - max
+  let start = Math.min(Math.max(0, previousStart), last)
 
-  return Array.from({ length: max }, (_, position) => {
+  // One page of lookahead on each side, so the shift happens before the active
+  // dot is pinned against the edge
+  if (active <= start) start = Math.max(0, active - 1)
+  else if (active >= start + max - 1) start = Math.min(last, active - max + 2)
+
+  const dots = Array.from({ length: max }, (_, position) => {
     const index = start + position
-    const atWindowStart = position === 0 && start > 0
-    const atWindowEnd = position === max - 1 && start + max < count
-    const nextToStart = position === 1 && start > 0
-    const nextToEnd = position === max - 2 && start + max < count
+    if (index === active) return { index, scale: 1 }
 
-    // The very edge of the window is smallest, its neighbour half way there
-    if (atWindowStart || atWindowEnd) return { index, scale: 0.45 }
-    if (nextToStart || nextToEnd) return { index, scale: 0.7 }
+    const moreBefore = start > 0
+    const moreAfter = start + max < count
+    if ((position === 0 && moreBefore) || (position === max - 1 && moreAfter)) {
+      return { index, scale: 0.45 }
+    }
+    if ((position === 1 && moreBefore) || (position === max - 2 && moreAfter)) {
+      return { index, scale: 0.7 }
+    }
     return { index, scale: 1 }
   })
+
+  return { start, dots }
 }

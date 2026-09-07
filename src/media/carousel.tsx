@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   ScrollView,
   StyleSheet,
@@ -14,7 +14,7 @@ import {
 import { resolveColor } from '../theme/color'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
-import { dotWindow, pageFromOffset } from '../utils/carousel'
+import { dotWindow, loopCorrection, loopedIndex, loopedOffset, pageFromOffset } from '../utils/carousel'
 
 export type CarouselProps<T> = {
   data: readonly T[]
@@ -22,6 +22,11 @@ export type CarouselProps<T> = {
   /** Controlled page. Changing it scrolls there */
   index?: number
   onIndexChange?: (index: number) => void
+  /**
+   * Wraps around at both ends. On by default: reaching the last page and
+   * finding the swipe does nothing reads as a broken control, not as a limit.
+   */
+  loop?: boolean
   height?: number
   showDots?: boolean
   /** Most dots to draw before the row starts sliding. Defaults to 5 */
@@ -35,15 +40,23 @@ export type CarouselProps<T> = {
 /**
  * Paged carousel.
  *
+ * Wrapping is done by rendering a copy of the last page before the first and a
+ * copy of the first after the last. Landing on a copy hands back the real
+ * index and the scroll position is moved to the matching real page WITHOUT
+ * animation, so the swipe continues in one direction and the seam is never
+ * seen. A paged scroll view has no notion of wrapping, and re-ordering the
+ * data mid-gesture would move the page out from under the finger.
+ *
  * Auto-play stops permanently at the first touch rather than resuming after a
  * pause: a page that moves again while being read is worse than one that never
- * moved, and a user who took hold of it has said what they want.
+ * moved.
  */
 export function Carousel<T>({
   data,
   renderItem,
   index,
   onIndexChange,
+  loop = true,
   height,
   showDots = true,
   maxDots = 5,
@@ -59,40 +72,102 @@ export function Carousel<T>({
   const [internal, setInternal] = useState(index ?? 0)
   const page = index ?? internal
   const touched = useRef(false)
+  const ready = useRef(false)
 
+  const count = data.length
+  const wraps = loop && count > 1
   const pageWidth = width > 0 ? width : window.width
 
-  const onContainerLayout = useCallback((event: LayoutChangeEvent) => {
-    setWidth(event.nativeEvent.layout.width)
-  }, [])
+  /** The rendered list, with a clone at each end when it wraps */
+  const pages = useMemo(() => {
+    if (!wraps) return data.map((item, itemIndex) => ({ item, index: itemIndex }))
+    return [
+      { item: data[count - 1]!, index: count - 1 },
+      ...data.map((item, itemIndex) => ({ item, index: itemIndex })),
+      { item: data[0]!, index: 0 },
+    ]
+  }, [count, data, wraps])
+
+  const scrollTo = useCallback(
+    (raw: number, animated: boolean) => {
+      scroller.current?.scrollTo({ x: raw * pageWidth, y: 0, animated })
+    },
+    [pageWidth],
+  )
+
+  const onContainerLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const next = event.nativeEvent.layout.width
+      setWidth(next)
+      // The first page of a wrapping pager is the second cell, and the jump has
+      // to happen the moment a width exists - before that there is nowhere to
+      // scroll to.
+      if (!ready.current && wraps && next > 0) {
+        ready.current = true
+        requestAnimationFrame(() => {
+          scroller.current?.scrollTo({ x: loopedOffset(page) * next, y: 0, animated: false })
+        })
+      }
+    },
+    [page, wraps],
+  )
 
   const settle = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const next = pageFromOffset(event.nativeEvent.contentOffset.x, pageWidth, data.length)
+      const raw = pageFromOffset(event.nativeEvent.contentOffset.x, pageWidth, pages.length)
+      const next = wraps ? loopedIndex(raw, count) : raw
+
+      if (wraps) {
+        const correction = loopCorrection(raw, count)
+        // Straight after the momentum, and never animated: an animated jump is
+        // the seam becoming visible.
+        if (correction != null) scrollTo(correction, false)
+      }
+
       if (next === page) return
       if (index === undefined) setInternal(next)
       onIndexChange?.(next)
     },
-    [data.length, index, onIndexChange, page, pageWidth],
+    [count, index, onIndexChange, page, pageWidth, pages.length, scrollTo, wraps],
   )
 
   // A controlled index that changes from elsewhere has to be followed
   useEffect(() => {
     if (index === undefined || width <= 0) return
-    scroller.current?.scrollTo({ x: index * pageWidth, animated: true })
-  }, [index, pageWidth, width])
+    scrollTo(wraps ? loopedOffset(index) : index, true)
+  }, [index, scrollTo, width, wraps])
 
   useEffect(() => {
-    if (!autoPlayMs || autoPlayMs <= 0 || data.length < 2) return
+    if (!autoPlayMs || autoPlayMs <= 0 || count < 2) return
     const timer = setInterval(() => {
       if (touched.current) return
-      const next = (page + 1) % data.length
-      scroller.current?.scrollTo({ x: next * pageWidth, animated: true })
+      if (wraps) {
+        // One step forward in the rendered list; the clone at the end makes
+        // the wrap look like any other page turn.
+        scrollTo(loopedOffset(page) + 1, true)
+        return
+      }
+      const next = (page + 1) % count
+      scrollTo(next, true)
       if (index === undefined) setInternal(next)
       onIndexChange?.(next)
     }, autoPlayMs)
     return () => clearInterval(timer)
-  }, [autoPlayMs, data.length, index, onIndexChange, page, pageWidth])
+  }, [autoPlayMs, count, index, onIndexChange, page, scrollTo, wraps])
+
+  /**
+   * The dot window is remembered between renders.
+   *
+   * It has to be, or the row would re-centre on every page and the highlight
+   * would never appear to move. Feeding the previous start back in is what
+   * lets the active dot travel across a window that stays put.
+   */
+  const dotStart = useRef(0)
+  const dots = useMemo(() => {
+    const next = dotWindow(page, count, maxDots, dotStart.current)
+    dotStart.current = next.start
+    return next.dots
+  }, [count, maxDots, page])
 
   const accent = resolveColor(colors, tone, colors.accent)
   const dotSize = 7
@@ -109,16 +184,16 @@ export function Carousel<T>({
           touched.current = true
         }}
         style={height != null ? { height } : undefined}>
-        {data.map((item, itemIndex) => (
-          <View key={itemIndex} style={{ width: pageWidth }}>
-            {renderItem(item, { index: itemIndex, active: itemIndex === page })}
+        {pages.map((entry, position) => (
+          <View key={`${entry.index}-${position}`} style={{ width: pageWidth }}>
+            {renderItem(entry.item, { index: entry.index, active: entry.index === page })}
           </View>
         ))}
       </ScrollView>
 
-      {showDots && data.length > 1 && (
+      {showDots && count > 1 && (
         <View style={[styles.dots, { gap: space(1.5) }]}>
-          {dotWindow(page, data.length, maxDots).map((dot) => (
+          {dots.map((dot) => (
             <View
               key={dot.index}
               style={{

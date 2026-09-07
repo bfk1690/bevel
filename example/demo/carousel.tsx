@@ -18,7 +18,9 @@ export function CarouselDemo() {
 
   return (
     <Stack>
-      <Demo title="Pages">
+      <Demo
+        title="Pages"
+        note="Wrapping is on by default. Reaching the last page and finding the swipe does nothing reads as a broken control rather than as a limit - so a copy of the last page sits before the first and a copy of the first after the last, and landing on one moves the scroll position to the real page without animation.">
         <Carousel
           data={PHOTOS}
           height={space(45)}
@@ -38,7 +40,7 @@ export function CarouselDemo() {
 
       <Demo
         title="More pages than dots"
-        note="Past a handful, one dot per page is a ruler nobody reads and a row that no longer fits. The window follows the active page, and the shrinking dots at its edges say there is more that way without spelling out how much.">
+        note="The window holds still and the active dot travels across it, shifting only when the dot reaches an edge. Re-centring on every page would pin the highlight in the middle while the indices shuffle underneath, and paging would look like nothing was happening.">
         <Carousel
           data={MANY}
           height={space(24)}
@@ -49,6 +51,21 @@ export function CarouselDemo() {
                   {String(item)}
                 </Text>
               </Card>
+            </View>
+          )}
+        />
+      </Demo>
+
+      <Demo title="Without wrapping" note="Set loop={false} where the end of the list is the point - a tour, a set of steps.">
+        <Carousel
+          data={PHOTOS}
+          loop={false}
+          height={space(24)}
+          renderItem={(uri) => (
+            <View style={{ flex: 1, paddingRight: space(3) }}>
+              <View style={{ flex: 1, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.skeleton }}>
+                <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+              </View>
             </View>
           )}
         />
