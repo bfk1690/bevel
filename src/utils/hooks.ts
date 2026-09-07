@@ -157,3 +157,46 @@ export function useCountdown(
 
   return { msLeft, done: end != null && msLeft === 0, restart }
 }
+
+/** Anything that can take the cursor - a `TextInput`, or your own wrapper */
+export type Focusable = { focus: () => void }
+
+export type FieldFocus<K extends string> = {
+  /** Hand the result to a field's `ref` */
+  register: (name: K) => (node: Focusable | null) => void
+  /** Focuses the first of these that is mounted. Returns which, or null */
+  focus: (names: readonly K[] | K) => K | null
+}
+
+/**
+ * Keeps a handle on fields so a form can send the cursor to one.
+ *
+ * Focusing rather than scrolling on purpose: the platform already scrolls a
+ * focused field into view and opens the keyboard against it, and a scroll
+ * position calculated by hand disagrees with that the moment the keyboard
+ * changes height.
+ */
+export function useFieldFocus<K extends string>(): FieldFocus<K> {
+  const fields = useRef<Partial<Record<K, Focusable | null>>>({})
+
+  const register = useCallback(
+    (name: K) => (node: Focusable | null) => {
+      fields.current[name] = node
+    },
+    [],
+  )
+
+  const focus = useCallback((names: readonly K[] | K) => {
+    const list: readonly K[] = typeof names === 'string' ? [names] : names
+    for (const name of list) {
+      const node = fields.current[name]
+      if (node != null) {
+        node.focus()
+        return name
+      }
+    }
+    return null
+  }, [])
+
+  return { register, focus }
+}

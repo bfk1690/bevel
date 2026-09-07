@@ -223,6 +223,13 @@ const form = useForm({
 Every rule is given its own message, so the package ships no wording of its
 own — it would be English-only or drag a translation layer in behind it.
 
+A refused submit reports the first field that needs fixing through
+`onInvalid`, in the order the fields appear on screen — pair it with
+`useFieldFocus` to put the cursor there. Focusing rather than scrolling: the
+platform already scrolls a focused field into view and opens the keyboard
+against it, and a scroll position worked out by hand disagrees with that the
+moment the keyboard changes height.
+
 An error appears once the field has been left, or once submit has been
 pressed; never while it is being typed into for the first time. Telling
 someone their email is invalid after one letter is both true and useless.

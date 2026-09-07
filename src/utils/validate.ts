@@ -130,3 +130,23 @@ export function validateAll<V extends Record<string, unknown>>(
 export function hasErrors<V>(errors: ErrorMap<V>): boolean {
   return Object.values(errors).some((message) => message != null)
 }
+
+/**
+ * The first field with something wrong with it.
+ *
+ * Order matters and is not the object's own: what a form wants is the field
+ * highest on the SCREEN, so that submitting a long form takes you to the first
+ * thing to fix rather than to whichever key happened to be declared first.
+ * Pass the field order; without one, declaration order is the best guess
+ * available.
+ */
+export function firstErrorKey<V>(
+  errors: ErrorMap<V>,
+  order?: readonly (keyof V)[],
+): keyof V | null {
+  const keys = order ?? (Object.keys(errors) as (keyof V)[])
+  for (const key of keys) {
+    if (errors[key] != null) return key
+  }
+  return null
+}

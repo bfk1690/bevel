@@ -9,6 +9,7 @@ import assert from 'node:assert/strict'
 import {
   countCharacters,
   email,
+  firstErrorKey,
   hasErrors,
   matches,
   maxLength,
@@ -123,6 +124,21 @@ test('validateAll reports one message per field', () => {
   assert.deepEqual(errors, { name: 'needed', email: 'bad', age: null })
   assert.equal(hasErrors(errors), true)
   assert.equal(hasErrors({ a: null, b: null }), false)
+})
+
+test('the first error is the one highest on screen', () => {
+  const errors = { name: null, email: 'Not an email', age: 'Required' }
+
+  // Declaration order is a guess; the field order is the answer. A form that
+  // sends you to the wrong field makes you hunt for the real one
+  assert.equal(firstErrorKey(errors), 'email')
+  assert.equal(firstErrorKey(errors, ['age', 'email', 'name']), 'age')
+  assert.equal(firstErrorKey(errors, ['name', 'age']), 'age', 'fields left out are not checked')
+})
+
+test('a clean form has no first error', () => {
+  assert.equal(firstErrorKey({ a: null, b: null }), null)
+  assert.equal(firstErrorKey({}), null)
 })
 
 console.log(`validate: ${passed} passed, ${failed} failed`)

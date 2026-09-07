@@ -1,6 +1,13 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { hasErrors, validate, validateAll, type ErrorMap, type RuleMap } from './validate'
+import {
+  firstErrorKey,
+  hasErrors,
+  validate,
+  validateAll,
+  type ErrorMap,
+  type RuleMap,
+} from './validate'
 
 export type FormConfig<V extends Record<string, unknown>> = {
   initial: V
@@ -14,6 +21,19 @@ export type FormConfig<V extends Record<string, unknown>> = {
    */
   rules?: RuleMap<V> | ((values: V) => RuleMap<V>)
   onSubmit?: (values: V) => void | Promise<void>
+  /**
+   * Called instead of `onSubmit` when the form is not valid, with the first
+   * field that needs fixing.
+   *
+   * The place to put the cursor there: a long form that refuses to submit and
+   * leaves the screen where it was makes the reader hunt for what is wrong.
+   */
+  onInvalid?: (first: keyof V, errors: ErrorMap<V>) => void
+  /**
+   * The order fields appear on screen, if it differs from the order of
+   * `initial`. Used to decide which error is `first`.
+   */
+  order?: readonly (keyof V)[]
 }
 
 export type FieldProps = {
@@ -37,6 +57,8 @@ export type Form<V extends Record<string, unknown>> = {
   reset: () => void
   /** Everything a text field needs, wired up */
   fieldProps: (key: keyof V) => FieldProps
+  /** The field highest on screen that is not valid, whether shown yet or not */
+  firstError: (order?: readonly (keyof V)[]) => keyof V | null
 }
 
 /**
@@ -55,6 +77,8 @@ export function useForm<V extends Record<string, unknown>>({
   initial,
   rules = {},
   onSubmit,
+  onInvalid,
+  order,
 }: FormConfig<V>): Form<V> {
   const [values, setValuesState] = useState<V>(initial)
   const [touched, setTouched] = useState<{ [K in keyof V]?: boolean }>({})
@@ -93,7 +117,12 @@ export function useForm<V extends Record<string, unknown>>({
     setAttempted(true)
     // Re-checked here rather than trusting the memo: submit can be called in
     // the same tick as a change, before anything has re-rendered.
-    if (hasErrors(validateAll(values, typeof rules === 'function' ? rules(values) : rules))) return
+    const found = validateAll(values, typeof rules === 'function' ? rules(values) : rules)
+    if (hasErrors(found)) {
+      const first = firstErrorKey(found, order)
+      if (first != null) onInvalid?.(first, found)
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -101,7 +130,7 @@ export function useForm<V extends Record<string, unknown>>({
     } finally {
       setSubmitting(false)
     }
-  }, [onSubmit, rules, values])
+  }, [onInvalid, onSubmit, order, rules, values])
 
   const reset = useCallback(() => {
     setValuesState(initialRef.current)
@@ -119,6 +148,11 @@ export function useForm<V extends Record<string, unknown>>({
     [blur, errors, setValue, values],
   )
 
+  const firstError = useCallback(
+    (fieldOrder?: readonly (keyof V)[]) => firstErrorKey(allErrors, fieldOrder ?? order),
+    [allErrors, order],
+  )
+
   return {
     values,
     errors,
@@ -131,8 +165,9 @@ export function useForm<V extends Record<string, unknown>>({
     submit,
     reset,
     fieldProps,
+    firstError,
   }
 }
 
 /** Re-exported so a form needs one import */
-export { validate, validateAll, hasErrors }
+export { validate, validateAll, hasErrors, firstErrorKey }

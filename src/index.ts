@@ -142,12 +142,15 @@ export { getCaseLocale, lower, setCaseLocale, upper, type CaseLocale } from './u
 export { dismissKeyboard, useKeyboardHeight, useKeyboardVisible } from './utils/keyboard'
 export {
   useCountdown,
+  useFieldFocus,
   useDebouncedValue,
   useDisclosure,
   useIsMounted,
   usePrevious,
   type CountdownOptions,
   type CountdownState,
+  type FieldFocus,
+  type Focusable,
   type Disclosure,
 } from './utils/hooks'
 export {
@@ -227,6 +230,7 @@ export {
 export {
   countCharacters,
   email,
+  firstErrorKey,
   hasErrors,
   matches,
   maxLength,
