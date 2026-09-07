@@ -96,5 +96,13 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bfk1690/bevel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bfk1690/bevel/issues"
+  },
+  "homepage": "https://github.com/bfk1690/bevel#readme"
 }
