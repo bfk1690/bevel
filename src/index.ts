@@ -40,6 +40,8 @@ export { TimeField, type TimeFieldProps } from './primitives/time-field'
 export { TimePicker, type TimePickerProps } from './primitives/time-picker'
 
 export { Modal, type ModalProps } from './feedback/modal'
+export { Popover, type PopoverProps } from './feedback/popover'
+export { Tooltip, type TooltipProps } from './feedback/tooltip'
 export { Toaster, type ToasterProps } from './feedback/toaster'
 export {
   clearToasts,
@@ -118,3 +120,11 @@ export {
   type TimeValue,
 } from './utils/time'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'
+export {
+  resolvePlacement,
+  type EdgeSpace,
+  type Placement,
+  type PlacementInput,
+  type PlacementResult,
+  type Rect,
+} from './utils/placement'

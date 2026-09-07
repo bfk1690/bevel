@@ -52,7 +52,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 | --- | --- |
 | **Primitives** | `Text` `Button` `SegmentedControl` `Tabs` `Input` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Stepper` `OtpInput` `Chip` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `Card` `ListItem` `Accordion` `EmptyState` `KeyboardStickyFooter` |
-| **Feedback** | `Modal` `Toaster` + the imperative `toast` |
+| **Feedback** | `Modal` `Popover` `Tooltip` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` |
 
 ### Button
@@ -185,6 +185,7 @@ for a stale one to expire is how a toast becomes noise.
 | `createMask` `applyMask` `unmask` | Pattern masking |
 | `addMonths` `buildMonthGrid` `toISODate` … | Calendar arithmetic, in local time |
 | `snapMinutes` `to12Hour` `parseTime` … | Time-of-day arithmetic, without a `Date` |
+| `resolvePlacement` | Where an anchored bubble goes, and which way it flips |
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
 
 ```tsx

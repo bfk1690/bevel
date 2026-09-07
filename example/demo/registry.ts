@@ -9,6 +9,7 @@ import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
 import { MediaDemo } from './media'
 import { ModalDemo } from './modal'
 import { OtpDemo } from './otp'
+import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
@@ -128,6 +129,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Sheet, dialog, full screen',
     group: 'Feedback',
     Component: ModalDemo,
+  },
+  {
+    key: 'popover',
+    title: 'Popover and Tooltip',
+    subtitle: 'Anchored, flipped, clamped',
+    group: 'Feedback',
+    Component: PopoverDemo,
   },
   {
     key: 'progress',
