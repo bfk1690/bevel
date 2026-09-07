@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View } from 'react-native'
-import { Card, Tabs, Text, useTheme } from '@bfkk/bevel'
+import { Card, TabView, Tabs, Text, useTheme } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 
@@ -25,6 +25,7 @@ export function TabsDemo() {
   const [category, setCategory] = useState('new')
   const [pair, setPair] = useState('details')
   const [small, setSmall] = useState('a')
+  const [paged, setPaged] = useState('one')
   const [status, setStatus] = useState('a')
   const { space, colors } = useTheme()
 
@@ -42,6 +43,50 @@ export function TabsDemo() {
             {pair === 'details' ? 'Fabric, fit and care.' : 'What people wrote about it.'}
           </Text>
         </View>
+      </Demo>
+
+      <Demo
+        title="Tabs with pages"
+        note="Both directions work: tapping moves the pages, swiping moves the tabs. The indicator is driven by the pager's scroll position, so during a swipe it travels with the finger rather than catching up once the page has settled - the difference between a gesture performed on the screen and one reported to it. Pages are built when first visited, so five tabs are not five screens' worth of work for the one being looked at.">
+        <Card padding={0} gap={0} style={{ height: space(60), overflow: 'hidden' }}>
+          <TabView
+            value={paged}
+            onChange={setPaged}
+            items={[
+              {
+                value: 'one',
+                label: 'Details',
+                render: () => (
+                  <View style={{ padding: space(4) }}>
+                    <Text variant="body">Swipe sideways.</Text>
+                    <Text variant="caption" color="textMuted">
+                      The underline comes with you.
+                    </Text>
+                  </View>
+                ),
+              },
+              {
+                value: 'two',
+                label: 'Reviews',
+                badge: 12,
+                render: () => (
+                  <View style={{ padding: space(4) }}>
+                    <Text variant="body">Second page.</Text>
+                  </View>
+                ),
+              },
+              {
+                value: 'three',
+                label: 'Shipping',
+                render: () => (
+                  <View style={{ padding: space(4) }}>
+                    <Text variant="body">Third page.</Text>
+                  </View>
+                ),
+              },
+            ]}
+          />
+        </Card>
       </Demo>
 
       <Demo title="With counts">

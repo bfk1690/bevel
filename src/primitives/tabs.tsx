@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Animated,
   Easing,
@@ -40,6 +40,15 @@ export type TabsProps<T> = {
   tone?: ColorInput
   /** Hairline under the strip, separating it from the content it filters */
   divider?: boolean
+  /**
+   * Page position, in pages, when the tabs sit above something swipeable.
+   *
+   * Given one, the indicator follows the FINGER rather than jumping once the
+   * swipe has settled. A tab strip that only catches up afterwards makes the
+   * gesture feel like it was reported to the screen rather than performed on
+   * it.
+   */
+  offset?: Animated.AnimatedInterpolation<number> | Animated.Value
   style?: StyleProp<ViewStyle>
 }
 
@@ -63,6 +72,7 @@ export function Tabs<T>({
   size = 'md',
   tone = 'accent',
   divider = true,
+  offset,
   style,
 }: TabsProps<T>) {
   const { colors, space, sizes } = useTheme()
@@ -86,7 +96,23 @@ export function Tabs<T>({
   const scale = useRef(new Animated.Value(1)).current
   const settled = useRef(false)
 
+  /** Every tab measured, which is what an offset-driven indicator needs */
+  const measured = useMemo(() => {
+    const all: Measurement[] = []
+    for (let index = 0; index < items.length; index += 1) {
+      const entry = measurements[index]
+      if (!entry) return null
+      all.push(entry)
+    }
+    return all.length > 0 ? all : null
+  }, [items.length, measurements])
+
+  const driven = offset != null && measured != null && measured.length > 1
+
   useEffect(() => {
+    // While the indicator is driven by a finger, animating it as well would be
+    // two things fighting over the same value.
+    if (driven) return
     if (!current) return
 
     if (!settled.current) {
@@ -112,7 +138,7 @@ export function Tabs<T>({
         useNativeDriver: true,
       }),
     ]).start()
-  }, [current, position, scale])
+  }, [current, driven, position, scale])
 
   // Keep the selected tab reachable when the strip scrolls
   useEffect(() => {
@@ -170,14 +196,31 @@ export function Tabs<T>({
         )
       })}
 
-      {current && (
+      {(current || driven) && (
         <Animated.View
           pointerEvents="none"
           style={[
             styles.indicator,
             {
               backgroundColor: accent,
-              transform: [{ translateX: position }, { scaleX: scale }],
+              transform: driven
+                ? [
+                    {
+                      translateX: offset.interpolate({
+                        inputRange: measured.map((_, index) => index),
+                        outputRange: measured.map((entry) => entry.x),
+                        extrapolate: 'clamp',
+                      }),
+                    },
+                    {
+                      scaleX: offset.interpolate({
+                        inputRange: measured.map((_, index) => index),
+                        outputRange: measured.map((entry) => entry.width),
+                        extrapolate: 'clamp',
+                      }),
+                    },
+                  ]
+                : [{ translateX: position }, { scaleX: scale }],
             },
           ]}
         />
