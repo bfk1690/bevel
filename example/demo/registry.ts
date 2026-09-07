@@ -7,12 +7,14 @@ import { DateDemo } from './date'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
 import { MediaDemo } from './media'
+import { MenuDemo } from './menu'
 import { ModalDemo } from './modal'
 import { OtpDemo } from './otp'
 import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
+import { SliderDemo } from './slider'
 import { SelectionDemo } from './selection'
 import { TabsDemo } from './tabs'
 import { TextDemo } from './text'
@@ -81,6 +83,13 @@ export const DEMOS: readonly DemoEntry[] = [
     Component: TimeDemo,
   },
   {
+    key: 'slider',
+    title: 'Slider',
+    subtitle: 'Steps, ranges, and a reachable maximum',
+    group: 'Fields',
+    Component: SliderDemo,
+  },
+  {
     key: 'selection',
     title: 'Checkbox, Radio, Switch, Chip',
     subtitle: 'Every selection control',
@@ -118,10 +127,17 @@ export const DEMOS: readonly DemoEntry[] = [
   },
   {
     key: 'toast',
-    title: 'Toast',
-    subtitle: 'Tones, actions, replacement behaviour',
+    title: 'Toast and Banner',
+    subtitle: 'What just happened, and what is still true',
     group: 'Feedback',
     Component: ToastDemo,
+  },
+  {
+    key: 'menu',
+    title: 'Menu and ActionSheet',
+    subtitle: 'Anchored actions, and actions from the edge',
+    group: 'Feedback',
+    Component: MenuDemo,
   },
   {
     key: 'modal',

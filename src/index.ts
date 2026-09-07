@@ -32,6 +32,7 @@ export {
   type SegmentOption,
 } from './primitives/segmented-control'
 export { Skeleton, type SkeletonProps } from './primitives/skeleton'
+export { Slider, type SliderProps } from './primitives/slider'
 export { Stepper, type StepperProps } from './primitives/stepper'
 export { Switch, type SwitchProps } from './primitives/switch'
 export { Tabs, type TabItem, type TabsProps } from './primitives/tabs'
@@ -39,6 +40,9 @@ export { Text, type BevelTextProps } from './primitives/text'
 export { TimeField, type TimeFieldProps } from './primitives/time-field'
 export { TimePicker, type TimePickerProps } from './primitives/time-picker'
 
+export { ActionSheet, type ActionSheetAction, type ActionSheetProps } from './feedback/action-sheet'
+export { Banner, type BannerProps } from './feedback/banner'
+export { Menu, type MenuItem, type MenuProps } from './feedback/menu'
 export { Modal, type ModalProps } from './feedback/modal'
 export { Popover, type PopoverProps } from './feedback/popover'
 export { Tooltip, type TooltipProps } from './feedback/tooltip'
@@ -120,6 +124,17 @@ export {
   type TimeValue,
 } from './utils/time'
 export { ZERO_INSETS, type EdgeInsets } from './utils/optional'
+export {
+  clampValue,
+  nearestBound,
+  orderRange,
+  positionOfValue,
+  ratioOfValue,
+  snapToStep,
+  valueOfPosition,
+  valueOfRatio,
+  type SliderScale,
+} from './utils/slider'
 export {
   resolvePlacement,
   type EdgeSpace,

@@ -1,4 +1,4 @@
-import { Button, Text, toast, useTheme } from '@bfkk/bevel'
+import { Banner, Button, Text, toast, useTheme } from '@bfkk/bevel'
 import { View } from 'react-native'
 
 import { Demo, Row, Stack } from './ui'
@@ -8,6 +8,28 @@ export function ToastDemo() {
 
   return (
     <Stack>
+      <Demo
+        title="Banner"
+        note="Where a toast reports something that just happened and leaves, a banner states a condition that is still true - offline, over quota, a draft not yet published - and stays until it is not. The tone is a bar down the leading edge rather than a wash across the block: a filled panel competes with the content it sits above.">
+        <Banner message="You are offline. Changes are saved on this device." />
+        <Banner
+          tone="warning"
+          title="Storage almost full"
+          message="Older exports will stop being kept."
+          actionLabel="Manage storage"
+          onAction={() => toast.info('Storage')}
+        />
+        <Banner
+          tone="danger"
+          title="Payment failed"
+          message="The card was declined."
+          actionLabel="Try another card"
+          onAction={() => toast.info('Cards')}
+          onDismiss={() => toast.info('Dismissed')}
+        />
+        <Banner tone="ok" message="Everything is up to date." onDismiss={() => toast.info('Dismissed')} />
+      </Demo>
+
       <Demo
         title="Tones"
         note="Tap one, then immediately tap another: the newest message takes the slot and starts its own countdown. Queueing would make you wait to read the one that matters."
