@@ -21,13 +21,13 @@ fails the build for everyone who has not installed it.
 
 ### Components
 
-- **Actions** — `Button` `SegmentedControl` `Tabs` `Fab`
+- **Actions** — `Button` `SegmentedControl` `Tabs` `TabBar` `Fab`
 - **Fields** — `Input` `SearchField` `Autocomplete` `Select` `DateField`
   `Calendar` `TimeField` `TimePicker` `Slider` `Rating` `Checkbox` `Radio`
   `Switch` `Stepper` `OtpInput` `Chip`
 - **Content** — `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid`
   `Table` `Timeline` `Steps` `Accordion` `Badge` `Avatar` `AvatarGroup`
-  `EmptyState` `StateView` `RelativeTime`
+  `EmptyState` `StateView` `RelativeTime` `Countdown`
 - **Feedback** — `Toast` `Dialog` `Banner` `Modal` `ActionSheet` `Menu`
   `Popover` `Tooltip` `Progress` `Skeleton`
 - **Media** — `ImageShower` `Carousel`

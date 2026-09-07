@@ -32,6 +32,7 @@ import { StepsDemo } from './steps'
 import { SelectionDemo } from './selection'
 import { HooksDemo } from './hooks'
 import { TableDemo } from './table'
+import { TabBarDemo } from './tab-bar'
 import { TabsDemo } from './tabs'
 import { TextDemo } from './text'
 import { TimeDemo } from './time'
@@ -71,6 +72,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'A line under where you already are',
     group: 'Actions',
     Component: TabsDemo,
+  },
+  {
+    key: 'tab-bar',
+    title: 'TabBar',
+    subtitle: 'The bar along the bottom, router-agnostic',
+    group: 'Actions',
+    Component: TabBarDemo,
   },
   {
     key: 'input',

@@ -103,6 +103,7 @@ export {
   type SwipeableRowProps,
 } from './layout/swipeable-row'
 export { Steps, type Step, type StepsProps } from './layout/steps'
+export { TabBar, type TabBarItem, type TabBarProps } from './layout/tab-bar'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { TabView, type TabViewItem, type TabViewProps } from './layout/tab-view'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'

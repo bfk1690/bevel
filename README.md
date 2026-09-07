@@ -66,8 +66,8 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `ExpandableText` `RelativeTime` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `Fab` `KeyboardStickyFooter` |
+| **Primitives** | `Text` `ExpandableText` `RelativeTime` `Countdown` `Button` `SegmentedControl` `Tabs` `Input` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
+| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `Fab` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
 | **Media** | `ImageShower` `Carousel` |
 
