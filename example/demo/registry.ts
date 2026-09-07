@@ -13,6 +13,7 @@ import { ProgressDemo } from './progress'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SelectionDemo } from './selection'
+import { TabsDemo } from './tabs'
 import { TextDemo } from './text'
 import { TimeDemo } from './time'
 import { ThemeDemo } from './theme'
@@ -42,6 +43,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'A sliding indicator over one axis of choice',
     group: 'Actions',
     Component: SegmentedDemo,
+  },
+  {
+    key: 'tabs',
+    title: 'Tabs',
+    subtitle: 'A line under where you already are',
+    group: 'Actions',
+    Component: TabsDemo,
   },
   {
     key: 'input',

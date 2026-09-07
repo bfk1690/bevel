@@ -1,6 +1,7 @@
 export * from './theme'
 
 export { Avatar, type AvatarProps } from './primitives/avatar'
+export { AvatarGroup, type AvatarGroupItem, type AvatarGroupProps } from './primitives/avatar-group'
 export { Badge, type BadgeProps } from './primitives/badge'
 export { Button, type ButtonProps, type ButtonSlot } from './primitives/button'
 export { Calendar, type CalendarProps, type DateRange } from './primitives/calendar'
@@ -32,6 +33,7 @@ export {
 } from './primitives/segmented-control'
 export { Skeleton, type SkeletonProps } from './primitives/skeleton'
 export { Switch, type SwitchProps } from './primitives/switch'
+export { Tabs, type TabItem, type TabsProps } from './primitives/tabs'
 export { Text, type BevelTextProps } from './primitives/text'
 export { TimeField, type TimeFieldProps } from './primitives/time-field'
 export { TimePicker, type TimePickerProps } from './primitives/time-picker'

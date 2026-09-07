@@ -118,6 +118,17 @@ export function ToastDemo() {
         />
       </Demo>
 
+      <Demo
+        title="Position and custom rendering"
+        note="Toaster takes a position and a renderToast, so an app can put its own card in the slot while keeping the queueing, timing and dismissal.">
+        <Text variant="caption" color="textMuted">
+          {'<Toaster position="bottom" offset={12} />'}
+        </Text>
+        <Text variant="caption" color="textMuted">
+          {'<Toaster renderToast={(item) => <MyCard {...item} />} />'}
+        </Text>
+      </Demo>
+
       <Demo title="Dismiss">
         <View style={{ gap: space(2) }}>
           <Row>

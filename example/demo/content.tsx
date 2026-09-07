@@ -1,6 +1,18 @@
 import { useState } from 'react'
 import { View } from 'react-native'
-import { Avatar, Badge, Card, Divider, EmptyState, ListItem, Switch, Text, toast, useTheme } from '@bfkk/bevel'
+import {
+  Avatar,
+  AvatarGroup,
+  Badge,
+  Card,
+  Divider,
+  EmptyState,
+  ListItem,
+  Switch,
+  Text,
+  toast,
+  useTheme,
+} from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 
@@ -75,6 +87,32 @@ export function ContentDemo() {
           <Avatar name="Ada" status="danger" />
           <Avatar source="https://i.pravatar.cc/120?img=12" name="Photo" />
         </Row>
+      </Demo>
+
+      <Demo
+        title="Avatar group"
+        note="The ring is not decoration: without a border in the surface color the faces merge into one shape as soon as two of them share a tone, and the group stops reading as a count of people.">
+        <AvatarGroup
+          items={[
+            { name: 'Ada Lovelace' },
+            { name: 'Grace Hopper' },
+            { name: 'Alan Turing' },
+            { name: 'Katherine Johnson' },
+            { name: 'Edsger Dijkstra' },
+            { name: 'Barbara Liskov' },
+          ]}
+        />
+        <Row>
+          <AvatarGroup size={44} max={3} items={[{ name: 'Ada' }, { name: 'Grace' }, { name: 'Alan' }, { name: 'Kay' }]} />
+          <AvatarGroup size={28} overlap={0.55} items={[{ name: 'Ada' }, { name: 'Grace' }, { name: 'Alan' }]} />
+          <AvatarGroup shape="rounded" items={[{ name: 'Ada' }, { name: 'Grace' }]} />
+        </Row>
+        <Card bg="surface">
+          <AvatarGroup ring="surface" items={[{ name: 'Ada' }, { name: 'Grace' }, { name: 'Alan' }]} />
+          <Text variant="caption" color="textMuted">
+            On a card, the ring takes the card colour.
+          </Text>
+        </Card>
       </Demo>
 
       <Demo title="Divider">

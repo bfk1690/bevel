@@ -50,7 +50,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `Button` `SegmentedControl` `Input` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `Progress` `Skeleton` `Divider` |
+| **Primitives** | `Text` `Button` `SegmentedControl` `Tabs` `Input` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `Card` `ListItem` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` |
