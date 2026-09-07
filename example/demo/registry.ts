@@ -19,6 +19,7 @@ import { OtpDemo } from './otp'
 import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
 import { RatingDemo } from './rating'
+import { RelativeDemo } from './relative'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SliderDemo } from './slider'
@@ -254,6 +255,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Type scale, color roles, casing',
     group: 'Foundation',
     Component: TextDemo,
+  },
+  {
+    key: 'relative',
+    title: 'RelativeTime',
+    subtitle: 'A timestamp in words, redrawn only when it changes',
+    group: 'Foundation',
+    Component: RelativeDemo,
   },
   {
     key: 'hooks',

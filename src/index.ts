@@ -16,6 +16,7 @@ export { Input, type InputProps, type InputSlot } from './primitives/input'
 export { OtpInput, type OtpInputProps } from './primitives/otp-input'
 export { Progress, type ProgressProps } from './primitives/progress'
 export { Rating, type RatingProps } from './primitives/rating'
+export { RelativeTime, type RelativeTimeProps } from './primitives/relative-time'
 export {
   Radio,
   RadioGroup,
@@ -157,6 +158,12 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  formatRelative,
+  relativeTickMs,
+  type RelativeOptions,
+  type RelativeStyle,
+} from './utils/relative'
 export {
   isFullSwipe,
   resistPast,
