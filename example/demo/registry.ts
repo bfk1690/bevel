@@ -8,6 +8,7 @@ import { FabDemo, FabDemoOverlay } from './fab'
 import { FilesDemo } from './files'
 import { InfiniteDemo } from './infinite'
 import { FormDemo } from './form'
+import { GridDemo } from './grid'
 import { DateDemo } from './date'
 import { DialogDemo } from './dialog'
 import { InputDemo } from './input'
@@ -175,6 +176,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Columns that scroll, events on a rail',
     group: 'Content',
     Component: TableDemo,
+  },
+  {
+    key: 'grid',
+    title: 'Grid',
+    subtitle: 'Columns in points, because percentages do not add up',
+    group: 'Content',
+    Component: GridDemo,
   },
   {
     key: 'infinite',

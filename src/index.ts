@@ -106,6 +106,7 @@ export { Table, type TableColumn, type TableProps } from './layout/table'
 export { TabView, type TabViewItem, type TabViewProps } from './layout/tab-view'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
 export { Fab, type FabProps } from './layout/fab'
+export { Grid, type GridProps } from './layout/grid'
 export { Header, type HeaderProps } from './layout/header'
 export {
   InfiniteList,
@@ -160,6 +161,12 @@ export {
 } from './utils/table'
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
+export {
+  resolveGrid,
+  rowsOf,
+  type GridInput,
+  type GridLayout,
+} from './utils/grid'
 export {
   clampStep,
   shouldCompact,
