@@ -14,6 +14,22 @@ is injected by the app rather than imported by the package.
 
 ## Setup
 
+Give it your brand colour and it derives the rest:
+
+```tsx
+import { createBrandTheme } from '@bfkk/bevel'
+
+const theme = createBrandTheme({ accent: '#00DB21', fontFamily: 'Inter' })
+```
+
+The tint behind the accent, the label colour on top of it and the version that
+survives a dark background all follow from that one hex. The brand colour
+itself is only moved when it cannot be **seen** — yellow on white fails the 3:1
+WCAG asks of an interface component — because correcting one that already reads
+is how a brand stops looking like itself.
+
+Or write the palette out with `defineTheme`:
+
 ```tsx
 import { BevelProvider, defineTheme, Toaster } from '@bfkk/bevel'
 
@@ -209,6 +225,8 @@ for a stale one to expire is how a toast becomes noise.
 | `BevelProvider` | Publishes the theme and resolves the active scheme |
 | `useTheme()` | Tokens **and** the subscription — call it even if you read no color |
 | `createThemedStyles(fn)` | `StyleSheet.create` resolved per scheme, cached and lazy |
+| `createBrandTheme(input)` | A whole theme from one brand colour |
+| `ensureContrast(color, background)` | Nudges a colour until it can be seen |
 | `darken` `lighten` `alpha` `mix` `contrast` `readableOn` | Memoized color math |
 | `shadow(preset)` `platformShadow(opts)` | Per-platform shadows |
 | `createMask` `applyMask` `unmask` | Pattern masking |

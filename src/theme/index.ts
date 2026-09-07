@@ -1,4 +1,5 @@
 export { alpha, contrast, darken, lighten, luminance, mix, parseColor, readableOn, resolveColor } from './color'
+export { createBrandTheme, ensureContrast, type BrandInput } from './brand'
 export { defaultTheme, defineTheme, type ThemeInput } from './define-theme'
 export {
   BevelProvider,

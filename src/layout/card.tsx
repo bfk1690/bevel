@@ -14,6 +14,8 @@ export type CardProps = {
   /** Trailing node in the title row - a badge, a chevron, an action */
   right?: ReactNode
   onPress?: () => void
+  /** Usually a menu of things to do with what the card shows */
+  onLongPress?: () => void
   bg?: ColorInput
   border?: ColorInput
   radius?: RadiusToken | number
@@ -29,6 +31,7 @@ function CardBase({
   subtitle,
   right,
   onPress,
+  onLongPress,
   bg = 'surface',
   border = 'border',
   radius = 'md',
@@ -67,10 +70,11 @@ function CardBase({
       </View>
     ) : null
 
-  if (onPress) {
+  if (onPress || onLongPress) {
     return (
       <Pressable
         onPress={onPress}
+        onLongPress={onLongPress}
         accessibilityRole="button"
         style={({ pressed }) => [surface, pressed && { opacity: 0.75 }, style]}>
         {head}

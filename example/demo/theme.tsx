@@ -1,9 +1,12 @@
 import { View } from 'react-native'
+import { useState } from 'react'
 import {
   Card,
+  SegmentedControl,
   Text,
   alpha,
   contrast,
+  createBrandTheme,
   darken,
   lighten,
   mix,
@@ -40,8 +43,17 @@ const ROLES = [
   'skeleton',
 ] as const
 
+const BRANDS = [
+  { value: '#00DB21', label: 'Green' },
+  { value: '#FFD60A', label: 'Yellow' },
+  { value: '#0B1E3F', label: 'Navy' },
+  { value: '#8E4EC6', label: 'Purple' },
+]
+
 export function ThemeDemo() {
   const { colors, radius, space, sizes, theme, scheme } = useTheme()
+  const [brand, setBrand] = useState('#FFD60A')
+  const derived = createBrandTheme({ accent: brand })
 
   return (
     <Stack>

@@ -14,6 +14,9 @@ export type ListItemProps = {
   /** Value, badge, switch. Replaced by the chevron when `onPress` is set */
   right?: ReactNode
   onPress?: () => void
+  /** Usually a menu. A row with only a long press has no affordance, so pair it
+   * with something visible */
+  onLongPress?: () => void
   /** Navigation affordance. Defaults on for pressable rows without a `right` */
   chevron?: boolean
   disabled?: boolean
@@ -38,6 +41,7 @@ function ListItemBase({
   left,
   right,
   onPress,
+  onLongPress,
   chevron,
   disabled = false,
   divider = false,
@@ -80,13 +84,14 @@ function ListItemBase({
     </>
   )
 
-  if (onPress == null) {
+  if (onPress == null && onLongPress == null) {
     return <View style={[{ backgroundColor }, style]}>{content}</View>
   }
 
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
