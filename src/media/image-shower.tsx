@@ -113,6 +113,22 @@ function ImageShowerBase({
    * image instead of zooming. The lock is released when the touch ends.
    */
   const [pinching, setPinching] = useState(false)
+  /**
+   * Two fingers are down.
+   *
+   * ── Why this is separate from `pinching` ─────────────────────────────────
+   * `pinching` is set when the pan responder GRANTS, which is too late. On iOS
+   * the pager's native scroll recogniser begins the moment the fingers move,
+   * and flipping `scrollEnabled` on an in-flight scroll does not cancel it —
+   * so a pinch on a multi-page gallery was swallowed by paging. (Single-image
+   * galleries were fine, because paging is off there anyway, which is exactly
+   * how the bug hid.)
+   *
+   * Touch-down happens before any movement, so suspending paging here lands in
+   * time. The handler observes and returns false rather than claiming, leaving
+   * every other gesture untouched.
+   */
+  const [multiTouch, setMultiTouch] = useState(false)
   const [chrome, setChrome] = useState(true)
   const backdrop = useRef(new Animated.Value(1)).current
 
@@ -149,13 +165,22 @@ function ImageShowerBase({
   return (
     <Modal visible animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <Animated.View
-        style={[styles.root, { backgroundColor: colors.media, opacity: backdrop }]}>
+        style={[styles.root, { backgroundColor: colors.media, opacity: backdrop }]}
+        onStartShouldSetResponderCapture={(event) => {
+          setMultiTouch(event.nativeEvent.touches.length >= 2)
+          return false
+        }}
+        onTouchEnd={(event) => {
+          if (event.nativeEvent.touches.length < 2) setMultiTouch(false)
+        }}
+        onTouchCancel={() => setMultiTouch(false)}>
         <ScrollView
           horizontal
           pagingEnabled
           // Paging is suspended while a page is zoomed, otherwise a pan inside
-          // the image would flick to the next one.
-          scrollEnabled={!zoomed && !pinching && pages.length > 1}
+          // the image would flick to the next one - and while two fingers are
+          // down, so a pinch is never swallowed by the pager.
+          scrollEnabled={!zoomed && !pinching && !multiTouch && pages.length > 1}
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={onScrollEnd}
           contentOffset={{ x: openedAt.current * width, y: 0 }}

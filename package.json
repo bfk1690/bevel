@@ -1,6 +1,6 @@
 {
   "name": "@bfkk/bevel",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Themeable React Native UI primitives with data-driven variants",
   "license": "MIT",
   "author": "Burak Karayakal\u0131",
