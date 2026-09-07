@@ -226,17 +226,35 @@ export function Toaster({ position = 'top', offset, renderToast, style }: Toaste
                 </Text>
               </View>
 
-              {item.action && (
-                <Pressable
-                  onPress={() => {
-                    item.action?.onPress()
-                    dismissToast(item.id)
-                  }}
-                  hitSlop={sizes.hitSlop}>
-                  <Text variant="label" style={{ color: tint }}>
-                    {item.action.label}
-                  </Text>
-                </Pressable>
+              {(item.action || item.secondaryAction) && (
+                <View style={[styles.actions, { gap: space(3) }]}>
+                  {item.secondaryAction && (
+                    <Pressable
+                      onPress={() => {
+                        item.secondaryAction?.onPress()
+                        dismissToast(item.id)
+                      }}
+                      accessibilityRole="button"
+                      hitSlop={sizes.hitSlop}>
+                      <Text variant="label" color="textMuted">
+                        {item.secondaryAction.label}
+                      </Text>
+                    </Pressable>
+                  )}
+                  {item.action && (
+                    <Pressable
+                      onPress={() => {
+                        item.action?.onPress()
+                        dismissToast(item.id)
+                      }}
+                      accessibilityRole="button"
+                      hitSlop={sizes.hitSlop}>
+                      <Text variant="label" style={{ color: tint }}>
+                        {item.action.label}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
               )}
 
               {item.duration > 0 && (
@@ -270,6 +288,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dot: { width: 8, height: 8, borderRadius: 4 },
+  actions: { flexDirection: 'row', alignItems: 'center' },
   body: { flex: 1, gap: 2 },
   progress: {
     position: 'absolute',

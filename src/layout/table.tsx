@@ -12,7 +12,17 @@ import {
 import { Text } from '../primitives/text'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
-import { nextSort, overflowsRow, resolveColumnWidths, sortRows, type TableSort } from '../utils/table'
+import {
+  nextSort,
+  overflowsRow,
+  resolveColumnWidths,
+  selectionState,
+  sortRows,
+  toggleAllKeys,
+  toggleKey,
+  type TableSort,
+} from '../utils/table'
+import { Checkbox } from '../primitives/checkbox'
 
 export type TableColumn<T> = {
   key: string
@@ -45,6 +55,15 @@ export type TableProps<T> = {
   stickyFirstColumn?: boolean
   emptyLabel?: string
   headerTone?: ColorInput
+  /**
+   * Row selection, held as keys.
+   *
+   * Keys rather than a flag on each row: the rows come from a server and are
+   * replaced on every page, sort and refresh, and a flag written onto them is
+   * lost each time.
+   */
+  selected?: ReadonlySet<string>
+  onSelectionChange?: (selected: Set<string>) => void
   /** Controlled sort. Leave it out and the table keeps its own */
   sort?: TableSort | null
   defaultSort?: TableSort | null
@@ -67,6 +86,8 @@ export function Table<T>({
   stickyFirstColumn = false,
   emptyLabel = 'Nothing to show',
   headerTone = 'textFaint',
+  selected,
+  onSelectionChange,
   sort,
   defaultSort = null,
   onSortChange,
@@ -154,11 +175,35 @@ export function Table<T>({
   }
 
   const rowKey = (row: T, index: number) => keyExtractor?.(row, index) ?? String(index)
+
+  const selectable = selected != null && onSelectionChange != null
+  const visibleKeys = selectable ? rows.map((row, index) => rowKey(row, index)) : []
+  const headerState = selectable ? selectionState(visibleKeys, selected) : 'none'
+
+  const selectColumn = (row: T, index: number) => (
+    <View style={{ paddingLeft: space(2), paddingRight: space(1) }}>
+      <Checkbox
+        size="sm"
+        checked={selected?.has(rowKey(row, index)) === true}
+        onChange={() => onSelectionChange?.(toggleKey(selected!, rowKey(row, index)))}
+      />
+    </View>
+  )
   const scrolls = overflowsRow(widths, Math.max(0, available - stickyWidth))
 
   const body = (
     <View>
       <View style={[styles.headerRow, { paddingBottom: space(2), borderBottomColor: colors.border }]}>
+        {selectable && sticky == null && (
+          <View style={{ paddingLeft: space(2), paddingRight: space(1) }}>
+            <Checkbox
+              size="sm"
+              checked={headerState === 'all'}
+              indeterminate={headerState === 'some'}
+              onChange={() => onSelectionChange?.(toggleAllKeys(visibleKeys, selected!))}
+            />
+          </View>
+        )}
         {scrolling.map((column, index) => (
           <View key={column.key} style={{ width: widths[index], paddingHorizontal: space(2) }}>
             {header(column)}
@@ -173,6 +218,7 @@ export function Table<T>({
           borderColor={colors.border}
           pressedColor={colors.raised}
           paddingVertical={space(3)}>
+          {selectable && sticky == null && selectColumn(row, rowIndex)}
           {scrolling.map((column, index) => (
             <View key={column.key} style={{ width: widths[index], paddingHorizontal: space(2) }}>
               {cell(column, row)}
@@ -198,7 +244,17 @@ export function Table<T>({
                   styles.headerRow,
                   { paddingBottom: space(2), borderBottomColor: colors.border },
                 ]}>
-                <View style={{ paddingHorizontal: space(2) }}>{header(sticky)}</View>
+                {selectable && (
+                  <View style={{ paddingLeft: space(2), paddingRight: space(1) }}>
+                    <Checkbox
+                      size="sm"
+                      checked={headerState === 'all'}
+                      indeterminate={headerState === 'some'}
+                      onChange={() => onSelectionChange?.(toggleAllKeys(visibleKeys, selected!))}
+                    />
+                  </View>
+                )}
+                <View style={{ paddingHorizontal: space(2), flex: 1 }}>{header(sticky)}</View>
               </View>
               {rows.map((row, rowIndex) => (
                 <Row
@@ -207,6 +263,7 @@ export function Table<T>({
                   borderColor={colors.border}
                   pressedColor={colors.raised}
                   paddingVertical={space(3)}>
+                  {selectable && selectColumn(row, rowIndex)}
                   <View style={{ paddingHorizontal: space(2), flex: 1 }}>{cell(sticky, row)}</View>
                 </Row>
               ))}

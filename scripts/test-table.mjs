@@ -8,6 +8,9 @@ import assert from 'node:assert/strict'
 
 import {
   compareValues,
+  selectionState,
+  toggleAllKeys,
+  toggleKey,
   nextSort,
   overflowsRow,
   resolveColumnWidths,
@@ -124,6 +127,33 @@ test('a column can bring its own comparator', () => {
     () => (a, b) => order.indexOf(a.size) - order.indexOf(b.size),
   )
   assert.deepEqual(sorted.map((row) => row.size), ['small', 'medium', 'large'])
+})
+
+test('toggling a key adds it, then removes it', () => {
+  const empty = new Set()
+  const one = toggleKey(empty, 'a')
+  assert.deepEqual([...one], ['a'])
+  assert.deepEqual([...toggleKey(one, 'a')], [])
+  assert.equal(empty.size, 0, 'the set it was given is never touched')
+})
+
+test('the header reflects the rows on screen', () => {
+  const selected = new Set(['a', 'b'])
+  assert.equal(selectionState(['a', 'b'], selected), 'all')
+  assert.equal(selectionState(['a', 'b', 'c'], selected), 'some')
+  assert.equal(selectionState(['c', 'd'], selected), 'none')
+  assert.equal(selectionState([], selected), 'none', 'an empty table selects nothing')
+})
+
+test('select-all leaves rows off screen alone', () => {
+  // A filtered table saying "all" while holding a hidden selection is how the
+  // wrong thing gets deleted
+  const selected = new Set(['hidden'])
+  const after = toggleAllKeys(['a', 'b'], selected)
+  assert.deepEqual([...after].sort(), ['a', 'b', 'hidden'])
+
+  const cleared = toggleAllKeys(['a', 'b'], after)
+  assert.deepEqual([...cleared], ['hidden'], 'and clearing leaves it too')
 })
 
 console.log(`table: ${passed} passed, ${failed} failed`)

@@ -72,13 +72,27 @@ export function ToastDemo() {
         />
       </Demo>
 
-      <Demo title="With an action" note="The action dismisses the toast after it runs.">
+      <Demo
+        title="With an action"
+        note="A second one is allowed, for the pair that actually comes up: do the thing, or look at it. A third would be a menu, and a toast is not one.">
         <Button
-          label="Show"
+          label="One action"
           variant="secondary"
           onPress={() =>
             toast.error('Message not sent', {
               action: { label: 'Retry', onPress: () => toast.success('Sent') },
+            })
+          }
+        />
+        <Button
+          label="Two actions"
+          variant="secondary"
+          onPress={() =>
+            toast.show({
+              tone: 'warning',
+              message: 'Three photos were skipped',
+              action: { label: 'Retry', onPress: () => toast.success('Retried') },
+              secondaryAction: { label: 'Details', onPress: () => toast.info('Details') },
             })
           }
         />

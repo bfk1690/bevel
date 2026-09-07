@@ -124,11 +124,15 @@ export {
 export {
   compareValues,
   nextSort,
+  selectionState,
+  toggleAllKeys,
+  toggleKey,
   overflowsRow,
   resolveColumnWidths,
   sortRows,
   DEFAULT_MIN_COLUMN,
   type ColumnSpec,
+  type SelectionState,
   type SortDirection,
   type TableSort,
 } from './utils/table'

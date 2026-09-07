@@ -14,6 +14,11 @@ export type ToastOptions = {
   /** ms on screen. `0` keeps it up until dismissed - implied by `loading` */
   duration?: number
   action?: ToastAction
+  /**
+   * A second action, for the pair that actually comes up: do the thing, or
+   * look at it. A third is a menu, and a toast is not one.
+   */
+  secondaryAction?: ToastAction
   /** Give one to dismiss this toast later by id; otherwise one is generated */
   id?: string
   tint?: ColorInput

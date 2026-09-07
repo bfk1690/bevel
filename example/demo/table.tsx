@@ -1,4 +1,5 @@
-import { Badge, Card, Table, Text, Timeline, toast, useTheme } from '@bfkk/bevel'
+import { useState } from 'react'
+import { Badge, Button, Card, Table, Text, Timeline, toast, useTheme } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 
@@ -16,6 +17,7 @@ const STATE_ORDER = ['on the way', 'packed', 'delivered']
 
 export function TableDemo() {
   const { space } = useTheme()
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
 
   return (
     <Stack>
@@ -40,6 +42,34 @@ export function TableDemo() {
             keyExtractor={(row) => row.id}
           />
         </Card>
+      </Demo>
+
+      <Demo
+        title="Selecting rows"
+        note="Selection is held as keys, not as a flag on each row: the rows come from a server and are replaced on every page, sort and refresh, and a flag written onto them is lost each time. Select-all covers the rows on screen only - a filtered table claiming all while holding a hidden selection is how the wrong thing gets deleted.">
+        <Card padding={space(3)}>
+          <Table
+            selected={selected}
+            onSelectionChange={setSelected}
+            columns={[
+              { key: 'id', title: 'Order', width: 110, value: (row) => row.id },
+              { key: 'customer', title: 'Customer', value: (row) => row.customer },
+              { key: 'total', title: 'Total', width: 96, align: 'right', value: (row) => row.total },
+            ]}
+            data={ORDERS}
+            keyExtractor={(row) => row.id}
+          />
+        </Card>
+        {selected.size > 0 && (
+          <Button
+            label={`Delete ${selected.size} selected`}
+            variant="danger"
+            onPress={() => {
+              toast.warning(`${selected.size} orders would go`)
+              setSelected(new Set())
+            }}
+          />
+        )}
       </Demo>
 
       <Demo

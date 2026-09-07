@@ -112,7 +112,9 @@ export function InputDemo() {
         <Input size="lg" placeholder="lg" />
       </Demo>
 
-      <Demo title="Multiline and counter">
+      <Demo
+        title="Multiline and counter"
+        note="The counter is quiet until it matters. Colouring it from the start makes a limit nobody is near look like a problem; going loud only at the end tells the writer when to start cutting.">
         <Input
           label="Bio"
           multiline

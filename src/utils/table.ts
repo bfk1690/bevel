@@ -109,3 +109,47 @@ export function sortRows<T>(
     return result * direction
   })
 }
+
+/**
+ * Row selection.
+ *
+ * Held as a set of keys rather than a flag on each row: the rows come from a
+ * server and get replaced on every page, sort and refresh, and a flag written
+ * onto them is lost each time. Keys survive all three.
+ */
+export function toggleKey(selected: ReadonlySet<string>, key: string): Set<string> {
+  const next = new Set(selected)
+  if (!next.delete(key)) next.add(key)
+  return next
+}
+
+export type SelectionState = 'none' | 'some' | 'all'
+
+/**
+ * What the header checkbox should show.
+ *
+ * Measured against the rows ON SCREEN, not against everything ever loaded: a
+ * filtered table saying "all" while holding a selection the user cannot see is
+ * how the wrong thing gets deleted.
+ */
+export function selectionState(keys: readonly string[], selected: ReadonlySet<string>): SelectionState {
+  if (keys.length === 0) return 'none'
+  let count = 0
+  for (const key of keys) if (selected.has(key)) count += 1
+  if (count === 0) return 'none'
+  return count === keys.length ? 'all' : 'some'
+}
+
+/** Adds or removes every visible key, leaving anything off screen untouched */
+export function toggleAllKeys(
+  keys: readonly string[],
+  selected: ReadonlySet<string>,
+): Set<string> {
+  const next = new Set(selected)
+  if (selectionState(keys, selected) === 'all') {
+    for (const key of keys) next.delete(key)
+  } else {
+    for (const key of keys) next.add(key)
+  }
+  return next
+}
