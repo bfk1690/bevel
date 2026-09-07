@@ -43,6 +43,12 @@ export function MediaDemo() {
         </Text>
       </Demo>
 
+      <Demo
+        title="Where a pinch gets lost"
+        note="Worth trying deliberately, because this is the one that used to fail. Open the gallery above - the one with several pages - and pinch quickly, or land the second finger a moment after the first. The pager's scroll recogniser starts as soon as a finger drifts, and turning scrolling off cannot cancel one already running; so the page claims the gesture as the second finger lands, before any movement. Then lift one finger and carry on panning: the picture should stay under your hand rather than jumping, and a third finger landing mid-pinch should change nothing.">
+        <Card onPress={() => setGallery(0)} title="Open the gallery again" />
+      </Demo>
+
       <Demo title="Single image" note="With one item the pager and the counter disappear.">
         <Card onPress={() => setSingle(true)} title="Open one photo" />
       </Demo>

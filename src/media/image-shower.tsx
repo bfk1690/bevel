@@ -18,6 +18,17 @@ import {
 
 import { Text } from '../primitives/text'
 import { useInsets, useTheme } from '../theme/provider'
+import {
+  clampTransform,
+  distanceBetween,
+  focalPoint,
+  focusedTransform,
+  isZoomed,
+  resistScale,
+  scaleFromPinch,
+  settledScale,
+  type ViewTransform,
+} from '../utils/zoom'
 
 export type MediaItem = {
   uri: string
@@ -66,7 +77,6 @@ export type ImageAction = {
 /** How far a downward drag must travel before it dismisses */
 const DISMISS_DISTANCE = 120
 const DOUBLE_TAP_MS = 280
-const PINCH_SLOP = 1.01
 
 function normalize(item: string | MediaItem): MediaItem {
   return typeof item === 'string' ? { uri: item, type: 'image' } : { type: 'image', ...item }
@@ -110,24 +120,23 @@ function ImageShowerBase({
    *
    * Spreading two fingers still moves them sideways, and a horizontal scroll
    * view happily reads that as a swipe - the gallery would flick to the next
-   * image instead of zooming. The lock is released when the touch ends.
+   * image instead of zooming.
+   *
+   * ── Why this is not the whole defence ────────────────────────────────────
+   * It cannot be. On iOS the pager's native scroll recogniser begins the
+   * moment a finger drifts, and flipping `scrollEnabled` on a scroll that is
+   * already running does not cancel it. A prop change also has to wait for a
+   * render, which is a frame the gesture does not have.
+   *
+   * So the page CLAIMS the responder as the second finger lands, before any
+   * movement, and these two flags only cover the window before that. Both are
+   * cleared eagerly for the same reason: a pager left disabled is worse than
+   * one re-enabled a touch early, since by then the claim is what is holding
+   * it off. (Single-image galleries never showed the bug at all, because
+   * paging is off there - which is exactly how it hid.)
    */
   const [pinching, setPinching] = useState(false)
-  /**
-   * Two fingers are down.
-   *
-   * ── Why this is separate from `pinching` ─────────────────────────────────
-   * `pinching` is set when the pan responder GRANTS, which is too late. On iOS
-   * the pager's native scroll recogniser begins the moment the fingers move,
-   * and flipping `scrollEnabled` on an in-flight scroll does not cancel it —
-   * so a pinch on a multi-page gallery was swallowed by paging. (Single-image
-   * galleries were fine, because paging is off there anyway, which is exactly
-   * how the bug hid.)
-   *
-   * Touch-down happens before any movement, so suspending paging here lands in
-   * time. The handler observes and returns false rather than claiming, leaving
-   * every other gesture untouched.
-   */
+  /** Two fingers are down, seen at touch-down rather than at grant */
   const [multiTouch, setMultiTouch] = useState(false)
   const [chrome, setChrome] = useState(true)
   const backdrop = useRef(new Animated.Value(1)).current
@@ -171,9 +180,19 @@ function ImageShowerBase({
           return false
         }}
         onTouchEnd={(event) => {
-          if (event.nativeEvent.touches.length < 2) setMultiTouch(false)
+          // Both flags are cleared eagerly. Clearing one touch too early costs
+          // nothing - by then the page has been granted the responder, and
+          // that is what actually keeps the pager out of a pinch - while
+          // leaving one set costs the pager entirely until the next touch
+          if (event.nativeEvent.touches.length < 2) {
+            setMultiTouch(false)
+            setPinching(false)
+          }
         }}
-        onTouchCancel={() => setMultiTouch(false)}>
+        onTouchCancel={() => {
+          setMultiTouch(false)
+          setPinching(false)
+        }}>
         <ScrollView
           horizontal
           pagingEnabled
@@ -396,37 +415,28 @@ function ZoomPage({
     focalX: 0,
     focalY: 0,
     dismissing: false,
+    /** How many were down when these measurements were taken */
+    fingers: 0,
+    /** Where the pan had reached then, so a re-measure does not lose it */
+    baseDx: 0,
+    baseDy: 0,
   })
   const lastTap = useRef(0)
 
-  /**
-   * Zoom around a POINT, not around the middle of the screen.
-   *
-   * Scaling about the centre pulls whatever the user was looking at out from
-   * under their fingers, so a detail in a corner runs away exactly when they
-   * try to inspect it. Keeping the focal point fixed is one equation: a point
-   * sits at `p * s + t` on screen, so holding it still across a scale change
-   * means
-   *
-   *   t1 = focus - (focusAtStart - t0) * (s1 / s0)
-   *
-   * Passing the CURRENT focus as the first term also gives two-finger panning
-   * for free: moving both fingers moves the image with them.
-   */
-  const focusedTranslate = useCallback(
-    (nextScale: number, focus: { x: number; y: number }) => {
-      const ratio = nextScale / start.current.scale
-      return {
-        scale: nextScale,
-        x: focus.x - (start.current.focalX - start.current.x) * ratio,
-        y: focus.y - (start.current.focalY - start.current.y) * ratio,
-      }
-    },
+  /** The maths lives in `utils/zoom`, where the corner cases are tested */
+  const focused = useCallback(
+    (nextScale: number, focus: { x: number; y: number }) =>
+      focusedTransform(
+        nextScale,
+        focus,
+        { scale: start.current.scale, x: start.current.x, y: start.current.y },
+        { x: start.current.focalX, y: start.current.focalY },
+      ),
     [],
   )
 
   const apply = useCallback(
-    (next: { scale: number; x: number; y: number }) => {
+    (next: ViewTransform) => {
       view.current = next
       scale.setValue(next.scale)
       translateX.setValue(next.x)
@@ -436,7 +446,7 @@ function ZoomPage({
   )
 
   const settle = useCallback(
-    (next: { scale: number; x: number; y: number }) => {
+    (next: ViewTransform) => {
       view.current = next
       Animated.parallel([
         Animated.timing(scale, { toValue: next.scale, duration: 180, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
@@ -447,21 +457,36 @@ function ZoomPage({
     [scale, translateX, translateY],
   )
 
-  /**
-   * Keeps the image from being dragged off screen once it is zoomed in.
-   *
-   * The bounds follow the CURRENT scale, including a scale borrowed past the
-   * maximum: clamping to the settled size while the image is still stretched
-   * would drag it sideways under the fingers.
-   */
   const clamp = useCallback(
-    (value: { scale: number; x: number; y: number }) => {
-      const limitX = Math.max(0, (width * value.scale - width) / 2)
-      const limitY = Math.max(0, (height * value.scale - height) / 2)
-      return {
-        scale: value.scale,
-        x: Math.min(limitX, Math.max(-limitX, value.x)),
-        y: Math.min(limitY, Math.max(-limitY, value.y)),
+    (value: ViewTransform) => clampTransform(value, width, height),
+    [height, width],
+  )
+
+  /**
+   * Takes the gesture's measurements from HERE.
+   *
+   * Called whenever the number of fingers changes. React Native reports a
+   * release only when the LAST finger lifts, so without this the move handler
+   * carries on against a baseline taken at the start of a pinch: lifting one
+   * finger to carry on panning made the photo jump.
+   */
+  const rebase = useCallback(
+    (touches: readonly { pageX: number; pageY: number }[], dx: number, dy: number) => {
+      const focus = focalPoint(touches, width, height)
+      start.current = {
+        scale: view.current.scale,
+        x: view.current.x,
+        y: view.current.y,
+        distance: touches.length >= 2 ? distanceBetween(touches) : 0,
+        focalX: focus.x,
+        focalY: focus.y,
+        // One finger on a resting image is a dismissal; anything else is a
+        // pinch or a pan. Decided here so that lifting back to one finger
+        // re-arms it rather than leaving a dead gesture
+        dismissing: !isZoomed(view.current.scale) && touches.length < 2,
+        fingers: touches.length,
+        baseDx: dx,
+        baseDy: dy,
       }
     },
     [height, width],
@@ -481,74 +506,67 @@ function ZoomPage({
   const responder = useMemo(
     () =>
       PanResponder.create({
-        // Taps are handled by the pressable below; claiming the responder on
-        // touch start would also stop the pager from ever scrolling.
         onStartShouldSetPanResponder: () => false,
-        onStartShouldSetPanResponderCapture: () => false,
+        /**
+         * A second finger claims the gesture the moment it lands.
+         *
+         * This is the difference between a pinch that works and one that is
+         * sometimes swallowed. Waiting for a MOVE is too late: on iOS the
+         * pager's scroll recogniser starts as soon as the first finger drifts,
+         * and turning `scrollEnabled` off does not cancel a scroll already
+         * running. Claiming on touch-down happens before any of that.
+         *
+         * Only for two fingers. Claiming on every touch start would stop the
+         * pager from ever scrolling, which is why this used to return false.
+         */
+        onStartShouldSetPanResponderCapture: (event) =>
+          event.nativeEvent.touches.length >= 2,
         // Capture, not the bubbling variant: the pressable underneath becomes
         // the responder as soon as a finger lands, and only a capturing parent
         // can take the gesture back from it once it turns into a real drag.
         onMoveShouldSetPanResponderCapture: (event, gesture) => {
-          if (event.nativeEvent.touches.length === 2) return true
-          if (view.current.scale > PINCH_SLOP) return true
+          // Two OR MORE: re-gripping mid-pinch puts a third finger down, and
+          // an exact count dropped the gesture back to the pager
+          if (event.nativeEvent.touches.length >= 2) return true
+          if (isZoomed(view.current.scale)) return true
           // A downward drag on an unzoomed page means "dismiss"; sideways
           // movement belongs to the pager.
           return gesture.dy > 8 && Math.abs(gesture.dy) > Math.abs(gesture.dx) * 1.5
         },
-        onPanResponderGrant: (event) => {
+        onPanResponderGrant: (event, gesture) => {
           const touches = event.nativeEvent.touches
-          const focus = focalPoint(touches, width, height)
-          start.current = {
-            scale: view.current.scale,
-            x: view.current.x,
-            y: view.current.y,
-            distance: touches.length === 2 ? distanceBetween(touches) : 0,
-            focalX: focus.x,
-            focalY: focus.y,
-            dismissing: view.current.scale <= PINCH_SLOP && touches.length < 2,
-          }
+          rebase(touches, gesture.dx, gesture.dy)
+          onPinchingChange(touches.length >= 2)
         },
         onPanResponderMove: (event, gesture) => {
           const touches = event.nativeEvent.touches
 
-          if (touches.length === 2) {
-            const distance = distanceBetween(touches)
-            const focus = focalPoint(touches, width, height)
+          // Any change in the number of fingers re-measures from here. React
+          // Native only reports a release when the LAST one lifts, so without
+          // this the maths carries on against a stale baseline
+          if (touches.length !== start.current.fingers) {
+            rebase(touches, gesture.dx, gesture.dy)
+            onPinchingChange(touches.length >= 2)
+            return
+          }
 
-            // The second finger can land after the gesture began: restart the
-            // measurement from here instead of dividing by a zero distance.
-            if (start.current.distance === 0) {
-              start.current = {
-                ...start.current,
-                scale: view.current.scale,
-                x: view.current.x,
-                y: view.current.y,
-                distance,
-                focalX: focus.x,
-                focalY: focus.y,
-                dismissing: false,
-              }
-              return
-            }
-
-            const raw = (start.current.scale * distance) / start.current.distance
-            // Past either limit the image keeps moving, but only a little.
-            // A hard stop feels like the gesture broke; resistance says the
-            // limit is real and the finger is still being heard.
-            const next =
-              raw > maxScale
-                ? maxScale + (raw - maxScale) * 0.2
-                : raw < 1
-                  ? 1 - (1 - raw) * 0.35
-                  : raw
-            apply(clamp(focusedTranslate(next, focus)))
+          if (touches.length >= 2) {
+            const raw = scaleFromPinch(
+              start.current.scale,
+              start.current.distance,
+              distanceBetween(touches),
+            )
+            apply(
+              clamp(focused(resistScale(raw, maxScale), focalPoint(touches, width, height))),
+            )
             return
           }
 
           if (start.current.dismissing) {
-            const progress = Math.min(1, Math.max(0, gesture.dy) / (DISMISS_DISTANCE * 2))
-            translateY.setValue(gesture.dy)
-            view.current = { ...view.current, y: gesture.dy }
+            const travel = gesture.dy - start.current.baseDy
+            const progress = Math.min(1, Math.max(0, travel) / (DISMISS_DISTANCE * 2))
+            translateY.setValue(travel)
+            view.current = { ...view.current, y: travel }
             backdrop.setValue(1 - progress * 0.75)
             return
           }
@@ -556,14 +574,16 @@ function ZoomPage({
           apply(
             clamp({
               scale: view.current.scale,
-              x: start.current.x + gesture.dx,
-              y: start.current.y + gesture.dy,
+              x: start.current.x + (gesture.dx - start.current.baseDx),
+              y: start.current.y + (gesture.dy - start.current.baseDy),
             }),
           )
         },
         onPanResponderRelease: (_event, gesture) => {
+          onPinchingChange(false)
+
           if (start.current.dismissing) {
-            if (gesture.dy > DISMISS_DISTANCE) {
+            if (gesture.dy - start.current.baseDy > DISMISS_DISTANCE) {
               onClose()
               return
             }
@@ -573,10 +593,13 @@ function ZoomPage({
           }
 
           // Whatever was borrowed past the limits is given back here
-          const settled = Math.min(maxScale, Math.max(1, view.current.scale))
-          const zoomedIn = settled > PINCH_SLOP
+          const settled = settledScale(view.current.scale, maxScale)
+          const zoomedIn = isZoomed(settled)
           settle(zoomedIn ? clamp({ ...view.current, scale: settled }) : { scale: 1, x: 0, y: 0 })
           onZoomChange(zoomedIn)
+        },
+        onPanResponderTerminate: () => {
+          onPinchingChange(false)
         },
         onPanResponderTerminationRequest: () => false,
       }),
@@ -584,11 +607,13 @@ function ZoomPage({
       apply,
       backdrop,
       clamp,
-      focusedTranslate,
+      focused,
       height,
       maxScale,
       onClose,
+      onPinchingChange,
       onZoomChange,
+      rebase,
       settle,
       translateY,
       width,
@@ -605,7 +630,7 @@ function ZoomPage({
 
       if (now - lastTap.current < DOUBLE_TAP_MS) {
         lastTap.current = 0
-        const zoomedIn = view.current.scale > PINCH_SLOP
+        const zoomedIn = isZoomed(view.current.scale)
         if (zoomedIn) {
           settle({ scale: 1, x: 0, y: 0 })
         } else {
@@ -618,7 +643,7 @@ function ZoomPage({
             focalX: point.x,
             focalY: point.y,
           }
-          settle(clamp(focusedTranslate(doubleTapScale, point)))
+          settle(clamp(focused(doubleTapScale, point)))
         }
         onZoomChange(!zoomedIn)
         return
@@ -632,22 +657,23 @@ function ZoomPage({
         }
       }, DOUBLE_TAP_MS)
     },
-    [clamp, doubleTapScale, focusedTranslate, height, onToggleChrome, onZoomChange, settle, width],
-  )
-
-  const reportTouches = useCallback(
-    (count: number) => {
-      onPinchingChange(count >= 2)
-    },
-    [onPinchingChange],
+    [clamp, doubleTapScale, focused, height, onToggleChrome, onZoomChange, settle, width],
   )
 
   return (
     <View
       style={{ width, height }}
-      onTouchStart={(event) => reportTouches(event.nativeEvent.touches.length)}
-      onTouchEnd={(event) => reportTouches(event.nativeEvent.touches.length - 1)}
-      onTouchCancel={() => reportTouches(0)}
+      /**
+       * Only the count going UP is read from a touch event.
+       *
+       * On the way down it used to subtract one and guess, and the two
+       * platforms disagree about whether the finger that just left is still in
+       * the list - so the pager could be left disabled after a pinch, or
+       * re-enabled during one. The gesture clears the flag itself now.
+       */
+      onTouchStart={(event) => {
+        if (event.nativeEvent.touches.length >= 2) onPinchingChange(true)
+      }}
       {...responder.panHandlers}>
       <Pressable onPress={onTap} style={styles.fill}>
         <Animated.View
@@ -660,27 +686,6 @@ function ZoomPage({
       </Pressable>
     </View>
   )
-}
-
-type Touch = { pageX: number; pageY: number }
-
-function distanceBetween(touches: readonly Touch[]): number {
-  const [a, b] = touches
-  if (!a || !b) return 0
-  return Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY)
-}
-
-/** Midpoint of the active touches, measured from the centre of the page */
-function focalPoint(
-  touches: readonly Touch[],
-  width: number,
-  height: number,
-): { x: number; y: number } {
-  const [a, b] = touches
-  if (!a) return { x: 0, y: 0 }
-  const pageX = b ? (a.pageX + b.pageX) / 2 : a.pageX
-  const pageY = b ? (a.pageY + b.pageY) / 2 : a.pageY
-  return { x: pageX - width / 2, y: pageY - height / 2 }
 }
 
 const styles = StyleSheet.create({

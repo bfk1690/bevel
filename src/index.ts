@@ -172,6 +172,19 @@ export {
 export { useForm, type FieldProps, type Form, type FormConfig } from './utils/form'
 export { errorMessage, resolveViewState, type ViewState, type ViewStateInput } from './utils/state'
 export {
+  clampTransform,
+  distanceBetween,
+  focalPoint,
+  focusedTransform,
+  isZoomed,
+  resistScale,
+  scaleFromPinch,
+  settledScale,
+  ZOOM_SLOP,
+  type Point,
+  type ViewTransform,
+} from './utils/zoom'
+export {
   nearestSnapIndex,
   resolveSnapPoints,
   DISMISS,
