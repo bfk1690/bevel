@@ -12,6 +12,17 @@ export type ScrollOffset = {
    * missing function every caller has to check for.
    */
   scrollToTop: () => void
+  /** Absolute position, in points from the top of the content */
+  scrollTo: (y: number, animated?: boolean) => void
+  /**
+   * Moves by a distance from wherever it is now.
+   *
+   * The offset is tracked in JavaScript for this, which is the only reason
+   * that listener exists: a native value cannot be read back synchronously,
+   * and everything else here is driven from it without ever asking what it
+   * currently is.
+   */
+  scrollBy: (delta: number, animated?: boolean) => void
 }
 
 /**
@@ -28,6 +39,8 @@ export type ScrollOffset = {
 export const ScrollContext = createContext<ScrollOffset>({
   y: new Animated.Value(0),
   scrollToTop: () => {},
+  scrollTo: () => {},
+  scrollBy: () => {},
 })
 
 export function useScrollOffset(): ScrollOffset {

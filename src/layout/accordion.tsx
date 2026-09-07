@@ -4,6 +4,7 @@ import {
   Easing,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
   type LayoutChangeEvent,
   type StyleProp,
@@ -11,7 +12,8 @@ import {
 } from 'react-native'
 
 import { Text } from '../primitives/text'
-import { useTheme } from '../theme/provider'
+import { useInsets, useTheme } from '../theme/provider'
+import { useScrollOffset } from './scroll-context'
 
 export type AccordionItemProps = {
   title: string
@@ -23,6 +25,13 @@ export type AccordionItemProps = {
   right?: ReactNode
   disabled?: boolean
   divider?: boolean
+  /**
+   * Brings the panel into view when it opens near the bottom of the screen.
+   *
+   * On by default. Opening a section and seeing nothing happen - because what
+   * opened is below the fold - is indistinguishable from it not working.
+   */
+  revealOnExpand?: boolean
   style?: StyleProp<ViewStyle>
 }
 
@@ -46,9 +55,14 @@ function AccordionItemBase({
   right,
   disabled = false,
   divider = true,
+  revealOnExpand = true,
   style,
 }: AccordionItemProps) {
   const { colors, space, sizes } = useTheme()
+  const insets = useInsets()
+  const window = useWindowDimensions()
+  const { scrollBy } = useScrollOffset()
+  const root = useRef<View>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const progress = useRef(new Animated.Value(expanded ? 1 : 0)).current
 
@@ -59,14 +73,28 @@ function AccordionItemBase({
       easing: expanded ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
       useNativeDriver: false,
     }).start()
-  }, [expanded, progress])
+
+    if (!expanded || !revealOnExpand || contentHeight <= 0) return
+
+    // Measured AFTER the panel has opened, or the reveal would aim at where
+    // the row used to end. The animation is 240ms; this waits for it.
+    const timer = setTimeout(() => {
+      root.current?.measureInWindow((_x, y, _width, height) => {
+        const bottom = y + height
+        const visible = window.height - insets.bottom - space(2)
+        if (bottom > visible) scrollBy(bottom - visible)
+      })
+    }, 260)
+
+    return () => clearTimeout(timer)
+  }, [contentHeight, expanded, insets.bottom, progress, revealOnExpand, scrollBy, space, window.height])
 
   const onContentLayout = useCallback((event: LayoutChangeEvent) => {
     setContentHeight(event.nativeEvent.layout.height)
   }, [])
 
   return (
-    <View style={style}>
+    <View ref={root} collapsable={false} style={style}>
       <Pressable
         onPress={disabled ? undefined : onToggle}
         disabled={disabled}

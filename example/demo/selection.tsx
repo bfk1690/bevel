@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Checkbox, Chip, Radio, RadioGroup, Stepper, Switch, Text } from '@bfkk/bevel'
+import { Checkbox, Chip, ChipGroup, Radio, RadioGroup, Stepper, Switch, Text } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 
@@ -14,6 +14,8 @@ export function SelectionDemo() {
   const [quantity, setQuantity] = useState(1)
   const [guests, setGuests] = useState(2)
   const [price, setPrice] = useState(250)
+  const [tags, setTags] = useState<string[]>(['kahve'])
+  const [size, setSize] = useState('m')
 
   const toggle = (key: string) =>
     setFilters((prev) => (prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]))
@@ -113,6 +115,40 @@ export function SelectionDemo() {
           </Text>
         </Row>
         <Stepper value={quantity} onChange={setQuantity} disabled />
+      </Demo>
+
+      <Demo
+        title="Chip groups"
+        note="Selection lives with the group, so no caller writes the same add-unless-it-is-there logic again and gets it subtly different each time. Past a limit the rest collapse behind a count: a filter row that wraps to four lines has stopped being a row and started being a screen.">
+        <ChipGroup
+          options={[
+            { value: 's', label: 'S' },
+            { value: 'm', label: 'M' },
+            { value: 'l', label: 'L' },
+            { value: 'xl', label: 'XL' },
+          ]}
+          value={size}
+          onChange={setSize}
+        />
+        <ChipGroup
+          multiple
+          max={4}
+          options={[
+            { value: 'kahve', label: 'Kahve' },
+            { value: 'tatli', label: 'Tatlı' },
+            { value: 'kahvalti', label: 'Kahvaltı' },
+            { value: 'vegan', label: 'Vegan' },
+            { value: 'glutensiz', label: 'Glutensiz' },
+            { value: 'manzara', label: 'Manzaralı' },
+            { value: 'calisma', label: 'Çalışmaya uygun' },
+          ]}
+          value={tags}
+          onChange={(next) =>
+            setTags((current) =>
+              current.includes(next) ? current.filter((tag) => tag !== next) : [...current, next],
+            )
+          }
+        />
       </Demo>
 
       <Demo

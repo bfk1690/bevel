@@ -1,5 +1,5 @@
 import { View } from 'react-native'
-import { Text, upper, useTheme } from '@bfkk/bevel'
+import { ExpandableText, Text, upper, useTheme } from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 
@@ -80,6 +80,15 @@ export function TextDemo() {
             setCaseLocale once at startup and every micro label follows.
           </Text>
         </View>
+      </Demo>
+
+      <Demo
+        title="Long text with a way out"
+        note="The control appears only when the text is actually clipped, and the platform decides that rather than a character count: the same sentence takes three lines in one language and five in another, and a read-more under two visible lines is a link that does nothing.">
+        <ExpandableText lines={3}>
+          {'Bir dilin kaç satır tuttuğunu karakter sayarak bilemezsiniz. Aynı cümle bir dilde üç satır, başka bir dilde beş satır sürer; yazı tipi değişir, ölçek değişir, kullanıcının yazı boyutu ayarı değişir. Bu yüzden kırpılıp kırpılmadığına platform karar veriyor - ve yalnızca gerçekten kırpıldığında bir çıkış yolu gösteriliyor.'}
+        </ExpandableText>
+        <ExpandableText lines={3}>{'Kısa bir metin hiç düğme göstermez.'}</ExpandableText>
       </Demo>
 
       <Demo title="micro uppercases itself">

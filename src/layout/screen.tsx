@@ -109,14 +109,33 @@ function ScreenBase({
    */
   const scrollY = useRef(new Animated.Value(0)).current
   const scroller = useRef<ScrollView>(null)
-  const scrollToTop = useCallback(() => {
-    scroller.current?.scrollTo({ y: 0, animated: true })
+  /** The last offset seen, because a native value cannot be read back */
+  const current = useRef(0)
+
+  const scrollTo = useCallback((y: number, animated = true) => {
+    scroller.current?.scrollTo({ y: Math.max(0, y), animated })
   }, [])
-  const offset = useMemo(() => ({ y: scrollY, scrollToTop }), [scrollToTop, scrollY])
+  const scrollToTop = useCallback(() => scrollTo(0), [scrollTo])
+  const scrollBy = useCallback(
+    (delta: number, animated = true) => scrollTo(current.current + delta, animated),
+    [scrollTo],
+  )
+
+  const offset = useMemo(
+    () => ({ y: scrollY, scrollToTop, scrollTo, scrollBy }),
+    [scrollBy, scrollTo, scrollToTop, scrollY],
+  )
+
   const onScroll = useMemo(
     () =>
       Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
         useNativeDriver: true,
+        // Everything animated reads the native value; this only remembers the
+        // number so something can later ask to move relative to it.
+        listener: (event) => {
+          const value = (event as { nativeEvent?: { contentOffset?: { y?: number } } }).nativeEvent
+          current.current = value?.contentOffset?.y ?? current.current
+        },
       }),
     [scrollY],
   )
