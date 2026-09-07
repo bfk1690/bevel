@@ -1,8 +1,9 @@
-import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   Animated,
   Easing,
   KeyboardAvoidingView,
+  PanResponder,
   Modal as RNModal,
   Platform,
   Pressable,
@@ -45,7 +46,13 @@ export type ModalProps = {
   maxHeightRatio?: number
   /** Adds keyboard avoidance - required when the modal contains a text field */
   keyboardAware?: boolean
-  /** Drag affordance at the top of a sheet */
+  /**
+   * Drag affordance at the top of a sheet, and the thing you drag.
+   *
+   * The gesture is deliberately limited to this strip: a sheet that closes
+   * from anywhere fights the list inside it, and a downward flick meant for
+   * the content dismisses the whole thing instead.
+   */
   handle?: boolean
   style?: StyleProp<ViewStyle>
 }
@@ -120,6 +127,36 @@ function ModalBase({
     setSurfaceHeight(event.nativeEvent.layout.height)
   }, [])
 
+  /** How far the finger has pulled the sheet down from its resting place */
+  const drag = useRef(new Animated.Value(0)).current
+
+  const swipe = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gesture) => gesture.dy > 4,
+        onPanResponderMove: (_event, gesture) => {
+          // Upward is resisted rather than blocked, so the sheet stays
+          // attached to the finger instead of feeling stuck
+          drag.setValue(gesture.dy > 0 ? gesture.dy : gesture.dy * 0.2)
+        },
+        onPanResponderRelease: (_event, gesture) => {
+          // A flick counts as much as a distance: a quick short pull down is
+          // as clear an instruction as a slow long one
+          if (gesture.dy > 96 || gesture.vy > 0.8) {
+            drag.setValue(0)
+            onClose()
+            return
+          }
+          Animated.spring(drag, { toValue: 0, useNativeDriver: true, bounciness: 2 }).start()
+        },
+      }),
+    [drag, onClose],
+  )
+
+  useEffect(() => {
+    if (!visible) drag.setValue(0)
+  }, [drag, visible])
+
   const surface: ViewStyle = {
     backgroundColor: variant === 'full' ? colors.canvas : colors.sheet,
     padding: space(4),
@@ -151,10 +188,10 @@ function ModalBase({
       : {
           transform: [
             {
-              translateY: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [travel, 0],
-              }),
+              translateY: Animated.add(
+                progress.interpolate({ inputRange: [0, 1], outputRange: [travel, 0] }),
+                variant === 'sheet' ? drag : 0,
+              ),
             },
           ],
         }
@@ -164,7 +201,16 @@ function ModalBase({
       onLayout={variant === 'full' ? undefined : onSurfaceLayout}
       style={[surface, shape, motion, style]}>
       {variant === 'sheet' && handle && (
-        <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
+        <View
+          {...swipe.panHandlers}
+          // The target is bigger than the mark: a 4pt line is not something a
+          // thumb can find
+          style={styles.handleArea}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          accessibilityHint="Drag down to dismiss">
+          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
+        </View>
       )}
       {title != null && <Text variant="heading">{title}</Text>}
       {scrollable ? (
@@ -238,7 +284,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   bottom: { justifyContent: 'flex-end' },
   centered: { justifyContent: 'center' },
-  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center' },
+  handleArea: { alignSelf: 'stretch', alignItems: 'center', paddingVertical: 6, marginTop: -6 },
+  handle: { width: 36, height: 4, borderRadius: 2 },
 })
 
 export const Modal = memo(ModalBase)

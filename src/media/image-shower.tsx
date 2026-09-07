@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
+  ActivityIndicator,
   Animated,
   Easing,
   Image,
@@ -179,12 +180,7 @@ function ImageShowerBase({
                 renderItem ? (
                   renderItem(item, { active: pageIndex === current, index: pageIndex })
                 ) : (
-                  <Image
-                    source={{ uri: item.uri }}
-                    style={{ width, height }}
-                    resizeMode="contain"
-                    accessibilityIgnoresInvertColors
-                  />
+                  <Photo uri={item.uri} width={width} height={height} tint={colors.onMedia} />
                 )
               ) : null}
             </ZoomPage>
@@ -268,6 +264,62 @@ function ImageShowerBase({
         )}
       </Animated.View>
     </Modal>
+  )
+}
+
+/**
+ * One photo, with something to look at while it arrives.
+ *
+ * A full-screen viewer opened on a large image over a slow connection shows
+ * black until it lands, which is indistinguishable from a broken picture. The
+ * spinner sits behind the image rather than in front, so it disappears the
+ * moment there is anything to see.
+ */
+function Photo({
+  uri,
+  width,
+  height,
+  tint,
+}: {
+  uri: string
+  width: number
+  height: number
+  tint: string
+}) {
+  const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    setFailed(false)
+  }, [uri])
+
+  return (
+    <View style={{ width, height }}>
+      {(loading || failed) && (
+        <View style={[StyleSheet.absoluteFill, styles.centre]}>
+          {failed ? (
+            <Text variant="caption" color="onMedia" style={styles.dim}>
+              Could not load this one
+            </Text>
+          ) : (
+            <ActivityIndicator color={tint} />
+          )}
+        </View>
+      )}
+
+      <Image
+        source={{ uri }}
+        style={{ width, height }}
+        resizeMode="contain"
+        accessibilityIgnoresInvertColors
+        onLoadEnd={() => setLoading(false)}
+        onError={() => {
+          setLoading(false)
+          setFailed(true)
+        }}
+      />
+    </View>
   )
 }
 
@@ -619,6 +671,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   chromeText: { flex: 1, gap: 2 },
+  centre: { alignItems: 'center', justifyContent: 'center' },
+  dim: { opacity: 0.7 },
   actions: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row' },
   action: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   counter: { opacity: 0.7 },

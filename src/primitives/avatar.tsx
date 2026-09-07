@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { Image, StyleSheet, View, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native'
 
 import { readableOn, resolveColor } from '../theme/color'
@@ -45,11 +45,16 @@ function initialsOf(name: string): string {
 
 function AvatarBase({ source, name, size = 40, shape = 'circle', bg, status, style }: AvatarProps) {
   const { colors, radius } = useTheme()
+  const [failed, setFailed] = useState(false)
 
   const resolvedSource: ImageSourcePropType | null = useMemo(() => {
     if (source == null) return null
     return typeof source === 'string' ? { uri: source } : source
   }, [source])
+
+  // A new address deserves a fresh attempt: the last one failing says nothing
+  // about this one.
+  useEffect(() => setFailed(false), [resolvedSource])
 
   const background = bg
     ? resolveColor(colors, bg, colors.raised)
@@ -72,8 +77,18 @@ function AvatarBase({ source, name, size = 40, shape = 'circle', bg, status, sty
           justifyContent: 'center',
           overflow: 'hidden',
         }}>
-        {resolvedSource ? (
-          <Image source={resolvedSource} style={{ width: size, height: size }} resizeMode="cover" />
+        {resolvedSource && !failed ? (
+          <Image
+            source={resolvedSource}
+            style={{ width: size, height: size }}
+            resizeMode="cover"
+            /**
+             * A broken address falls back to the initials rather than leaving
+             * a coloured hole. An avatar that cannot load is still a person,
+             * and their name is right there.
+             */
+            onError={() => setFailed(true)}
+          />
         ) : (
           <Text
             variant="label"
