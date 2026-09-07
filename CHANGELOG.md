@@ -35,12 +35,12 @@ fails the build for everyone who has not installed it.
 
 ### The pure layer
 
-Eighteen modules with no React Native imports, and 265 tests aimed at the cases
+Twenty-two suites over the pure layer, 295 tests aimed at the cases
 a device only shows by accident: colour math, masking, locale-safe casing,
 search folding, calendar and clock arithmetic, anchored placement, slider and
 rating scales, column widths and sorting, validation, view state, swipe and
-step arithmetic, relative time, grid division, the dialog queue, and the theme
-engine itself. The suite runs on a reference screen, a small one, and with the
+step arithmetic, relative time, grid division, sheet snapping, password
+strength, text direction, the dialog queue, and the theme engine itself. The suite runs on a reference screen, a small one, and with the
 platform switched, because that is where scaling and shadow rules diverge.
 
 ### Decisions worth knowing

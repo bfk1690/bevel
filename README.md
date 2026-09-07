@@ -460,12 +460,12 @@ yarn install
 yarn ios         # or: yarn android
 ```
 
-The example app is the living documentation: an index of components, and one
-page per component showing every variant, state and edge case with the
-reasoning next to it. Metro watches the package source, so editing a component
+The example app is the living documentation: an index of forty pages, one per
+component, each showing every variant, state and edge case with the reasoning
+next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — eighteen modules, 265 assertions: color math,
+Tests cover the pure layer — twenty-two suites, 295 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve
