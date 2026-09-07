@@ -73,10 +73,11 @@ export function CarouselDemo() {
 
       <Demo
         title="Auto-play"
-        note="It advances on its own, and the first touch stops it for good. A page that moves again while being read is worse than one that never moved, and a user who took hold of it has said what they want.">
+        note="Touching pauses it and it picks up again once left alone - two and a half seconds here. Moving a page while it is being read is rude; never moving again after a single swipe is dead. Pass resumeAfterMs={0} where taking hold really is the end of it.">
         <Carousel
           data={PHOTOS}
           autoPlayMs={2200}
+          resumeAfterMs={2500}
           height={space(24)}
           tone="ok"
           renderItem={(uri) => (

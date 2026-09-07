@@ -31,8 +31,17 @@ export type CarouselProps<T> = {
   showDots?: boolean
   /** Most dots to draw before the row starts sliding. Defaults to 5 */
   maxDots?: number
-  /** Advances on its own every N ms. Any touch stops it for good */
+  /** Advances on its own every N ms */
   autoPlayMs?: number
+  /**
+   * How long after the last touch auto-play picks up again.
+   *
+   * Touching pauses it, because a page that moves while being read is worse
+   * than one that never moved. Stopping for good is worse still: a shop
+   * banner that never turns again after one swipe reads as dead. `0` keeps it
+   * stopped, for the cases where the user taking hold really is the end of it.
+   */
+  resumeAfterMs?: number
   tone?: ColorInput
   style?: StyleProp<ViewStyle>
 }
@@ -47,9 +56,9 @@ export type CarouselProps<T> = {
  * seen. A paged scroll view has no notion of wrapping, and re-ordering the
  * data mid-gesture would move the page out from under the finger.
  *
- * Auto-play stops permanently at the first touch rather than resuming after a
- * pause: a page that moves again while being read is worse than one that never
- * moved.
+ * Auto-play pauses on touch and picks up again once the pager has been left
+ * alone. Moving a page while it is being read is rude; never moving again
+ * after a single swipe is dead.
  */
 export function Carousel<T>({
   data,
@@ -61,6 +70,7 @@ export function Carousel<T>({
   showDots = true,
   maxDots = 5,
   autoPlayMs,
+  resumeAfterMs = 4000,
   tone = 'accent',
   style,
 }: CarouselProps<T>) {
@@ -71,8 +81,30 @@ export function Carousel<T>({
   const [width, setWidth] = useState(0)
   const [internal, setInternal] = useState(index ?? 0)
   const page = index ?? internal
-  const touched = useRef(false)
+  /** Paused by a touch, released once the pager has been left alone */
+  const paused = useRef(false)
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ready = useRef(false)
+
+  const pause = useCallback(() => {
+    paused.current = true
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    resumeTimer.current = null
+  }, [])
+
+  const scheduleResume = useCallback(() => {
+    if (!paused.current || resumeAfterMs <= 0) return
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+    resumeTimer.current = setTimeout(() => {
+      paused.current = false
+      resumeTimer.current = null
+    }, resumeAfterMs)
+  }, [resumeAfterMs])
+
+  // A timer that outlives the screen would wake up into a pager that is gone
+  useEffect(() => () => {
+    if (resumeTimer.current) clearTimeout(resumeTimer.current)
+  }, [])
 
   const count = data.length
   const wraps = loop && count > 1
@@ -124,11 +156,16 @@ export function Carousel<T>({
         if (correction != null) scrollTo(correction, false)
       }
 
+      // The momentum has settled, so the countdown to resuming can start -
+      // including after a page turn auto-play itself asked for, where the
+      // pager is already running and this is a no-op.
+      scheduleResume()
+
       if (next === page) return
       if (index === undefined) setInternal(next)
       onIndexChange?.(next)
     },
-    [count, index, onIndexChange, page, pageWidth, pages.length, scrollTo, wraps],
+    [count, index, onIndexChange, page, pageWidth, pages.length, scheduleResume, scrollTo, wraps],
   )
 
   // A controlled index that changes from elsewhere has to be followed
@@ -140,7 +177,7 @@ export function Carousel<T>({
   useEffect(() => {
     if (!autoPlayMs || autoPlayMs <= 0 || count < 2) return
     const timer = setInterval(() => {
-      if (touched.current) return
+      if (paused.current) return
       if (wraps) {
         // One step forward in the rendered list; the clone at the end makes
         // the wrap look like any other page turn.
@@ -180,9 +217,10 @@ export function Carousel<T>({
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={settle}
-        onScrollBeginDrag={() => {
-          touched.current = true
-        }}
+        onScrollBeginDrag={pause}
+        // A slow drag never gains momentum, so the resume has to be armed from
+        // here as well or the pager would stay paused for ever.
+        onScrollEndDrag={scheduleResume}
         style={height != null ? { height } : undefined}>
         {pages.map((entry, position) => (
           <View key={`${entry.index}-${position}`} style={{ width: pageWidth }}>
