@@ -4,6 +4,7 @@ import { AccordionDemo } from './accordion'
 import { ButtonDemo } from './button'
 import { ContentDemo } from './content'
 import { FilesDemo } from './files'
+import { FormDemo } from './form'
 import { DateDemo } from './date'
 import { InputDemo } from './input'
 import { KeyboardDemo, KeyboardDemoFooter } from './keyboard'
@@ -86,6 +87,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'A wheel that can be themed',
     group: 'Fields',
     Component: TimeDemo,
+  },
+  {
+    key: 'form',
+    title: 'Forms',
+    subtitle: 'Validation, and when to show it',
+    group: 'Fields',
+    Component: FormDemo,
   },
   {
     key: 'slider',

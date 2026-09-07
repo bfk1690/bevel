@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Image, Pressable, View } from 'react-native'
-import { Card, ImageShower, Text, useTheme } from '@bfkk/bevel'
+import { Card, ImageShower, Text, toast, useTheme } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 
@@ -21,7 +21,7 @@ export function MediaDemo() {
     <Stack>
       <Demo
         title="Gallery"
-        note="Swipe to page, pinch to zoom, drag to pan, double tap to toggle, drag down to dismiss, single tap to hide the chrome. Zoom follows the point between your fingers, so a detail in a corner does not run away when you reach for it.">
+        note="Swipe to page, pinch to zoom, drag to pan, double tap to toggle, drag down to dismiss, single tap to hide the chrome. Zoom follows the point between your fingers. The actions sit along the bottom edge rather than the top: the viewer is held in one hand, and the top of a large phone is out of reach of the thumb holding it.">
         <Row>
           {PHOTOS.map((uri, index) => (
             <Pressable key={uri} onPress={() => setGallery(index)} style={{ flex: 1 }}>
@@ -57,6 +57,11 @@ export function MediaDemo() {
         items={PHOTOS}
         onClose={() => setGallery(null)}
         onIndexChange={setGallery}
+        actions={[
+          { key: 'share', label: 'Share', onPress: (_, index) => toast.info(`Shared ${index + 1}`) },
+          { key: 'save', label: 'Save', onPress: () => toast.success('Saved') },
+          { key: 'delete', label: 'Delete', destructive: true, onPress: () => toast.warning('Deleted') },
+        ]}
       />
 
       <ImageShower

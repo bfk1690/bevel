@@ -45,6 +45,21 @@ export type ImageShowerProps = {
    */
   renderItem?: (item: MediaItem, state: { active: boolean; index: number }) => ReactNode
   renderHeader?: (state: { index: number; total: number; close: () => void }) => ReactNode
+  /**
+   * Actions along the bottom edge, shown with the chrome.
+   *
+   * Bottom rather than top: the viewer is held in one hand and the top of a
+   * large phone is out of reach of the thumb holding it.
+   */
+  actions?: readonly ImageAction[]
+}
+
+export type ImageAction = {
+  key: string
+  label: string
+  /** Receives the item the viewer is currently on */
+  onPress: (item: MediaItem, index: number) => void
+  destructive?: boolean
 }
 
 /** How far a downward drag must travel before it dismisses */
@@ -80,8 +95,9 @@ function ImageShowerBase({
   doubleTapScale = 2.4,
   renderItem,
   renderHeader,
+  actions,
 }: ImageShowerProps) {
-  const { colors, space } = useTheme()
+  const { colors, radius, space } = useTheme()
   const insets = useInsets()
   const { width, height } = useWindowDimensions()
 
@@ -174,6 +190,42 @@ function ImageShowerBase({
             </ZoomPage>
           ))}
         </ScrollView>
+
+        {chrome && actions != null && actions.length > 0 && (
+          <View
+            pointerEvents="box-none"
+            style={[
+              styles.actions,
+              { paddingBottom: insets.bottom + space(3), paddingHorizontal: space(4), gap: space(2) },
+            ]}>
+            {actions.map((action) => {
+              const item = pages[current]
+              return (
+                <Pressable
+                  key={action.key}
+                  disabled={item == null}
+                  onPress={() => item && action.onPress(item, current)}
+                  accessibilityRole="button"
+                  accessibilityLabel={action.label}
+                  style={({ pressed }) => [
+                    styles.action,
+                    {
+                      paddingVertical: space(2.5),
+                      backgroundColor: colors.overlay,
+                      borderRadius: radius.md,
+                      opacity: pressed ? 0.6 : 1,
+                    },
+                  ]}>
+                  <Text
+                    variant="label"
+                    style={{ color: action.destructive ? colors.danger : colors.onMedia }}>
+                    {action.label}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </View>
+        )}
 
         {chrome && (
           <View
@@ -553,6 +605,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   chromeText: { flex: 1, gap: 2 },
+  actions: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row' },
+  action: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   counter: { opacity: 0.7 },
   close: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   closeBar: { position: 'absolute', width: 20, height: 2, transform: [{ rotate: '45deg' }] },

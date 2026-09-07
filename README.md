@@ -153,6 +153,31 @@ date around for "half past two" drags a timezone and a calendar day into a
 value that has neither, which is how an alarm ends up an hour off after a
 clock change.
 
+### Forms
+
+```tsx
+const form = useForm({
+  initial: { email: '', password: '', confirm: '' },
+  rules: (values) => ({
+    email: [required('E-posta gerekli'), email('Bu adres geçerli görünmüyor')],
+    confirm: [matches(() => values.password, 'Parolalar eşleşmiyor')],
+  }),
+  onSubmit: async (values) => api.signUp(values),
+})
+
+<Input label="E-posta" {...form.fieldProps('email')} />
+<Button label="Kaydol" loading={form.submitting} onPress={form.submit} />
+```
+
+Every rule is given its own message, so the package ships no wording of its
+own — it would be English-only or drag a translation layer in behind it.
+
+An error appears once the field has been left, or once submit has been
+pressed; never while it is being typed into for the first time. Telling
+someone their email is invalid after one letter is both true and useless.
+After that it updates live, because by then they are correcting something and
+want to see when they are done.
+
 ### Toast
 
 ```tsx
@@ -190,6 +215,7 @@ for a stale one to expire is how a toast becomes noise.
 | `ratingFromRatio` `starFill` `dotWindow` `loopedIndex` … | Rating and paging arithmetic |
 | `upper` `lower` `setCaseLocale` | Locale-safe casing (the platform's is not) |
 | `useDebouncedValue` `useDisclosure` `usePrevious` `useIsMounted` | The hooks every app rewrites |
+| `useForm` `required` `email` `minLength` … | Validation, with the app's own wording |
 | `resolveColumnWidths` `nextSort` `sortRows` | Column widths and sorting |
 | `formatBytes` `formatCount` `truncateMiddle` `fileKind` | The formatting every app rewrites |
 
@@ -259,6 +285,7 @@ with a build.
 
 ## Status
 
-Early, and moving. Shipping: the theme engine and every component listed above,
-with the example app as the living reference. Next: date and time fields, a
-segmented control, and screenshot coverage in CI.
+Early, and moving. Shipping: the theme engine and every component listed above —
+date and time fields, the segmented control, tables, timelines and file rows
+included — with the example app as the living reference. Next: screenshot
+coverage in CI.
