@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
+  Animated,
+  Easing,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -231,20 +233,80 @@ export function Carousel<T>({
 
       {showDots && count > 1 && (
         <View style={[styles.dots, { gap: space(1.5) }]}>
-          {dots.map((dot) => (
-            <View
-              key={dot.index}
-              style={{
-                width: dotSize * dot.scale,
-                height: dotSize * dot.scale,
-                borderRadius: dotSize,
-                backgroundColor: dot.index === page ? accent : colors.borderStrong,
-              }}
+          {dots.map((dot, position) => (
+            <PagerDot
+              // Keyed by POSITION, not by page. The window slides its indices
+              // along, and keying by index would unmount every dot on the
+              // shift - taking the animation with it.
+              key={position}
+              size={dotSize}
+              scale={dot.scale}
+              active={dot.index === page}
+              accent={accent}
+              idle={colors.borderStrong}
             />
           ))}
         </View>
       )}
     </View>
+  )
+}
+
+/**
+ * One dot.
+ *
+ * Everything animated here runs on the native driver: transform and opacity
+ * can, width and colour cannot. So the dot keeps a fixed footprint and is
+ * SCALED, and the colour change is a crossfade between two stacked circles
+ * rather than an interpolated backgroundColor. A row of dots animating on the
+ * JS thread would stutter at exactly the moment it matters - while the pager
+ * beside it is being dragged.
+ */
+function PagerDot({
+  size,
+  scale,
+  active,
+  accent,
+  idle,
+}: {
+  size: number
+  scale: number
+  active: boolean
+  accent: string
+  idle: string
+}) {
+  const grow = useRef(new Animated.Value(scale)).current
+  const fade = useRef(new Animated.Value(active ? 1 : 0)).current
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(grow, {
+        toValue: active ? Math.max(scale, 1) : scale,
+        useNativeDriver: true,
+        speed: 20,
+        bounciness: 6,
+      }),
+      Animated.timing(fade, {
+        toValue: active ? 1 : 0,
+        duration: 180,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [active, fade, grow, scale])
+
+  return (
+    <Animated.View
+      style={{
+        width: size,
+        height: size,
+        transform: [{ scale: grow }],
+      }}>
+      <View style={[StyleSheet.absoluteFill, { borderRadius: size, backgroundColor: idle }]} />
+      <Animated.View
+        style={[StyleSheet.absoluteFill, { borderRadius: size, backgroundColor: accent, opacity: fade }]}
+      />
+    </Animated.View>
   )
 }
 

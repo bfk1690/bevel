@@ -6,7 +6,13 @@
  */
 import assert from 'node:assert/strict'
 
-import { overflowsRow, resolveColumnWidths } from '../src/utils/table.ts'
+import {
+  compareValues,
+  nextSort,
+  overflowsRow,
+  resolveColumnWidths,
+  sortRows,
+} from '../src/utils/table.ts'
 
 let passed = 0
 let failed = 0
@@ -64,6 +70,60 @@ test('overflow is what decides whether the row scrolls', () => {
   assert.equal(overflowsRow([300, 300], 400), true)
   assert.equal(overflowsRow([200, 200], 400), false, 'an exact fit does not scroll')
   assert.equal(overflowsRow([100], 0), true, 'nor does an unmeasured row claim to fit')
+})
+
+test('a header cycles through ascending, descending and off', () => {
+  // The third press is the one people expect and almost nobody implements
+  const first = nextSort(null, 'name')
+  assert.deepEqual(first, { key: 'name', direction: 'asc' })
+  const second = nextSort(first, 'name')
+  assert.deepEqual(second, { key: 'name', direction: 'desc' })
+  assert.equal(nextSort(second, 'name'), null, 'back to the order it arrived in')
+})
+
+test('pressing a different header starts that column over', () => {
+  const sorted = { key: 'name', direction: 'desc' }
+  assert.deepEqual(nextSort(sorted, 'total'), { key: 'total', direction: 'asc' })
+})
+
+test('numbers inside text sort as numbers', () => {
+  // Plain string comparison is why a list of order numbers comes out shuffled
+  assert.ok(compareValues('9', '10') < 0)
+  assert.ok(compareValues('HJ-9', 'HJ-10') < 0)
+  assert.ok(compareValues('item 2', 'item 11') < 0)
+  assert.equal(compareValues('same', 'same'), 0)
+})
+
+test('sorting never touches the array it was given', () => {
+  const rows = [{ n: 'b' }, { n: 'a' }, { n: 'c' }]
+  const sorted = sortRows(rows, { key: 'n', direction: 'asc' }, (row) => row.n)
+  assert.deepEqual(sorted.map((row) => row.n), ['a', 'b', 'c'])
+  assert.deepEqual(rows.map((row) => row.n), ['b', 'a', 'c'], 'the original order survives')
+})
+
+test('turning sorting off gives the original order back', () => {
+  const rows = [{ n: 'b' }, { n: 'a' }]
+  const same = sortRows(rows, null, (row) => row.n)
+  assert.deepEqual(same.map((row) => row.n), ['b', 'a'])
+  assert.notEqual(same, rows, 'still a copy')
+})
+
+test('descending is ascending, reversed', () => {
+  const rows = [{ n: '2' }, { n: '10' }, { n: '1' }]
+  const down = sortRows(rows, { key: 'n', direction: 'desc' }, (row) => row.n)
+  assert.deepEqual(down.map((row) => row.n), ['10', '2', '1'])
+})
+
+test('a column can bring its own comparator', () => {
+  const rows = [{ size: 'large' }, { size: 'small' }, { size: 'medium' }]
+  const order = ['small', 'medium', 'large']
+  const sorted = sortRows(
+    rows,
+    { key: 'size', direction: 'asc' },
+    (row) => row.size,
+    () => (a, b) => order.indexOf(a.size) - order.indexOf(b.size),
+  )
+  assert.deepEqual(sorted.map((row) => row.size), ['small', 'medium', 'large'])
 })
 
 console.log(`table: ${passed} passed, ${failed} failed`)

@@ -34,9 +34,15 @@ export type TimelineProps = {
  *
  * A pending entry gets a broken line above it, which is the difference between
  * "this happened" and "this is expected" without a second colour to decode.
+ *
+ * The marker is centred on the FIRST LINE of the entry rather than sitting at
+ * the top of the rail. Those are not the same place: a 10pt dot pinned to the
+ * top of a 21pt line sits visibly high, and the mismatch shows up as a row of
+ * dots that never quite line up with what they mark. The line height is taken
+ * from the type scale, so it stays right when the scale changes.
  */
 function TimelineBase({ entries, style }: TimelineProps) {
-  const { colors, space } = useTheme()
+  const { colors, space, type } = useTheme()
   const dot = 10
   const rail = space(4)
 
@@ -47,21 +53,26 @@ function TimelineBase({ entries, style }: TimelineProps) {
         const last = index === entries.length - 1
         const next = entries[index + 1]
 
+        // Whichever line comes first is the one the marker has to agree with
+        const firstLine = entry.meta != null ? type.micro.lineHeight : type.bodyStrong.lineHeight
+
         return (
           <View key={entry.key} style={styles.row}>
             <View style={[styles.rail, { width: rail }]}>
-              {entry.marker ?? (
-                <View
-                  style={{
-                    width: dot,
-                    height: dot,
-                    borderRadius: dot,
-                    backgroundColor: entry.pending ? colors.canvas : accent,
-                    borderWidth: entry.pending ? 2 : 0,
-                    borderColor: colors.borderStrong,
-                  }}
-                />
-              )}
+              <View style={[styles.marker, { height: firstLine }]}>
+                {entry.marker ?? (
+                  <View
+                    style={{
+                      width: dot,
+                      height: dot,
+                      borderRadius: dot,
+                      backgroundColor: entry.pending ? colors.canvas : accent,
+                      borderWidth: entry.pending ? 2 : 0,
+                      borderColor: colors.borderStrong,
+                    }}
+                  />
+                )}
+              </View>
 
               {!last && (
                 <View style={styles.lineWrap}>
@@ -110,6 +121,7 @@ function TimelineBase({ entries, style }: TimelineProps) {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row' },
   rail: { alignItems: 'center' },
+  marker: { justifyContent: 'center', alignItems: 'center' },
   lineWrap: { flex: 1, alignItems: 'center', paddingVertical: 4 },
   dashes: { flex: 1, alignItems: 'center', justifyContent: 'space-between' },
   body: { flex: 1 },

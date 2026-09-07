@@ -40,7 +40,7 @@ export function CarouselDemo() {
 
       <Demo
         title="More pages than dots"
-        note="The window holds still and the active dot travels across it, shifting only when the dot reaches an edge. Re-centring on every page would pin the highlight in the middle while the indices shuffle underneath, and paging would look like nothing was happening.">
+        note="The window holds still and the active dot travels across it, shifting only when the dot reaches an edge. Re-centring on every page would pin the highlight in the middle while the indices shuffle underneath. Each dot keeps a fixed footprint and is scaled rather than resized, and its colour is a crossfade between two stacked circles - transform and opacity are what the native driver can carry, so the row stays smooth while the pager beside it is being dragged.">
         <Carousel
           data={MANY}
           height={space(24)}

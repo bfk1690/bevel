@@ -12,7 +12,7 @@ import {
 import { Text } from '../primitives/text'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
-import { overflowsRow, resolveColumnWidths } from '../utils/table'
+import { nextSort, overflowsRow, resolveColumnWidths, sortRows, type TableSort } from '../utils/table'
 
 export type TableColumn<T> = {
   key: string
@@ -25,6 +25,10 @@ export type TableColumn<T> = {
   /** Plain text for the cell. Use `render` for anything else */
   value?: (row: T) => string
   render?: (row: T) => ReactNode
+  /** Makes the header a control. Needs `value` or `compare` to have anything to sort by */
+  sortable?: boolean
+  /** For orders a string comparison cannot express - sizes, states, ranks */
+  compare?: (a: T, b: T) => number
 }
 
 export type TableProps<T> = {
@@ -41,6 +45,10 @@ export type TableProps<T> = {
   stickyFirstColumn?: boolean
   emptyLabel?: string
   headerTone?: ColorInput
+  /** Controlled sort. Leave it out and the table keeps its own */
+  sort?: TableSort | null
+  defaultSort?: TableSort | null
+  onSortChange?: (sort: TableSort | null) => void
   style?: StyleProp<ViewStyle>
 }
 
@@ -59,10 +67,41 @@ export function Table<T>({
   stickyFirstColumn = false,
   emptyLabel = 'Nothing to show',
   headerTone = 'textFaint',
+  sort,
+  defaultSort = null,
+  onSortChange,
   style,
 }: TableProps<T>) {
   const { colors, space } = useTheme()
   const [available, setAvailable] = useState(0)
+  const [internalSort, setInternalSort] = useState<TableSort | null>(defaultSort)
+  const activeSort = sort !== undefined ? sort : internalSort
+
+  const press = useCallback(
+    (key: string) => {
+      const next = nextSort(activeSort, key)
+      if (sort === undefined) setInternalSort(next)
+      onSortChange?.(next)
+    },
+    [activeSort, onSortChange, sort],
+  )
+
+  /**
+   * Sorting happens here, on a copy.
+   *
+   * Doing it in the caller is the obvious alternative and it means every table
+   * re-implements the same cycle; doing it in place would reorder an array the
+   * caller still owns.
+   */
+  const rows = useMemo(() => {
+    const byKey = new Map(columns.map((column) => [column.key, column]))
+    return sortRows(
+      data,
+      activeSort,
+      (row, key) => byKey.get(key)?.value?.(row) ?? '',
+      (key) => byKey.get(key)?.compare,
+    )
+  }, [activeSort, columns, data])
 
   const sticky = stickyFirstColumn && columns.length > 1 ? columns[0] : undefined
   const scrolling = sticky ? columns.slice(1) : columns
@@ -84,15 +123,35 @@ export function Table<T>({
       </Text>
     )
 
-  const header = (column: TableColumn<T>) => (
-    <Text
-      variant="micro"
-      color={headerTone}
-      numberOfLines={1}
-      style={column.align === 'right' ? styles.right : undefined}>
-      {column.title}
-    </Text>
-  )
+  const header = (column: TableColumn<T>) => {
+    const sorted = activeSort?.key === column.key ? activeSort.direction : null
+    const label = (
+      <Text variant="micro" color={sorted ? 'text' : headerTone} numberOfLines={1}>
+        {column.title}
+      </Text>
+    )
+
+    if (!column.sortable) {
+      return (
+        <View style={column.align === 'right' ? styles.headerRight : styles.headerLeft}>{label}</View>
+      )
+    }
+
+    return (
+      <Pressable
+        onPress={() => press(column.key)}
+        accessibilityRole="button"
+        accessibilityLabel={`Sort by ${column.title}`}
+        accessibilityState={{ selected: sorted != null }}
+        style={({ pressed }) => [
+          column.align === 'right' ? styles.headerRight : styles.headerLeft,
+          { opacity: pressed ? 0.6 : 1, gap: 4 },
+        ]}>
+        {label}
+        <SortMark direction={sorted} color={sorted ? colors.text : colors.textFaint} />
+      </Pressable>
+    )
+  }
 
   const rowKey = (row: T, index: number) => keyExtractor?.(row, index) ?? String(index)
   const scrolls = overflowsRow(widths, Math.max(0, available - stickyWidth))
@@ -107,7 +166,7 @@ export function Table<T>({
         ))}
       </View>
 
-      {data.map((row, rowIndex) => (
+      {rows.map((row, rowIndex) => (
         <Row
           key={rowKey(row, rowIndex)}
           onPress={onRowPress ? () => onRowPress(row, rowIndex) : undefined}
@@ -141,7 +200,7 @@ export function Table<T>({
                 ]}>
                 <View style={{ paddingHorizontal: space(2) }}>{header(sticky)}</View>
               </View>
-              {data.map((row, rowIndex) => (
+              {rows.map((row, rowIndex) => (
                 <Row
                   key={rowKey(row, rowIndex)}
                   onPress={onRowPress ? () => onRowPress(row, rowIndex) : undefined}
@@ -164,6 +223,27 @@ export function Table<T>({
         </View>
       )}
     </View>
+  )
+}
+
+/** Direction mark: a small triangle, drawn from a rotated square's corner */
+function SortMark({ direction, color }: { direction: 'asc' | 'desc' | null; color: string }) {
+  if (direction == null) {
+    // An unsorted but sortable column still says so, quietly
+    return <View style={[styles.markDot, { backgroundColor: color, opacity: 0.4 }]} />
+  }
+  return (
+    <View
+      style={{
+        width: 6,
+        height: 6,
+        borderRightWidth: 1.5,
+        borderBottomWidth: 1.5,
+        borderColor: color,
+        transform: [{ rotate: direction === 'asc' ? '-135deg' : '45deg' }],
+        marginTop: direction === 'asc' ? 2 : -2,
+      }}
+    />
   )
 }
 
@@ -203,4 +283,7 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   row: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth },
   right: { textAlign: 'right', width: '100%' },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' },
+  markDot: { width: 4, height: 4, borderRadius: 2 },
 })

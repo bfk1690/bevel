@@ -11,6 +11,9 @@ const ORDERS: Order[] = [
   { id: 'HJ-88415', customer: 'Katherine Johnson', city: 'Bursa', items: 2, total: '712,25', state: 'delivered' },
 ]
 
+/** Packed comes after placed, delivered after both - not what the words say */
+const STATE_ORDER = ['on the way', 'packed', 'delivered']
+
 export function TableDemo() {
   const { space } = useTheme()
 
@@ -22,12 +25,50 @@ export function TableDemo() {
         <Card padding={space(3)}>
           <Table
             columns={[
-              { key: 'city', title: 'City', value: (row) => row.city },
-              { key: 'items', title: 'Items', width: 64, align: 'right', value: (row) => String(row.items) },
+              { key: 'city', title: 'City', value: (row) => row.city, sortable: true },
+              {
+                key: 'items',
+                title: 'Items',
+                width: 64,
+                align: 'right',
+                value: (row) => String(row.items),
+                sortable: true,
+              },
               { key: 'total', title: 'Total', width: 96, align: 'right', value: (row) => row.total },
             ]}
             data={ORDERS}
             keyExtractor={(row) => row.id}
+          />
+        </Card>
+      </Demo>
+
+      <Demo
+        title="Sorting"
+        note="Press a header: ascending, then descending, then off. The third press is the one people expect and almost nobody implements - without it there is no way back to the order the data arrived in, which is itself meaningful. Numbers inside text sort as numbers, so HJ-9 comes before HJ-10.">
+        <Card padding={space(3)}>
+          <Table
+            columns={[
+              { key: 'id', title: 'Order', width: 110, value: (row) => row.id, sortable: true },
+              { key: 'customer', title: 'Customer', value: (row) => row.customer, sortable: true },
+              {
+                key: 'state',
+                title: 'State',
+                width: 110,
+                sortable: true,
+                value: (row) => row.state,
+                // An order nothing about the words themselves would give
+                compare: (a, b) => STATE_ORDER.indexOf(a.state) - STATE_ORDER.indexOf(b.state),
+                render: (row) => (
+                  <Badge
+                    label={row.state}
+                    tone={row.state === 'delivered' ? 'ok' : row.state === 'packed' ? 'warning' : 'accent'}
+                  />
+                ),
+              },
+            ]}
+            data={ORDERS}
+            keyExtractor={(row) => row.id}
+            defaultSort={{ key: 'id', direction: 'desc' }}
           />
         </Card>
       </Demo>
@@ -40,11 +81,11 @@ export function TableDemo() {
             stickyFirstColumn
             onRowPress={(row) => toast.info(row.id)}
             columns={[
-              { key: 'customer', title: 'Customer', width: 130, value: (row) => row.customer },
+              { key: 'customer', title: 'Customer', width: 130, value: (row) => row.customer, sortable: true },
               { key: 'id', title: 'Order', width: 110, value: (row) => row.id },
               { key: 'city', title: 'City', width: 100, value: (row) => row.city },
               { key: 'items', title: 'Items', width: 70, align: 'right', value: (row) => String(row.items) },
-              { key: 'total', title: 'Total', width: 110, align: 'right', value: (row) => row.total },
+              { key: 'total', title: 'Total', width: 110, align: 'right', value: (row) => row.total, sortable: true },
               {
                 key: 'state',
                 title: 'State',
@@ -75,7 +116,7 @@ export function TableDemo() {
 
       <Demo
         title="Timeline"
-        note="The line is drawn between entries rather than beside each one, so nothing hangs below the last: a rail continuing past the final event promises something that is not there. A pending step gets a broken line above it - the difference between what happened and what is expected, without a second colour to decode.">
+        note="The line is drawn between entries rather than beside each one, so nothing hangs below the last. The marker is centred on the first line of the entry rather than pinned to the top of the rail - a 10pt dot at the top of a 21pt line sits visibly high, and a row of them never quite lines up with what it marks.">
         <Card>
           <Timeline
             entries={[
