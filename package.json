@@ -3,6 +3,18 @@
   "version": "0.1.0",
   "description": "Themeable React Native UI primitives with data-driven variants",
   "license": "MIT",
+  "author": "Burak Karayakal\u0131",
+  "keywords": [
+    "react-native",
+    "expo",
+    "ui",
+    "design-system",
+    "theme",
+    "components",
+    "dark-mode",
+    "accessibility",
+    "typescript"
+  ],
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "types": "./lib/typescript/commonjs/index.d.ts",
@@ -14,7 +26,8 @@
     "lib",
     "!**/__tests__",
     "!**/*.test.*",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
@@ -78,13 +91,9 @@
       "typescript"
     ]
   },
-  "keywords": [
-    "react-native",
-    "expo",
-    "ui",
-    "design-system",
-    "theme"
-  ],
+  "engines": {
+    "node": ">=20.19.4"
+  },
   "publishConfig": {
     "access": "public"
   }

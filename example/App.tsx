@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BackHandler, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -7,13 +7,16 @@ import {
   BevelProvider,
   Button,
   Card,
+  EmptyState,
   Header,
   LargeTitle,
   ListItem,
   Screen,
+  SearchField,
   Text,
   Toaster,
   defineTheme,
+  rankSuggestions,
   useTheme,
 } from '@bfkk/bevel'
 
@@ -89,6 +92,19 @@ function Gallery() {
   const { scheme, setPreference, space } = useTheme()
   const [route, setRoute] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [query, setQuery] = useState('')
+
+  /**
+   * The gallery searches itself with the package's own ranking, which is the
+   * cheapest test of it there is: a page it cannot find is a bug in the thing
+   * being demonstrated.
+   */
+  const found = useMemo(
+    () =>
+      rankSuggestions(query, DEMOS, (entry) => `${entry.title} ${entry.subtitle} ${entry.group}`),
+    [query],
+  )
+  const searching = query.trim().length > 0
 
   const back = useCallback(() => setRoute(null), [])
 
@@ -129,7 +145,33 @@ function Gallery() {
             {/* Inside the scroll content, so it takes its space with it when
                 it goes. In the header it would fade and leave the gap behind. */}
             <LargeTitle title="bevel" subtitle="Themeable primitives" />
-            {GROUPS.map((group) => {
+
+            <SearchField
+              value={query}
+              onChangeText={setQuery}
+              onClear={() => setQuery('')}
+              placeholder={`Search ${DEMOS.length} pages`}
+            />
+
+            {searching && found.length === 0 && (
+              <EmptyState compact title="Nothing matches" message="Try a component name." />
+            )}
+
+            {searching && found.length > 0 && (
+              <Card padding={0} gap={0} style={{ paddingHorizontal: space(4) }}>
+                {found.map((entry, index) => (
+                  <ListItem
+                    key={entry.key}
+                    title={entry.title}
+                    subtitle={entry.subtitle}
+                    onPress={() => setRoute(entry.key)}
+                    divider={index < found.length - 1}
+                  />
+                ))}
+              </Card>
+            )}
+            {!searching &&
+              GROUPS.map((group) => {
               const entries = DEMOS.filter((entry) => entry.group === group.title)
               return (
               <View key={group.title} style={{ gap: space(2) }}>
