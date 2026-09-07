@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  PanResponder,
   Platform,
   Pressable,
   StyleSheet,
@@ -62,15 +63,21 @@ export function Toaster({ position = 'top', offset, renderToast, style }: Toaste
     toastStore.getSnapshot,
     toastStore.getSnapshot,
   )
+  /** Read inside the gesture, which is created once and outlives any one toast */
+  const itemRef = useRef(item)
+  itemRef.current = item
 
   const progress = useRef(new Animated.Value(0)).current
   const enter = useRef(new Animated.Value(0)).current
+  /** How far the finger has pushed the toast away from its resting place */
+  const drag = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
     if (!item) return
 
     enter.setValue(0)
     progress.setValue(1)
+    drag.setValue(0)
 
     const animation = Animated.timing(enter, {
       toValue: 1,
@@ -98,20 +105,59 @@ export function Toaster({ position = 'top', offset, renderToast, style }: Toaste
       countdown.stop()
       clearTimeout(timer)
     }
-  }, [enter, item, progress])
+  }, [drag, enter, item, progress])
 
   const travel = position === 'top' ? -24 : 24
+  /** The direction that takes the toast off screen, given where it sits */
+  const away = position === 'top' ? -1 : 1
+
+  /**
+   * Swipe to dismiss.
+   *
+   * A toast that can only be waited out is an obstruction, and the tap target
+   * is small when it lands over a header. Pushing it back the way it came is
+   * the gesture people already try.
+   */
+  const swipe = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_event, gesture) => Math.abs(gesture.dy) > 4,
+        onPanResponderMove: (_event, gesture) => {
+          // Dragging the other way is resisted rather than blocked, so the
+          // toast still feels attached to the finger.
+          const resisted = gesture.dy * away > 0 ? gesture.dy : gesture.dy * 0.25
+          drag.setValue(resisted)
+        },
+        onPanResponderRelease: (_event, gesture) => {
+          if (gesture.dy * away > 44) {
+            const id = itemRef.current?.id
+            Animated.timing(enter, {
+              toValue: 0,
+              duration: 140,
+              easing: Easing.in(Easing.cubic),
+              useNativeDriver: true,
+            }).start(() => dismissToast(id))
+            return
+          }
+          Animated.spring(drag, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start()
+        },
+      }),
+    [away, drag, enter],
+  )
 
   const animatedStyle = useMemo(
     () => ({
       opacity: enter,
       transform: [
         {
-          translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [travel, 0] }),
+          translateY: Animated.add(
+            enter.interpolate({ inputRange: [0, 1], outputRange: [travel, 0] }),
+            drag,
+          ),
         },
       ],
     }),
-    [enter, travel],
+    [drag, enter, travel],
   )
 
   if (!item) return null
@@ -130,7 +176,7 @@ export function Toaster({ position = 'top', offset, renderToast, style }: Toaste
           { paddingHorizontal: space(3) },
           style,
         ]}>
-        <Animated.View style={animatedStyle}>
+        <Animated.View style={animatedStyle} {...swipe.panHandlers}>
           {renderToast ? (
             renderToast(item)
           ) : (

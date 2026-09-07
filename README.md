@@ -50,7 +50,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 
 | | |
 | --- | --- |
-| **Primitives** | `Text` `Button` `SegmentedControl` `Tabs` `Input` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `OtpInput` `Chip` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
+| **Primitives** | `Text` `Button` `SegmentedControl` `Tabs` `Input` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Stepper` `OtpInput` `Chip` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
 | **Layout** | `Screen` `Header` `Card` `ListItem` `Accordion` `EmptyState` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Toaster` + the imperative `toast` |
 | **Media** | `ImageShower` |
@@ -164,6 +164,8 @@ toast.error('Could not connect', { action: { label: 'Retry', onPress: retry } })
 
 Fired from anywhere — an interceptor, a queue, a catch block — because the
 store lives outside React and assumes no state library.
+
+Swipe a toast back the way it came to dismiss it early.
 
 **One slot, newest wins.** Tapping retry while a success toast is still fading
 replaces it immediately, with a fresh countdown. Queueing was wrong: the

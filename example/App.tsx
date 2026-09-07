@@ -17,6 +17,7 @@ import {
 } from '@bfkk/bevel'
 
 import { DEMOS } from './demo/registry'
+import { ThemeToggle } from './demo/theme-toggle'
 
 /**
  * The theme an app would write.
@@ -114,41 +115,34 @@ function Gallery() {
         </Screen>
       ) : (
         <Screen
-          header={
-            <Header
-              title="bevel"
-              subtitle={`${DEMOS.length} components - ${scheme} scheme`}
-              right={
-                <Button
-                  label={scheme === 'dark' ? 'Light' : 'Dark'}
-                  variant="secondary"
-                  size="sm"
-                  full={false}
-                  onPress={() => setPreference(scheme === 'dark' ? 'light' : 'dark')}
-                />
-              }
-            />
-          }>
+          header={<Header title="bevel" subtitle="Themeable primitives" right={<ThemeToggle />} />}>
           <View style={{ gap: space(4), paddingVertical: space(3) }}>
-            {GROUPS.map((group) => (
+            {GROUPS.map((group) => {
+              const entries = DEMOS.filter((entry) => entry.group === group.title)
+              return (
               <View key={group.title} style={{ gap: space(2) }}>
-                <Text variant="micro" color="textFaint">
-                  {group.title}
-                </Text>
-                <Card padding={0} gap={0}>
-                  {DEMOS.filter((entry) => entry.group === group.title).map((entry, index, list) => (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: space(2) }}>
+                  <Text variant="micro" color="textFaint">
+                    {group.title}
+                  </Text>
+                  <Text variant="micro" color="textFaint" style={{ opacity: 0.6 }}>
+                    {String(entries.length)}
+                  </Text>
+                </View>
+                <Card padding={0} gap={0} style={{ paddingHorizontal: space(4) }}>
+                  {entries.map((entry, index) => (
                     <ListItem
                       key={entry.key}
                       title={entry.title}
                       subtitle={entry.subtitle}
                       onPress={() => setRoute(entry.key)}
-                      divider={index < list.length - 1}
-                      dividerInset={space(4)}
+                      divider={index < entries.length - 1}
                     />
                   ))}
                 </Card>
               </View>
-            ))}
+              )
+            })}
           </View>
         </Screen>
       )}

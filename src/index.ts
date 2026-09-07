@@ -32,6 +32,7 @@ export {
   type SegmentOption,
 } from './primitives/segmented-control'
 export { Skeleton, type SkeletonProps } from './primitives/skeleton'
+export { Stepper, type StepperProps } from './primitives/stepper'
 export { Switch, type SwitchProps } from './primitives/switch'
 export { Tabs, type TabItem, type TabsProps } from './primitives/tabs'
 export { Text, type BevelTextProps } from './primitives/text'

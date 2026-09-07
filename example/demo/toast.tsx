@@ -119,6 +119,16 @@ export function ToastDemo() {
       </Demo>
 
       <Demo
+        title="Swipe to dismiss"
+        note="Push a toast back the way it came and it goes. Waiting one out is an obstruction, and its tap target is small when it lands over a header. Dragging the other way is resisted rather than blocked, so it still feels attached to the finger.">
+        <Button
+          label="Show one and try it"
+          variant="secondary"
+          onPress={() => toast.info('Swipe me upwards', { duration: 6000 })}
+        />
+      </Demo>
+
+      <Demo
         title="Position and custom rendering"
         note="Toaster takes a position and a renderToast, so an app can put its own card in the slot while keeping the queueing, timing and dismissal.">
         <Text variant="caption" color="textMuted">

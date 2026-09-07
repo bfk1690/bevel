@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Checkbox, Chip, Radio, RadioGroup, Switch } from '@bfkk/bevel'
+import { Checkbox, Chip, Radio, RadioGroup, Stepper, Switch, Text } from '@bfkk/bevel'
 
 import { Demo, Row, Stack } from './ui'
 
@@ -11,6 +11,9 @@ export function SelectionDemo() {
   const [delivery, setDelivery] = useState('fast')
   const [alerts, setAlerts] = useState(true)
   const [filters, setFilters] = useState<string[]>(['new'])
+  const [quantity, setQuantity] = useState(1)
+  const [guests, setGuests] = useState(2)
+  const [price, setPrice] = useState(250)
 
   const toggle = (key: string) =>
     setFilters((prev) => (prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]))
@@ -78,6 +81,36 @@ export function SelectionDemo() {
           <Switch value={false} onChange={() => {}} />
           <Switch value disabled onChange={() => {}} />
         </Row>
+      </Demo>
+
+      <Demo
+        title="Stepper"
+        note="Hold a button and it keeps counting, faster the longer you hold. Going from one to forty by tapping is forty taps, and the alternative is a keyboard for a number the user is only nudging.">
+        <Row>
+          <Stepper value={quantity} onChange={setQuantity} min={1} max={99} />
+          <Text variant="caption" color="textMuted">
+            {`min 1, max 99`}
+          </Text>
+        </Row>
+        <Row>
+          <Stepper value={guests} onChange={setGuests} min={1} max={8} size="sm" />
+          <Stepper
+            value={price}
+            onChange={setPrice}
+            step={50}
+            min={0}
+            max={2000}
+            size="lg"
+            formatValue={(value) => `${value} TL`}
+          />
+        </Row>
+        <Row>
+          <Stepper value={1} onChange={() => {}} min={1} max={1} />
+          <Text variant="caption" color="textFaint">
+            Both ends reached, so both buttons dim
+          </Text>
+        </Row>
+        <Stepper value={quantity} onChange={setQuantity} disabled />
       </Demo>
 
       <Demo
