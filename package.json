@@ -13,7 +13,8 @@
     "src",
     "lib",
     "!**/__tests__",
-    "!**/*.test.*"
+    "!**/*.test.*",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {

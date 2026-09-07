@@ -1,0 +1,59 @@
+# Changelog
+
+## 0.1.0
+
+First release.
+
+### The idea
+
+Every visual decision is theme **data** — sizes, radii, press behaviour, the
+variant tables — so an app adapts the kit rather than forking it. A component
+is only worth having if it also carries the decision behind it; those are
+written down at the point of use, not in a wiki.
+
+### Zero runtime dependencies
+
+`react` and `react-native` are the only peers. Anything platform-specific —
+gradients, safe-area insets, iOS overlay windows — is injected through the
+provider rather than imported. A bundler cannot resolve a native module
+conditionally: a dynamic `require` is rejected outright, and a literal one
+fails the build for everyone who has not installed it.
+
+### Components
+
+- **Actions** — `Button` `SegmentedControl` `Tabs`
+- **Fields** — `Input` `SearchField` `Autocomplete` `Select` `DateField`
+  `Calendar` `TimeField` `TimePicker` `Slider` `Rating` `Checkbox` `Radio`
+  `Switch` `Stepper` `OtpInput` `Chip`
+- **Content** — `Card` `ListItem` `DataList` `FileRow` `Table` `Timeline`
+  `Accordion` `Badge` `Avatar` `AvatarGroup` `EmptyState` `StateView`
+- **Feedback** — `Toast` `Banner` `Modal` `ActionSheet` `Menu` `Popover`
+  `Tooltip` `Progress` `Skeleton`
+- **Media** — `ImageShower` `Carousel`
+- **Layout** — `Screen` `Header` `LargeTitle` `TabView` `KeyboardStickyFooter`
+
+### The pure layer
+
+Eleven modules with no React Native imports, and 213 tests aimed at the cases a
+device only shows by accident: colour math, masking, locale-safe casing, search
+folding, calendar and clock arithmetic, anchored placement, slider and rating
+scales, column widths and sorting, validation, view state, and the theme engine
+itself. The suite runs on a reference screen, a small one, and with the
+platform switched, because that is where scaling and shadow rules diverge.
+
+### Decisions worth knowing
+
+- The maximum of a stepped slider stays reachable even when the step does not
+  divide the range.
+- An unticked checkbox counts as missing and a quantity of zero does not.
+- Lengths count graphemes: one emoji is one character, whatever JavaScript
+  says.
+- A brand colour is only corrected when it cannot be **seen** — 3:1, what WCAG
+  asks of an interface component — because pushing yellow until it reads as
+  body text turns it brown.
+- Toasts hold one slot and the newest takes it; an update keeps its place
+  rather than replaying the entrance.
+- A large title lives inside the scroll view, because fading one out in a fixed
+  header leaves the gap it occupied.
+- Search folds the two Turkish i letters together; display casing keeps them
+  apart. Both are correct, for different jobs.

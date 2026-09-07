@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, type ReactNode } from 'react'
+import { memo, useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   Animated,
   KeyboardAvoidingView,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
   type ScrollViewProps,
   type StyleProp,
   type ViewStyle,
@@ -39,6 +40,15 @@ export type ScreenProps = {
    */
   footer?: ReactNode
   scrollable?: boolean
+  /**
+   * Slides the footer away as the screen scrolls down, and brings it back the
+   * moment it scrolls up.
+   *
+   * For a bar that is useful but not urgent - a filter row, a cart summary. A
+   * bar holding the one action of the screen should stay put: hiding it makes
+   * the user hunt for what they came to do.
+   */
+  hideFooterOnScroll?: boolean
   /**
    * Lifts the content above the keyboard. Required on any screen with a text
    * field; skip it elsewhere so the layout does not shift for no reason.
@@ -74,6 +84,7 @@ function ScreenBase({
   header,
   footer,
   scrollable = true,
+  hideFooterOnScroll = false,
   keyboardAware = false,
   background = 'canvas',
   padding,
@@ -101,6 +112,24 @@ function ScreenBase({
         useNativeDriver: true,
       }),
     [scrollY],
+  )
+
+  const [footerHeight, setFooterHeight] = useState(0)
+  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    setFooterHeight(event.nativeEvent.layout.height)
+  }, [])
+
+  /**
+   * Direction from a clamped difference, entirely on the native side.
+   *
+   * `diffClamp` grows as the offset grows and shrinks as it falls, bounded by
+   * the bar's own height - which is the hide-on-scroll behaviour written as
+   * one value. Working out the direction in JavaScript would mean a listener
+   * on every frame of every scroll, for a bar that mostly sits still.
+   */
+  const footerShift = useMemo(
+    () => Animated.diffClamp(scrollY, 0, Math.max(1, footerHeight)),
+    [footerHeight, scrollY],
   )
 
   const paddingHorizontal = padding ?? space(4)
@@ -133,7 +162,16 @@ function ScreenBase({
       scrollEventThrottle={16}
       refreshControl={pull}
       contentContainerStyle={[
-        { paddingHorizontal, paddingBottom: footer ? space(4) : bottom + space(4) },
+        {
+          paddingHorizontal,
+          // A floating footer covers the end of the list, so the list has to
+          // end above it
+          paddingBottom: hideFooterOnScroll
+            ? footerHeight + space(4)
+            : footer
+              ? space(4)
+              : bottom + space(4),
+        },
         contentContainerStyle,
       ]}
       {...scrollProps}>
@@ -155,9 +193,26 @@ function ScreenBase({
       {header != null && <View style={{ paddingTop: top }}>{header}</View>}
       {header == null && top > 0 ? <View style={{ height: top }} /> : null}
       {content}
-      {footer != null && (
-        <View style={{ paddingHorizontal, paddingBottom: bottom || space(2) }}>{footer}</View>
-      )}
+      {footer != null &&
+        (hideFooterOnScroll ? (
+          // Laid over the content rather than beside it: a bar that slides away
+          // has to give its space back, and a bar in the layout never does.
+          <Animated.View
+            onLayout={onFooterLayout}
+            style={[
+              styles.floatingFooter,
+              {
+                paddingHorizontal,
+                paddingBottom: bottom || space(2),
+                backgroundColor,
+                transform: [{ translateY: footerShift }],
+              },
+            ]}>
+            {footer}
+          </Animated.View>
+        ) : (
+          <View style={{ paddingHorizontal, paddingBottom: bottom || space(2) }}>{footer}</View>
+        ))}
     </>
   )
 
@@ -182,6 +237,7 @@ function ScreenBase({
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
+  floatingFooter: { position: 'absolute', left: 0, right: 0, bottom: 0 },
 })
 
 export const Screen = memo(ScreenBase)

@@ -309,7 +309,7 @@ with a build.
 
 ## Status
 
-Early, and moving. Shipping: the theme engine and every component listed above —
+0.1.0, and moving. Shipping: the theme engine and every component listed above —
 date and time fields, the segmented control, tables, timelines and file rows
 included — with the example app as the living reference. Next: screenshot
 coverage in CI.
