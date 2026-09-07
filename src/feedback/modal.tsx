@@ -35,6 +35,14 @@ export type ModalProps = {
   /** Tapping the scrim closes. Turn off for destructive confirmations */
   dismissOnBackdrop?: boolean
   scrollable?: boolean
+  /**
+   * Cap for the scrolling area, as a fraction of the window.
+   *
+   * Without one a sheet grows with its content until it covers the page it
+   * was supposed to leave in place - and with a keyboard open it grows past
+   * the screen entirely.
+   */
+  maxHeightRatio?: number
   /** Adds keyboard avoidance - required when the modal contains a text field */
   keyboardAware?: boolean
   /** Drag affordance at the top of a sheet */
@@ -58,6 +66,7 @@ function ModalBase({
   footer,
   dismissOnBackdrop = true,
   scrollable = false,
+  maxHeightRatio = 0.6,
   keyboardAware = false,
   handle = true,
   style,
@@ -159,7 +168,10 @@ function ModalBase({
       )}
       {title != null && <Text variant="heading">{title}</Text>}
       {scrollable ? (
-        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          style={{ maxHeight: windowHeight * maxHeightRatio }}>
           {children}
         </ScrollView>
       ) : (

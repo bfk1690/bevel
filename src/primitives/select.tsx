@@ -198,18 +198,35 @@ export function Select<T>(props: SelectProps<T>) {
         scrollable
         keyboardAware={searchable}>
         {searchable && (
-          <Input
-            value={query}
-            onChangeText={setQuery}
-            placeholder={searchPlaceholder}
-            variant="pill"
-            autoCorrect={false}
-          />
+          <View style={{ gap: space(3) }}>
+            {/*
+              A full-size field is the same height as the rows it filters, so
+              the sheet reads as a list with an odd first item. Small, with a
+              mark of its own, it reads as a control over the list.
+            */}
+            <Input
+              size="sm"
+              variant="pill"
+              value={query}
+              onChangeText={setQuery}
+              placeholder={searchPlaceholder}
+              autoCorrect={false}
+              autoCapitalize="none"
+              left={({ size: glyphSize, color }) => <SearchGlyph size={glyphSize} color={color} />}
+              right={
+                query.length > 0
+                  ? ({ size: glyphSize, color }) => <ClearGlyph size={glyphSize} color={color} />
+                  : undefined
+              }
+              onRightPress={() => setQuery('')}
+            />
+            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} />
+          </View>
         )}
 
-        <View style={{ gap: space(3), paddingVertical: space(1) }}>
+        <View style={{ paddingBottom: space(1) }}>
           {visible.length === 0 && (
-            <Text variant="caption" color="textFaint">
+            <Text variant="caption" color="textFaint" style={{ paddingVertical: space(3) }}>
               {emptyLabel}
             </Text>
           )}
@@ -224,6 +241,9 @@ export function Select<T>(props: SelectProps<T>) {
                 </Pressable>
               )
             }
+            // Padding rather than a gap: the whole row is the target, which is
+            // what a list of choices is expected to be.
+            const rowStyle = { paddingVertical: space(2.5) }
             return multiple ? (
               <Checkbox
                 key={index}
@@ -232,6 +252,7 @@ export function Select<T>(props: SelectProps<T>) {
                 label={option.label}
                 description={option.description}
                 disabled={option.disabled}
+                style={rowStyle}
               />
             ) : (
               <Radio
@@ -241,6 +262,7 @@ export function Select<T>(props: SelectProps<T>) {
                 label={option.label}
                 description={option.description}
                 disabled={option.disabled}
+                style={rowStyle}
               />
             )
           })}
@@ -249,6 +271,53 @@ export function Select<T>(props: SelectProps<T>) {
         {/* Single choice closes on pick; a multi-select needs an explicit end */}
         {multiple && <Button label={doneLabel} onPress={() => setOpen(false)} />}
       </Modal>
+    </View>
+  )
+}
+
+/** Magnifier, drawn rather than imported */
+function SearchGlyph({ size, color }: { size: number; color: string }) {
+  return (
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{
+          width: size * 0.62,
+          height: size * 0.62,
+          borderRadius: size,
+          borderWidth: 1.5,
+          borderColor: color,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          right: size * 0.1,
+          bottom: size * 0.14,
+          width: size * 0.28,
+          height: 1.5,
+          borderRadius: 1,
+          backgroundColor: color,
+          transform: [{ rotate: '45deg' }],
+        }}
+      />
+    </View>
+  )
+}
+
+function ClearGlyph({ size, color }: { size: number; color: string }) {
+  return (
+    <View
+      style={{
+        width: size * 0.8,
+        height: size * 0.8,
+        borderRadius: size,
+        backgroundColor: color,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0.55,
+      }}>
+      <View style={{ position: 'absolute', width: size * 0.36, height: 1.5, backgroundColor: 'white', transform: [{ rotate: '45deg' }] }} />
+      <View style={{ position: 'absolute', width: size * 0.36, height: 1.5, backgroundColor: 'white', transform: [{ rotate: '-45deg' }] }} />
     </View>
   )
 }
