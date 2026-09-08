@@ -124,7 +124,7 @@ function FabBase({
   useEffect(() => {
     if (label == null) return
     Animated.timing(width, {
-      toValue: collapsed ? 0 : labelWidth,
+      toValue: collapsed ? 0 : labelWidth + LABEL_GAP,
       duration: 180,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
@@ -154,7 +154,9 @@ function FabBase({
     const measured = event.nativeEvent.layout.width
     setLabelWidth((previous) => {
       if (previous === measured) return previous
-      if (previous === 0) width.setValue(measured)
+      // The first measurement is taken, not animated to: a button that grew
+      // into its own label on mount would read as something arriving
+      if (previous === 0 && !collapsed) width.setValue(measured + LABEL_GAP)
       return measured
     })
   }
@@ -206,15 +208,37 @@ function FabBase({
         {icon ?? <Plus color={foreground} />}
 
         {label != null && (
-          <Animated.View style={[styles.labelClip, { width }]}>
-            {/* Measured off-flow at its natural width, so the animation has a
-                figure to move towards rather than a guess */}
-            <View style={styles.measure} onLayout={onLabelLayout}>
-              <Text variant="label" numberOfLines={1} style={{ color: foreground }}>
+          <>
+            {/*
+              Measured off to one side, and this time really off-flow.
+
+              It used to be measured inside the clip - a box whose width this
+              very measurement decides. On the first frame that box is zero
+              wide, so the figure it reported was the label squeezed into
+              nothing rather than the label at its natural size, and the pill
+              was built around a wrong number for the rest of its life.
+            */}
+            <Text
+              variant="label"
+              numberOfLines={1}
+              onLayout={onLabelLayout}
+              importantForAccessibility="no"
+              accessibilityElementsHidden
+              style={styles.measure}>
+              {label}
+            </Text>
+
+            <Animated.View style={[styles.labelClip, { width }]}>
+              {/* Fixed at its measured width, so collapsing clips it rather
+                  than re-wrapping it into an ellipsis on the way */}
+              <Text
+                variant="label"
+                numberOfLines={1}
+                style={{ width: labelWidth, marginStart: LABEL_GAP, color: foreground }}>
                 {label}
               </Text>
-            </View>
-          </Animated.View>
+            </Animated.View>
+          </>
         )}
       </Pressable>
     </Animated.View>
@@ -231,6 +255,8 @@ function Plus({ color }: { color: string }) {
   )
 }
 
+/** Between the icon and the label. Inside the animated width, so it closes too */
+const LABEL_GAP = 8
 /** How far the screen must scroll for the button to be fully out of the way */
 const HIDE_DISTANCE = 90
 /** How long the screen must be still before an extended button takes its label back */
@@ -240,7 +266,8 @@ const styles = StyleSheet.create({
   root: { position: 'absolute' },
   button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   labelClip: { overflow: 'hidden' },
-  measure: { paddingStart: 8 },
+  // Off the layout entirely, and invisible. Only its reported width is wanted
+  measure: { position: 'absolute', opacity: 0 },
   plus: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
 })
 
