@@ -130,7 +130,7 @@ fails the build for everyone who has not installed it.
 
 ### The pure layer
 
-Twenty-two suites over the pure layer, 295 tests aimed at the cases
+Twenty-five suites over the pure layer, 323 tests aimed at the cases
 a device only shows by accident: colour math, masking, locale-safe casing,
 search folding, calendar and clock arithmetic, anchored placement, slider and
 rating scales, column widths and sorting, validation, view state, swipe and

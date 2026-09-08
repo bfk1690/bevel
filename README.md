@@ -465,7 +465,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — twenty-two suites, 295 assertions: color math,
+Tests cover the pure layer — twenty-five suites, 323 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve
@@ -480,7 +480,9 @@ with a build.
 
 ## Status
 
-0.1.0, and moving. Shipping: the theme engine and every component listed above —
+0.2.2, and moving. Shipping: the theme engine and every component listed above —
 date and time fields, the segmented control, tables, timelines and file rows
-included — with the example app as the living reference. Next: screenshot
-coverage in CI.
+included — with the example app as the living reference. CI runs the whole of
+`yarn verify` plus a typecheck and a Metro bundle of the example, because a
+missing export and an import cycle both typecheck cleanly and only fail at
+runtime. Next: screenshot coverage.

@@ -1,0 +1,49 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # React Native 0.86 refuses anything older, and the pure tests use
+          # Node's own type stripping rather than a build step
+          node-version: 22.18.0
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      # typecheck, every pure suite, and the bob build in one. The runner
+      # discovers the suites and re-runs the theme one on a small screen and
+      # with the platform switched, so there is nothing to list here
+      - run: yarn verify
+
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+
+      - name: Build the package the example links against
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Typecheck and bundle the example
+        working-directory: example
+        run: |
+          yarn install
+          yarn tsc --noEmit
+          # Bundling is the only check here that catches a missing export or a
+          # cycle: those typecheck cleanly and fail at runtime
+          npx expo export --platform ios --output-dir /tmp/bundle-check
