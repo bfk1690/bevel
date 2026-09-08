@@ -21,6 +21,15 @@ export type DragHandle = {
   onResponderMove: (event: GestureResponderEvent) => void
   onResponderRelease: (event: GestureResponderEvent) => void
   onResponderTerminate: () => void
+  /**
+   * Refuses to hand the gesture back.
+   *
+   * Without this a list inside a scroll view cannot be dragged AT ALL: the
+   * grip takes the touch, the finger moves vertically, the scroll view asks
+   * for the responder, and the default answer is yes - so the row is dropped
+   * and the page scrolls instead.
+   */
+  onResponderTerminationRequest: () => boolean
 }
 
 export type ReorderableRenderState = {
@@ -64,6 +73,11 @@ const SHIFT_MS = 160
  * a list that cannot be scrolled, because the first touch always becomes a
  * drag.
  *
+ * Spread the WHOLE handle. It includes a refusal to give the gesture back,
+ * without which a list inside a scroll view cannot be dragged at all: the grip
+ * takes the touch, the finger moves, the scroll view asks for the responder,
+ * and the default answer is yes.
+ *
  * Everything given to it is rendered, which is right for the length of list
  * anybody actually reorders by hand.
  */
@@ -84,26 +98,32 @@ export function ReorderableList<T>({
 
   /** Where the finger was when the drag began, in window coordinates */
   const origin = useRef(0)
-  /** How far the dragged row has come, mirrored because a native value cannot be read back */
+  /** How far the dragged row has come, mirrored because an animated value cannot be read back */
   const travelled = useRef(0)
-  const lift = useRef(new Animated.Value(0)).current
 
   /**
-   * One animated value per row, so a displaced row SLIDES out of the way.
+   * One animated value per row, used for BOTH jobs: the slide that opens the
+   * gap, and the drag itself.
    *
-   * Setting the offset straight onto the style would move it between two
-   * frames, which is the jump this component exists to avoid.
+   * Two values - one native-driven for the slide, one JS-driven for the drag -
+   * was the obvious shape and it does not work. A row alternates between the
+   * two, and a view whose transform swaps between a native-driven value and a
+   * JS-driven one keeps the node it was given and stops moving.
+   *
+   * So: one value, and every animation on it stays in JavaScript. The drag is
+   * already setting a value per frame from JS; a handful of 160ms slides
+   * alongside it costs nothing worth the ambiguity.
    */
-  const shifts = useRef(new Map<string, Animated.Value>()).current
-  const shiftFor = useCallback(
+  const offsets = useRef(new Map<string, Animated.Value>()).current
+  const offsetFor = useCallback(
     (key: string) => {
-      const existing = shifts.get(key)
+      const existing = offsets.get(key)
       if (existing) return existing
       const created = new Animated.Value(0)
-      shifts.set(key, created)
+      offsets.set(key, created)
       return created
     },
-    [shifts],
+    [offsets],
   )
 
   const rows = useMemo(
@@ -115,47 +135,53 @@ export function ReorderableList<T>({
   // life of the screen
   useEffect(() => {
     const alive = new Set(rows.map((row) => row.key))
-    for (const key of [...shifts.keys()]) {
-      if (!alive.has(key)) shifts.delete(key)
+    for (const key of [...offsets.keys()]) {
+      if (!alive.has(key)) offsets.delete(key)
     }
-  }, [rows, shifts])
+  }, [offsets, rows])
 
   useEffect(() => {
     const duration = transitionDuration(SHIFT_MS, reducedMotion)
     for (const row of rows) {
-      const to =
-        dragging != null && target != null ? slotShift(row.index, dragging, target, itemHeight) : 0
-      Animated.timing(shiftFor(row.key), {
-        toValue: row.index === dragging ? 0 : to,
+      // The dragged row is driven by the finger, not by this
+      if (row.index === dragging) continue
+      Animated.timing(offsetFor(row.key), {
+        toValue:
+          dragging != null && target != null ? slotShift(row.index, dragging, target, itemHeight) : 0,
         duration,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start()
     }
-  }, [dragging, itemHeight, reducedMotion, rows, shiftFor, target])
+  }, [dragging, itemHeight, offsetFor, reducedMotion, rows, target])
 
   const finish = useCallback(
     (from: number, to: number) => {
       setDragging(null)
       setTarget(null)
       travelled.current = 0
-      // No spring back: the row is already over the slot it earned, and the
-      // reorder below puts it there for real in the same commit
-      lift.setValue(0)
+
+      // Every row goes back to no offset HERE, before the reorder lands.
+      // Left to the effect, the rows would take their drag-time offsets into
+      // the new layout for a frame and then fly home from the wrong place
+      for (const value of offsets.values()) value.setValue(0)
+
+      // No spring back either: the row is already over the slot it earned, and
+      // the reorder puts it there for real in the same commit
       if (from !== to) onReorder(moveItem(data, from, to), from, to)
     },
-    [data, lift, onReorder],
+    [data, offsets, onReorder],
   )
 
   const handleFor = useCallback(
-    (index: number): DragHandle => ({
+    (index: number, key: string): DragHandle => ({
       onStartShouldSetResponder: () => true,
       onResponderGrant: (event) => {
         // Captured here rather than sniffed for on the first move: a finger
         // can legitimately land at zero, and a sentinel would eat that drag
         origin.current = event.nativeEvent.pageY
         travelled.current = 0
-        lift.setValue(0)
+        offsetFor(key).setValue(0)
         setDragging(index)
         setTarget(index)
       },
@@ -164,15 +190,16 @@ export function ReorderableList<T>({
         // moving underneath it
         const travel = event.nativeEvent.pageY - origin.current
         travelled.current = travel
-        lift.setValue(travel)
+        offsetFor(key).setValue(travel)
         setTarget(targetIndex(index, travel, itemHeight, data.length))
       },
       onResponderRelease: () => {
         finish(index, targetIndex(index, travelled.current, itemHeight, data.length))
       },
       onResponderTerminate: () => finish(index, index),
+      onResponderTerminationRequest: () => false,
     }),
-    [data.length, finish, itemHeight, lift],
+    [data.length, finish, itemHeight, offsetFor],
   )
 
   return (
@@ -191,13 +218,15 @@ export function ReorderableList<T>({
                 // The dragged row rides above the rest; underneath, it would
                 // slide behind its own neighbours
                 zIndex: isDragging ? 2 : 1,
+                // The same value either way, so the view never swaps the node
+                // its transform is bound to
                 transform: isDragging
-                  ? [{ translateY: lift }, { scale: liftScale }]
-                  : [{ translateY: shiftFor(key) }],
+                  ? [{ translateY: offsetFor(key) }, { scale: liftScale }]
+                  : [{ translateY: offsetFor(key) }],
                 ...(isDragging ? shadowStyle('float', colors.media) : null),
               },
             ]}>
-            {renderItem(item, { index, dragging: isDragging, handle: handleFor(index) })}
+            {renderItem(item, { index, dragging: isDragging, handle: handleFor(index, key) })}
           </Animated.View>
         )
       })}

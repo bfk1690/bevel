@@ -46,9 +46,10 @@ export function ReorderDemo() {
                   subtitle={track.note}
                   left={<Avatar name={track.title} />}
                   right={
-                    // The grip takes the drag. Handing it to the whole row
-                    // would make a list that cannot be scrolled, because the
-                    // first touch always becomes a drag
+                    // The grip takes the drag, and the whole handle is spread
+                    // onto it: it carries a refusal to hand the gesture back,
+                    // without which the scroll view underneath takes the drag
+                    // the moment the finger moves
                     <View {...handle} hitSlop={12} style={{ gap: 3, padding: 6 }}>
                       {[0, 1, 2].map((line) => (
                         <View
@@ -73,6 +74,16 @@ export function ReorderDemo() {
             {lastMove}
           </Text>
         </Spec>
+      </Demo>
+
+      <Demo
+        title="Inside a scrolling page"
+        note="This list is in a scroll view, which is the case that breaks a naive implementation: the grip takes the touch, the finger moves down, the scroll view asks for the gesture back, and the default answer is yes - so the row is dropped and the page scrolls instead. The handle refuses, which is why the whole of it has to be spread onto the grip.">
+        <Card>
+          <Text variant="caption" color="textMuted">
+            Drag a grip up and down. The page underneath should stay still.
+          </Text>
+        </Card>
       </Demo>
 
       <Demo
