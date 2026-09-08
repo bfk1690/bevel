@@ -92,3 +92,41 @@ export function nextSecondIn(ms: number): number {
   const remainder = Math.max(0, ms) % SECOND
   return remainder === 0 ? SECOND : remainder
 }
+
+export type SpokenUnits = {
+  day: (count: number) => string
+  hour: (count: number) => string
+  minute: (count: number) => string
+  second: (count: number) => string
+  none: string
+}
+
+const SPOKEN: SpokenUnits = {
+  day: (count) => `${count} ${count === 1 ? 'day' : 'days'}`,
+  hour: (count) => `${count} ${count === 1 ? 'hour' : 'hours'}`,
+  minute: (count) => `${count} ${count === 1 ? 'minute' : 'minutes'}`,
+  second: (count) => `${count} ${count === 1 ? 'second' : 'seconds'}`,
+  none: 'no time left',
+}
+
+/**
+ * A length of time as a screen reader should hear it.
+ *
+ * `02:30` is announced as "two colon thirty", which is not a length of time.
+ * The clock face is for eyes; this is for the label behind it.
+ *
+ * Two units at most. "1 hour 3 minutes 12 seconds" is a recital, and the
+ * seconds are worthless once there is an hour to go.
+ */
+export function spokenDuration(ms: number, units: Partial<SpokenUnits> = {}): string {
+  const say = { ...SPOKEN, ...units }
+  const parts = durationParts(ms)
+
+  const spoken: string[] = []
+  if (parts.days > 0) spoken.push(say.day(parts.days))
+  if (parts.hours > 0) spoken.push(say.hour(parts.hours))
+  if (spoken.length < 2 && parts.minutes > 0) spoken.push(say.minute(parts.minutes))
+  if (spoken.length < 2 && parts.seconds > 0) spoken.push(say.second(parts.seconds))
+
+  return spoken.length === 0 ? say.none : spoken.slice(0, 2).join(' ')
+}

@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { formatDuration, type DurationStyle } from '../utils/duration'
+import { formatDuration, spokenDuration, type DurationStyle, type SpokenUnits } from '../utils/duration'
 import { useCountdown } from '../utils/hooks'
 import { Text, type BevelTextProps } from './text'
 
@@ -22,6 +22,13 @@ export type CountdownProps = Omit<BevelTextProps, 'children'> & {
   running?: boolean
   /** Shown instead of 00:00 once the time is up */
   endLabel?: string
+  /**
+   * Wording for the spoken label, when the app is not in English.
+   *
+   * The face reads `02:30`; a screen reader announcing that says "two colon
+   * thirty", which is not a length of time.
+   */
+  spokenUnits?: Partial<SpokenUnits>
 }
 
 /**
@@ -42,15 +49,30 @@ function CountdownBase({
   onEnd,
   running = true,
   endLabel,
+  spokenUnits,
   ...rest
 }: CountdownProps) {
   const { msLeft, done } = useCountdown(to, { onEnd, running })
 
+  const face =
+    done && endLabel != null
+      ? endLabel
+      : formatDuration(msLeft, { style: format, showHours, hideDays })
+
   return (
-    <Text {...rest}>
-      {done && endLabel != null
-        ? endLabel
-        : formatDuration(msLeft, { style: format, showHours, hideDays })}
+    <Text
+      // Said in words, because the face is punctuation to a screen reader
+      accessibilityLabel={done && endLabel != null ? endLabel : spokenDuration(msLeft, spokenUnits)}
+      /**
+       * Not announced on its own.
+       *
+       * The label changes every second; as a live region it would interrupt
+       * whatever is being read, every second, for as long as the timer runs.
+       * Someone who wants the time asks for it - and gets a sentence.
+       */
+      accessibilityLiveRegion="none"
+      {...rest}>
+      {face}
     </Text>
   )
 }

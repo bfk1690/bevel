@@ -43,4 +43,20 @@ export const I18nManager = { isRTL: false }
 export const Keyboard = { dismiss: () => {}, addListener: () => ({ remove: () => {} }) }
 export const Appearance = { getColorScheme: () => 'light' }
 
-export default { Dimensions, I18nManager, PixelRatio, Platform, StyleSheet, Keyboard, Appearance }
+// The pure half of the motion module is what the tests read; the subscription
+// is a device behaviour and is not pretended at here
+export const AccessibilityInfo = {
+  isReduceMotionEnabled: async () => false,
+  addEventListener: () => ({ remove: () => {} }),
+}
+
+export default {
+  AccessibilityInfo,
+  Dimensions,
+  I18nManager,
+  PixelRatio,
+  Platform,
+  StyleSheet,
+  Keyboard,
+  Appearance,
+}

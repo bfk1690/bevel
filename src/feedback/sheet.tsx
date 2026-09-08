@@ -24,6 +24,7 @@ import { Text } from '../primitives/text'
 import { resolveColor } from '../theme/color'
 import { useInsets, useTheme } from '../theme/provider'
 import type { ColorInput, RadiusToken } from '../theme/types'
+import { transitionDuration, useReducedMotion } from '../utils/motion'
 import { DISMISS, nearestSnapIndex, resolveSnapPoints, type SnapPoint } from '../utils/sheet'
 
 export type SheetProps = {
@@ -101,6 +102,7 @@ export function Sheet({
 }: SheetProps) {
   const { colors, radius: radii, space } = useTheme()
   const insets = useInsets()
+  const reducedMotion = useReducedMotion()
   const window = useWindowDimensions()
 
   const available = Math.max(
@@ -125,14 +127,17 @@ export function Sheet({
       shiftValue.current = toValue
       Animated.timing(shift, {
         toValue,
-        duration,
+        // A sheet crosses most of the screen, which is exactly the travel the
+        // setting is about. Shortened rather than cut: it still has to be seen
+        // arriving
+        duration: transitionDuration(duration, reducedMotion),
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start(({ finished }) => {
         if (finished) then?.()
       })
     },
-    [shift],
+    [reducedMotion, shift],
   )
 
   useEffect(() => {

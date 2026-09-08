@@ -1,6 +1,5 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef } from 'react'
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   View,
@@ -10,6 +9,7 @@ import {
 } from 'react-native'
 
 import { resolveColor } from '../theme/color'
+import { useReducedMotion } from '../utils/motion'
 import { useTheme } from '../theme/provider'
 import type { ColorInput, RadiusToken } from '../theme/types'
 
@@ -43,19 +43,7 @@ function SkeletonBase({
 }: SkeletonProps) {
   const { colors, radius: radii, space } = useTheme()
   const pulse = useRef(new Animated.Value(0)).current
-  const [reduceMotion, setReduceMotion] = useState(false)
-
-  useEffect(() => {
-    let alive = true
-    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (alive) setReduceMotion(enabled)
-    })
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion)
-    return () => {
-      alive = false
-      sub.remove()
-    }
-  }, [])
+  const reduceMotion = useReducedMotion()
 
   useEffect(() => {
     // A pulsing placeholder is motion the user did not ask for. Honour the

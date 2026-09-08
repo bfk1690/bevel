@@ -200,10 +200,18 @@ export {
   type SuggestionKey,
 } from './utils/password'
 export {
+  allowsAmbientMotion,
+  transitionDuration,
+  useReducedMotion,
+  REDUCED_TRANSITION_MS,
+} from './utils/motion'
+export {
   durationParts,
   formatDuration,
   nextSecondIn,
   remaining,
+  spokenDuration,
+  type SpokenUnits,
   type DurationOptions,
   type DurationParts,
   type DurationStyle,

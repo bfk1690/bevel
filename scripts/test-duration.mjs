@@ -11,6 +11,7 @@ import {
   formatDuration,
   nextSecondIn,
   remaining,
+  spokenDuration,
 } from '../src/utils/duration.ts'
 
 let passed = 0
@@ -81,6 +82,40 @@ test('ticks aim at the second boundary, not 1000ms later', () => {
   assert.equal(nextSecondIn(5000), 1000, 'exactly on the boundary waits a full second')
   assert.equal(nextSecondIn(0), 1000)
   assert.equal(nextSecondIn(-20), 1000)
+})
+
+test('a screen reader is given a length of time, not a clock face', () => {
+  // "02:30" is announced as "two colon thirty", which is not a length of time
+  assert.equal(spokenDuration(150 * SECOND), '2 minutes 30 seconds')
+  assert.equal(spokenDuration(60 * SECOND), '1 minute', 'and it counts properly')
+  assert.equal(spokenDuration(SECOND), '1 second')
+})
+
+test('the spoken form stops at two units', () => {
+  // "1 hour 3 minutes 12 seconds" is a recital, and the seconds are worthless
+  // once there is an hour to go
+  assert.equal(spokenDuration(HOUR + 3 * MINUTE + 12 * SECOND), '1 hour 3 minutes')
+  assert.equal(spokenDuration(2 * DAY + 3 * HOUR + 4 * MINUTE), '2 days 3 hours')
+})
+
+test('empty units are skipped, not spoken as zero', () => {
+  assert.equal(spokenDuration(2 * HOUR), '2 hours')
+  assert.equal(spokenDuration(HOUR + 5 * SECOND), '1 hour 5 seconds', 'over a gap, too')
+})
+
+test('a finished countdown says so', () => {
+  assert.equal(spokenDuration(0), 'no time left')
+  assert.equal(spokenDuration(-500), 'no time left')
+})
+
+test('the wording can be replaced for another language', () => {
+  // The kit ships English and gets out of the way; it does not carry a
+  // phrasebook
+  const tr = {
+    minute: (count) => `${count} dakika`,
+    second: (count) => `${count} saniye`,
+  }
+  assert.equal(spokenDuration(90 * SECOND, tr), '1 dakika 30 saniye')
 })
 
 console.log(`duration: ${passed} passed, ${failed} failed`)

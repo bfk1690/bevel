@@ -65,11 +65,33 @@ function PasswordFieldBase(
         autoCapitalize="none"
         autoCorrect={false}
         textContentType="newPassword"
+        /**
+         * The verdict travels with the FIELD.
+         *
+         * A meter drawn from coloured bars and a word beside them is furniture
+         * to a screen reader: somebody who cannot see it gets told nothing at
+         * all about a password the form is about to refuse. Attaching it to
+         * the field means it is read where the decision is being made.
+         */
+        accessibilityHint={
+          typed
+            ? [levels[assessment.score], assessment.suggestion].filter(Boolean).join('. ')
+            : rest.accessibilityHint
+        }
       />
 
       {meter && typed && (
-        <View style={{ gap: space(1.5) }}>
-          <View style={[styles.track, { gap: space(1) }]}>
+        // One announcement for the whole meter, and only when it settles.
+        // Read as separate pieces it becomes "weak", "one", "two", "three"
+        <View
+          style={{ gap: space(1.5) }}
+          accessible
+          accessibilityRole="progressbar"
+          accessibilityLabel={[levels[assessment.score], assessment.suggestion]
+            .filter(Boolean)
+            .join('. ')}
+          accessibilityValue={{ now: assessment.score, min: 0, max: 4 }}>
+          <View style={[styles.track, { gap: space(1) }]} importantForAccessibility="no">
             {/* Four segments rather than a bar: a continuous fill invites the
                 reader to chase the last pixel, and the difference between two
                 strong passwords is not worth chasing */}

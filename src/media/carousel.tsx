@@ -17,6 +17,7 @@ import { resolveColor } from '../theme/color'
 import { useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
 import { dotWindow, loopCorrection, loopedIndex, loopedOffset, pageFromOffset } from '../utils/carousel'
+import { allowsAmbientMotion, useReducedMotion } from '../utils/motion'
 
 export type CarouselProps<T> = {
   data: readonly T[]
@@ -33,7 +34,14 @@ export type CarouselProps<T> = {
   showDots?: boolean
   /** Most dots to draw before the row starts sliding. Defaults to 5 */
   maxDots?: number
-  /** Advances on its own every N ms */
+  /**
+   * Advances on its own every N ms.
+   *
+   * Ignored when the system has been asked to reduce movement: this is the
+   * category that setting is really about. A transition answers something the
+   * reader just did; a carousel turning by itself happens AT them, and cannot
+   * be predicted or stopped by holding still.
+   */
   autoPlayMs?: number
   /**
    * How long after the last touch auto-play picks up again.
@@ -77,6 +85,7 @@ export function Carousel<T>({
   style,
 }: CarouselProps<T>) {
   const { colors, space } = useTheme()
+  const reducedMotion = useReducedMotion()
   const window = useWindowDimensions()
   const scroller = useRef<ScrollView>(null)
 
@@ -177,6 +186,7 @@ export function Carousel<T>({
   }, [index, scrollTo, width, wraps])
 
   useEffect(() => {
+    if (!allowsAmbientMotion(reducedMotion)) return
     if (!autoPlayMs || autoPlayMs <= 0 || count < 2) return
     const timer = setInterval(() => {
       if (paused.current) return
@@ -192,7 +202,7 @@ export function Carousel<T>({
       onIndexChange?.(next)
     }, autoPlayMs)
     return () => clearInterval(timer)
-  }, [autoPlayMs, count, index, onIndexChange, page, scrollTo, wraps])
+  }, [autoPlayMs, count, index, onIndexChange, page, reducedMotion, scrollTo, wraps])
 
   /**
    * The dot window is remembered between renders.

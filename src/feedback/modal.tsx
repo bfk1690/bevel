@@ -19,6 +19,7 @@ import {
 import { Text } from '../primitives/text'
 import { useInsets, useTheme } from '../theme/provider'
 import { useKeyboardVisible } from '../utils/keyboard'
+import { transitionDuration, useReducedMotion } from '../utils/motion'
 
 export type ModalProps = {
   visible: boolean
@@ -80,6 +81,7 @@ function ModalBase({
 }: ModalProps) {
   const { colors, radius, space } = useTheme()
   const insets = useInsets()
+  const reducedMotion = useReducedMotion()
   const keyboardUp = useKeyboardVisible()
   const { height: windowHeight } = useWindowDimensions()
 
@@ -106,7 +108,7 @@ function ModalBase({
       setMounted(true)
       Animated.timing(progress, {
         toValue: 1,
-        duration: IN_DURATION,
+        duration: transitionDuration(IN_DURATION, reducedMotion),
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start()
@@ -115,7 +117,7 @@ function ModalBase({
 
     Animated.timing(progress, {
       toValue: 0,
-      duration: OUT_DURATION,
+      duration: transitionDuration(OUT_DURATION, reducedMotion),
       easing: Easing.in(Easing.cubic),
       useNativeDriver: true,
     }).start(({ finished }) => {

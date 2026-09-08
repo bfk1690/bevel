@@ -421,7 +421,19 @@ Not a checklist item here, and a few of the decisions are load-bearing:
 - Pickers announce what they currently hold rather than reading as an empty
   button.
 - Small buttons keep a 44dp touch target through hit slop rather than growing.
-- The skeleton pulse honours the system reduce-motion setting.
+- **Reduce motion is answered in two different ways.** Movement the reader set
+  off — a sheet, a modal — is *shortened*, not cut: a change that happens
+  between two frames is not seen happening. Movement nobody asked for — a
+  carousel advancing on its own, the skeleton pulse — stops. That is the
+  category the setting is really about: it happens *at* the reader and cannot
+  be predicted. `useReducedMotion()` is exported for an app's own animations.
+- A countdown is announced as a length of time, not as a clock face: `02:30`
+  is read aloud as "two colon thirty". It is also not a live region — the label
+  changes every second, and announcing that would interrupt whatever is being
+  read, every second, for as long as the timer runs.
+- The password meter's verdict travels with the field. Coloured bars and a word
+  beside them are furniture to a screen reader, so somebody who cannot see them
+  would be told nothing about a password the form is about to refuse.
 - A row's swipe actions are hidden from a screen reader until the row is open,
   and reachable through the row's own accessibility actions in the meantime —
   a gesture nobody can perform is not an interface.
@@ -465,7 +477,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — twenty-five suites, 323 assertions: color math,
+Tests cover the pure layer — twenty-six suites, 332 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve

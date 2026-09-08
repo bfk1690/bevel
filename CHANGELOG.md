@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased
+
+### Accessibility
+
+- **Reduce motion, answered properly.** It was honoured in one place — the
+  skeleton pulse — while three other things moved on their own. Movement the
+  reader set off (a sheet, a modal) is now *shortened* rather than cut, because
+  a change that happens between two frames is not seen happening. Movement
+  nobody asked for — a carousel advancing by itself — stops. `useReducedMotion`
+  is exported for an app's own animations.
+- **`Countdown` says a length of time.** `02:30` is announced as "two colon
+  thirty". It now carries a spoken label ("2 minutes 30 seconds") and is not a
+  live region: the text changes every second, and announcing it would interrupt
+  whatever is being read for as long as the timer runs. `spokenDuration` takes
+  replacement wording for apps that are not in English.
+- **`PasswordField`'s verdict reaches a screen reader.** Coloured bars and a
+  word beside them are furniture; the level and its suggestion now travel with
+  the field, where the decision is being made, and the meter itself is one
+  announcement instead of four.
+
+### Internal
+
+- The carousel's looping and dot-window arithmetic has tests — the two things
+  reported from a device rather than found here.
+- The test runner discovers its own suites. The script had become twenty-six
+  copies of one command in a single line of `package.json`, which is how a
+  suite once ran without the module loader and passed for the wrong reason.
+- CI runs `yarn verify` on every push, and typechecks and bundles the example:
+  a missing export and an import cycle both typecheck cleanly.
+
 ## 0.2.2
 
 ### Fixed
@@ -130,7 +160,7 @@ fails the build for everyone who has not installed it.
 
 ### The pure layer
 
-Twenty-five suites over the pure layer, 323 tests aimed at the cases
+Twenty-six suites over the pure layer, 332 tests aimed at the cases
 a device only shows by accident: colour math, masking, locale-safe casing,
 search folding, calendar and clock arithmetic, anchored placement, slider and
 rating scales, column widths and sorting, validation, view state, swipe and
