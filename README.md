@@ -67,7 +67,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 | | |
 | --- | --- |
 | **Primitives** | `Text` `ExpandableText` `RelativeTime` `Countdown` `Button` `SegmentedControl` `Tabs` `Input` `PasswordField` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `ReorderableList` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `ErrorBoundary` `Fab` `KeyboardStickyFooter` |
+| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `ReorderableList` `FileRow` `Grid` `Table` `Stat` `BarChart` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `ErrorBoundary` `Fab` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Sheet` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
 | **Media** | `ImageShower` `Carousel` |
 
@@ -296,6 +296,27 @@ needs less travel than opening one.
 it quietly promotes whichever action happens to sit at the edge — right for
 deleting a message, wrong when the actions are equals.
 
+### Stat and BarChart
+
+```tsx
+<Stat label="Response time" value="340ms" delta={12.5} goodWhen="down" deltaAsPercent />
+<BarChart data={week} height={140} max={3000} />
+```
+
+**Up is not the same as good.** A metric says which direction it wants; without
+one the change is reported and left uncoloured. Painting every rise green is
+the most common lie a dashboard tells — response time, error rate, cost per
+order and churn all get worse going up. The direction is carried by an arrow as
+well as a colour, because red and green are the two most likeliest to be
+confused.
+
+**The chart's scale starts at zero, and there is no way to ask it not to.**
+Cutting the axis turns a 3% difference into a doubling. `max` holds two charts
+to one scale, which is the only honest way to put them side by side.
+
+Bars are views. Anything with a line or a curve wants a canvas, and a canvas
+wants a dependency this package will not take.
+
 ### Reordering
 
 ```tsx
@@ -500,7 +521,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — twenty-seven suites, 343 assertions: color math,
+Tests cover the pure layer — twenty-nine suites, 361 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve

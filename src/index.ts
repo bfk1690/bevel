@@ -94,6 +94,7 @@ export {
   type AccordionItemProps,
   type AccordionProps,
 } from './layout/accordion'
+export { BarChart, type BarChartProps, type BarDatum } from './layout/bar-chart'
 export { Card, type CardProps } from './layout/card'
 export { DataList, type DataListProps, type DataRow } from './layout/data-list'
 export { EmptyState, type EmptyStateProps } from './layout/empty-state'
@@ -104,6 +105,7 @@ export {
   type SwipeAction,
   type SwipeableRowProps,
 } from './layout/swipeable-row'
+export { Stat, type StatProps } from './layout/stat'
 export { Steps, type Step, type StepsProps } from './layout/steps'
 export { TabBar, type TabBarItem, type TabBarProps } from './layout/tab-bar'
 export { Table, type TableColumn, type TableProps } from './layout/table'
@@ -206,6 +208,26 @@ export {
   type PasswordScore,
   type SuggestionKey,
 } from './utils/password'
+export {
+  niceCeiling,
+  scaleBars,
+  type Bar,
+  type BarScale,
+  type BarScaleInput,
+} from './utils/chart'
+export {
+  deltaDirection,
+  deltaVerdict,
+  formatDelta,
+  percentChange,
+  type DeltaFormat,
+  type DeltaVerdict,
+  type Direction,
+} from './utils/stat'
+export {
+  useAppState,
+  type AppStateValue,
+} from './utils/motion'
 export {
   moveItem,
   restingOffset,

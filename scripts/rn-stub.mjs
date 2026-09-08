@@ -45,6 +45,13 @@ export const Appearance = { getColorScheme: () => 'light' }
 
 // The pure half of the motion module is what the tests read; the subscription
 // is a device behaviour and is not pretended at here
+// Only the shape the module reads at import; the subscription is a device
+// behaviour and is not pretended at here
+export const AppState = {
+  currentState: 'active',
+  addEventListener: () => ({ remove: () => {} }),
+}
+
 export const AccessibilityInfo = {
   isReduceMotionEnabled: async () => false,
   addEventListener: () => ({ remove: () => {} }),
@@ -52,6 +59,7 @@ export const AccessibilityInfo = {
 
 export default {
   AccessibilityInfo,
+  AppState,
   Dimensions,
   I18nManager,
   PixelRatio,

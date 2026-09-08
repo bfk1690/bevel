@@ -30,6 +30,7 @@ import { SelectDemo } from './select'
 import { SheetDemo } from './sheet'
 import { SliderDemo } from './slider'
 import { SwipeDemo } from './swipe'
+import { StatDemo } from './stat'
 import { StateDemo } from './state'
 import { StepsDemo } from './steps'
 import { SelectionDemo } from './selection'
@@ -195,6 +196,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Drag to reorder, with the gap opening as you go',
     group: 'Content',
     Component: ReorderDemo,
+  },
+  {
+    key: 'stat',
+    title: 'Stat and BarChart',
+    subtitle: 'One figure, and the axis that starts at zero',
+    group: 'Content',
+    Component: StatDemo,
   },
   {
     key: 'table',

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { AccessibilityInfo } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { AccessibilityInfo, AppState } from 'react-native'
 
 /**
  * How long a transition should take when movement has been turned down.
@@ -60,4 +60,35 @@ export function transitionDuration(duration: number, reduced: boolean): number {
  */
 export function allowsAmbientMotion(reduced: boolean): boolean {
   return !reduced
+}
+
+export type AppStateValue = 'active' | 'background' | 'inactive' | 'unknown'
+
+/**
+ * Whether the app is in front, and what to do when it comes back.
+ *
+ * Timers are throttled or stopped while the app is away, so anything counting
+ * comes back as stale as the trip was long. Reading the clock again on the way
+ * in is the difference between a message from this morning saying "just now"
+ * and saying the truth.
+ */
+export function useAppState(onForeground?: () => void): AppStateValue {
+  const [state, setState] = useState<AppStateValue>(
+    () => (AppState.currentState as AppStateValue) ?? 'unknown',
+  )
+
+  // Held in a ref so a caller passing an inline function does not resubscribe
+  // on every render - which would miss the very change it was waiting for
+  const handler = useRef(onForeground)
+  handler.current = onForeground
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next) => {
+      setState(next as AppStateValue)
+      if (next === 'active') handler.current?.()
+    })
+    return () => subscription.remove()
+  }, [])
+
+  return state
 }

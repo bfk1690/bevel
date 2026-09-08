@@ -10,6 +10,12 @@
 - **`ErrorBoundary`** — themed, with a retry and a `resetKey`, because a
   boundary that has caught once otherwise stays broken for the life of the
   screen. It catches renders and nothing else, and says so.
+- **`Stat`** — one figure, with a change that knows *up is not the same as
+  good*. A metric declares which direction it wants; one that has not is
+  reported and left uncoloured. The direction is a shape as well as a colour.
+- **`BarChart`** — bars drawn with views, the one chart that needs no canvas.
+  The scale starts at zero and cannot be asked not to.
+- **`useAppState`** — extracted from `RelativeTime`, which had it inline.
 - `EmptyState` takes `children`, below its actions.
 
 ### Accessibility
@@ -170,7 +176,7 @@ fails the build for everyone who has not installed it.
 
 ### The pure layer
 
-Twenty-seven suites over the pure layer, 343 tests aimed at the cases
+Twenty-nine suites over the pure layer, 361 tests aimed at the cases
 a device only shows by accident: colour math, masking, locale-safe casing,
 search folding, calendar and clock arithmetic, anchored placement, slider and
 rating scales, column widths and sorting, validation, view state, swipe and

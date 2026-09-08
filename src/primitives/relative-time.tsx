@@ -1,6 +1,6 @@
-import { memo, useEffect, useState } from 'react'
-import { AppState } from 'react-native'
+import { memo, useCallback, useEffect, useState } from 'react'
 
+import { useAppState } from '../utils/motion'
 import { formatRelative, relativeTickMs, type RelativeOptions } from '../utils/relative'
 import { Text, type BevelTextProps } from './text'
 
@@ -35,6 +35,16 @@ function RelativeTimeBase({
   ...rest
 }: RelativeTimeProps) {
   const [now, setNow] = useState(() => Date.now())
+  const [wokeAt, setWokeAt] = useState(0)
+
+  /**
+   * Timers are throttled or stopped while the app is away, so the label on
+   * screen when it comes back is as old as the trip. Reading the clock again
+   * on the way in is what stops a message from this morning still saying
+   * "just now".
+   */
+  const wake = useCallback(() => setWokeAt(Date.now()), [])
+  useAppState(live ? wake : undefined)
 
   useEffect(() => {
     if (!live) return
@@ -42,31 +52,18 @@ function RelativeTimeBase({
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const schedule = () => {
+      setNow(Date.now())
       const wait = relativeTickMs(value, { cutoffDays })
       if (wait == null) return
-      timer = setTimeout(() => {
-        setNow(Date.now())
-        schedule()
-      }, wait)
+      timer = setTimeout(schedule, wait)
     }
 
     schedule()
 
-    // Timers are throttled or stopped while the app is away, so the label on
-    // screen when it comes back is as old as the trip. Catching up on resume
-    // is what stops a message from this morning still saying "just now".
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next !== 'active') return
-      setNow(Date.now())
-      if (timer != null) clearTimeout(timer)
-      schedule()
-    })
-
     return () => {
       if (timer != null) clearTimeout(timer)
-      subscription.remove()
     }
-  }, [cutoffDays, live, value])
+  }, [cutoffDays, live, value, wokeAt])
 
   return (
     <Text {...rest} style={style}>
