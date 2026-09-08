@@ -55,6 +55,23 @@ export function KeyboardStickyFooter({
   const inSlot = useContext(FooterSlotContext)
 
   useEffect(() => {
+    /**
+     * The keyboard may already be up when this mounts.
+     *
+     * Listeners only hear what happens NEXT, so a bar mounted with a field
+     * already focused — coming back to a screen, a fast refresh, a form that
+     * autofocuses — never lifted at all and sat behind the keyboard with half
+     * the action unreachable. Reported from a device.
+     *
+     * `metrics()` answers for the keyboard that is already there. It is set
+     * without animating: there is nothing to animate from, and easing in from
+     * zero would read as a jump.
+     */
+    const open = Keyboard.metrics()
+    if (open && open.height > 0) {
+      lift.setValue(-(Math.max(0, open.height - insets.bottom) + offset))
+    }
+
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
 
