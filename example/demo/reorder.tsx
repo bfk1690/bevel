@@ -78,10 +78,11 @@ export function ReorderDemo() {
 
       <Demo
         title="Inside a scrolling page"
-        note="This list is in a scroll view, which is the case that breaks a naive implementation: the grip takes the touch, the finger moves down, the scroll view asks for the gesture back, and the default answer is yes - so the row is dropped and the page scrolls instead. The handle refuses, which is why the whole of it has to be spread onto the grip.">
+        note="Two separate problems, and refusing the responder only solves the first. The grip takes the touch and refuses to hand it back, so the row stays with the finger - but on iOS the scroll view's recogniser is native and runs beside the JavaScript responder system rather than under it, so the page kept scrolling behind the row anyway. The list now holds the page still for the length of the drag, through the scroll context.">
         <Card>
           <Text variant="caption" color="textMuted">
-            Drag a grip up and down. The page underneath should stay still.
+            Drag a grip up and down. The page underneath should stay exactly
+            where it is, and start moving again the moment you let go.
           </Text>
         </Card>
       </Demo>

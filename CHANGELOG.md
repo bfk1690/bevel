@@ -6,7 +6,11 @@
 
 - **`ReorderableList`** — drag to reorder, with the gap opening as the finger
   moves rather than after it lifts, and the swap happening as the centres cross
-  rather than a whole row later. Rows are one height on purpose.
+  rather than a whole row later. Rows are one height on purpose. Inside a
+  `Screen` it holds the page still for the length of the drag; elsewhere,
+  `onDragStart` / `onDragEnd` say when to do it yourself.
+- `ScrollContext` gained `setScrollEnabled`, counted rather than boolean, for
+  anything that owns the vertical axis while it runs.
 - **`ErrorBoundary`** — themed, with a retry and a `resetKey`, because a
   boundary that has caught once otherwise stays broken for the life of the
   screen. It catches renders and nothing else, and says so.

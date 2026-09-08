@@ -338,7 +338,17 @@ neighbour on every frame, and a list somebody reorders by hand is almost always
 a list of one repeated thing.
 
 Give `handle` to a grip rather than the whole row, or the list can never be
-scrolled — the first touch always becomes a drag.
+scrolled — the first touch always becomes a drag. Spread **all** of it: it
+carries a refusal to hand the gesture back, without which the scroll view takes
+the drag the moment the finger moves.
+
+That refusal keeps the row but does not stop the page. On iOS the scroll view's
+recogniser is native and runs *beside* the JavaScript responder system, so the
+row would follow the finger while the page scrolled behind it. Inside a
+`Screen` the list holds the page still for the length of the drag, through the
+scroll context — `setScrollEnabled` is counted, not a flag, so two things
+asking at once cannot have one switch scrolling back on while the other still
+needs it off. In somebody else's scroll view, use `onDragStart` / `onDragEnd`.
 
 ### Grid
 

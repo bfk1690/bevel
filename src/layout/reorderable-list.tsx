@@ -122,6 +122,21 @@ export function ReorderableList<T>({
   const origin = useRef(0)
   /** How far the dragged row has come, mirrored because an animated value cannot be read back */
   const travelled = useRef(0)
+  /** Whether OUR hold on the page is outstanding, so it is released exactly once */
+  const holding = useRef(false)
+
+  const hold = useCallback(
+    (wanted: boolean) => {
+      if (holding.current === wanted) return
+      holding.current = wanted
+      setScrollEnabled(!wanted)
+    },
+    [setScrollEnabled],
+  )
+
+  // A list unmounted mid-drag - a route change, a filter applied - would
+  // otherwise leave the page unable to scroll for the rest of its life
+  useEffect(() => () => hold(false), [hold])
 
   /**
    * One animated value per row, used for BOTH jobs: the slide that opens the
@@ -182,7 +197,7 @@ export function ReorderableList<T>({
       setDragging(null)
       setTarget(null)
       travelled.current = 0
-      setScrollEnabled(true)
+      hold(false)
       onDragEnd?.(from, to)
 
       // Every row goes back to no offset HERE, before the reorder lands.
@@ -194,7 +209,7 @@ export function ReorderableList<T>({
       // the reorder puts it there for real in the same commit
       if (from !== to) onReorder(moveItem(data, from, to), from, to)
     },
-    [data, offsets, onDragEnd, onReorder, setScrollEnabled],
+    [data, hold, offsets, onDragEnd, onReorder],
   )
 
   const handleFor = useCallback(
@@ -208,7 +223,7 @@ export function ReorderableList<T>({
         offsetFor(key).setValue(0)
         // Before anything moves: a scroll that has already begun is not
         // cancelled by turning scrolling off
-        setScrollEnabled(false)
+        hold(true)
         onDragStart?.(index)
         setDragging(index)
         setTarget(index)
@@ -227,7 +242,7 @@ export function ReorderableList<T>({
       onResponderTerminate: () => finish(index, index),
       onResponderTerminationRequest: () => false,
     }),
-    [data.length, finish, itemHeight, offsetFor, onDragStart, setScrollEnabled],
+    [data.length, finish, hold, itemHeight, offsetFor, onDragStart],
   )
 
   return (
