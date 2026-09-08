@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **The sticky footer came to rest behind the keyboard**, with half the action
+  unreachable. Two places were taking the safe area off the same measurement:
+  the bar subtracted it from its lift, assuming a padding that only exists when
+  it stands alone, while `Screen` drops that very padding whenever the keyboard
+  is up — because the keyboard covers the ground it was reserving. Both landed.
+  The lift is the keyboard's whole height now, and the bar gives back its own
+  bottom inset while the keyboard is over it.
+- The `Fab` page had two floating buttons on one screen, which is the thing the
+  component tells you never to do. One now, steered by the page's controls.
+
 ## 0.2.4
 
 ### Fixed
