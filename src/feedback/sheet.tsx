@@ -25,6 +25,7 @@ import { resolveColor } from '../theme/color'
 import { useInsets, useTheme } from '../theme/provider'
 import type { ColorInput, RadiusToken } from '../theme/types'
 import { transitionDuration, useReducedMotion } from '../utils/motion'
+import { sidePadding } from '../utils/optional'
 import { DISMISS, nearestSnapIndex, resolveSnapPoints, type SnapPoint } from '../utils/sheet'
 
 export type SheetProps = {
@@ -204,7 +205,7 @@ export function Sheet({
   const borderRadius = typeof radius === 'number' ? radius : (radii[radius] ?? radii.lg)
 
   const body = (
-    <View style={{ paddingHorizontal: space(4), paddingBottom: insets.bottom || space(4) }}>
+    <View style={{ ...sidePadding(insets, space(4)), paddingBottom: insets.bottom || space(4) }}>
       {children}
     </View>
   )
@@ -263,7 +264,7 @@ export function Sheet({
               </View>
             )}
             {title != null && (
-              <View style={{ paddingHorizontal: space(4), paddingBottom: space(2) }}>
+              <View style={{ ...sidePadding(insets, space(4)), paddingBottom: space(2) }}>
                 <Text variant="heading" numberOfLines={1}>
                   {title}
                 </Text>
@@ -286,7 +287,7 @@ export function Sheet({
           {footer != null && (
             <View
               style={{
-                paddingHorizontal: space(4),
+                ...sidePadding(insets, space(4)),
                 paddingBottom: insets.bottom || space(4),
                 paddingTop: space(2),
                 borderTopWidth: StyleSheet.hairlineWidth,

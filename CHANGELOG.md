@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.7
+
+### Fixed
+
+- **Everything pinned to a screen edge was cut off in landscape.** Only the
+  popover's arithmetic looked at the horizontal insets; a turned phone reserves
+  around 59pt each side for the sensor housing, and a toast, a header, a tab
+  bar, a floating button, a sheet, a modal and the content of every screen all
+  ran under it. Invisible in portrait, where those insets are zero — which is
+  the orientation everything gets developed in. `sidePadding` is exported for
+  an app's own edge-hugging views.
+
 ## 0.2.6
 
 ### Fixed

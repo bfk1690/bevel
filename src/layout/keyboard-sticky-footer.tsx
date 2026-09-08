@@ -12,6 +12,7 @@ import {
 
 import { resolveColor } from '../theme/color'
 import { footerPadding, keyboardLift } from '../utils/keyboard'
+import { sidePadding } from '../utils/optional'
 import { FooterSlotContext } from './footer-slot'
 import { useInsets, useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
@@ -117,7 +118,10 @@ export function KeyboardStickyFooter({
         {
           transform: [{ translateY: lift }],
           backgroundColor,
-          paddingHorizontal: inSlot ? (padding ?? 0) : (padding ?? space(4)),
+          // In the slot the screen around it has already cleared the housing
+          ...(inSlot
+            ? { paddingHorizontal: padding ?? 0 }
+            : sidePadding(insets, padding ?? space(4))),
           paddingTop: space(3),
           // The slot around it owns the safe area. Standing alone it owns it
           // itself - and gives it back while the keyboard covers that ground

@@ -10,7 +10,8 @@ import {
 
 import { Text } from '../primitives/text'
 import { resolveColor } from '../theme/color'
-import { useTheme } from '../theme/provider'
+import { useInsets, useTheme } from '../theme/provider'
+import { sidePadding } from '../utils/optional'
 import type { ColorInput } from '../theme/types'
 import { useScrollOffset } from './scroll-context'
 
@@ -66,6 +67,7 @@ function HeaderBase({
   style,
 }: HeaderProps) {
   const { colors, space, sizes } = useTheme()
+  const insets = useInsets()
   const { y } = useScrollOffset()
 
   /**
@@ -114,7 +116,9 @@ function HeaderBase({
         styles.bar,
         {
           backgroundColor: large ? 'transparent' : backgroundColor,
-          paddingHorizontal: space(4),
+          // Spans the full width and sits at the top edge, so in landscape the
+          // back control lands under the sensor housing without this
+          ...sidePadding(insets, space(4)),
           paddingVertical: space(2),
           gap: space(2),
           borderBottomWidth: !large && divider ? StyleSheet.hairlineWidth : 0,

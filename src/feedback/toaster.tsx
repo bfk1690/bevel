@@ -17,6 +17,7 @@ import { alpha, resolveColor } from '../theme/color'
 import { useInsets, useTheme } from '../theme/provider'
 import { shadow as shadowStyle } from '../theme/shadow'
 import type { ColorInput } from '../theme/types'
+import { sidePadding } from '../utils/optional'
 import { dismissToast, toastStore, type ToastItem, type ToastTone } from './toast-store'
 
 export type ToasterProps = {
@@ -186,7 +187,7 @@ export function Toaster({ position = 'top', offset, renderToast, style }: Toaste
         style={[
           styles.container,
           position === 'top' ? { top: edge + gap } : { bottom: edge + gap },
-          { paddingHorizontal: space(3) },
+          sidePadding(insets, space(3)),
           style,
         ]}>
         <Animated.View style={animatedStyle} {...swipe.panHandlers}>

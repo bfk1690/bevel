@@ -492,6 +492,23 @@ Not a checklist item here, and a few of the decisions are load-bearing:
   and reachable through the row's own accessibility actions in the meantime —
   a gesture nobody can perform is not an interface.
 
+## Landscape
+
+Insets are not just top and bottom. Turned on its side a phone reserves around
+59pt on **each** side for the sensor housing, and anything laid out to the raw
+edge is cut off there — which is invisible in portrait, where those insets are
+zero, and therefore invisible on the screen anybody develops on.
+
+Everything that pins itself to a screen edge clears it: `Screen`'s gutter,
+`Header`, `Toaster`, `Fab`, `TabBar`, `Sheet`, `Modal`, `ImageShower` and
+`KeyboardStickyFooter`. `sidePadding(insets, gutter)` is exported for an app's
+own edge-hugging views.
+
+The inset is **added** to the design's gutter rather than maxed with it: the
+gutter is a decision about breathing room, the inset is a fact about where
+pixels cannot be seen, and taking the larger of the two puts content hard
+against the edge of the usable area and calls it a margin.
+
 ## Right to left
 
 Layout properties are written as `start` and `end` rather than `left` and
@@ -531,7 +548,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — twenty-nine suites, 361 assertions: color math,
+Tests cover the pure layer — thirty-one suites, 376 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve

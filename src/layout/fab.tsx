@@ -211,8 +211,12 @@ function FabBase({
         ? trailingSide()
         : position
 
+  // The sensor housing takes about 59pt a side in landscape, and a button
+  // pinned to the raw edge sits under it
   const placement: ViewStyle =
-    side === 'center' ? { left: 0, right: 0, alignItems: 'center' } : { [side]: inset }
+    side === 'center'
+      ? { left: insets.left, right: insets.right, alignItems: 'center' }
+      : { [side]: inset + Math.max(0, side === 'left' ? insets.left : insets.right) }
 
   return (
     <Animated.View

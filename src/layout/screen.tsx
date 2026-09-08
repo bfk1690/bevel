@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 
 import { resolveColor } from '../theme/color'
+import { sidePadding } from '../utils/optional'
 import { FooterSlotContext } from './footer-slot'
 import { ScrollContext } from './scroll-context'
 import { useInsets, useTheme } from '../theme/provider'
@@ -183,7 +184,13 @@ function ScreenBase({
     [footerHeight, scrollY],
   )
 
-  const paddingHorizontal = padding ?? space(4)
+  /**
+   * The design's gutter, plus whatever the sensor housing takes.
+   *
+   * Zero in portrait. Turned on its side a phone reserves around 59pt each
+   * way, and content laid out to the raw edge is cut off there.
+   */
+  const gutter = sidePadding(insets, padding ?? space(4))
   const backgroundColor =
     background === 'none' ? 'transparent' : resolveColor(colors, background, colors.canvas)
 
@@ -228,7 +235,7 @@ function ScreenBase({
       refreshControl={pull}
       contentContainerStyle={[
         {
-          paddingHorizontal,
+          ...gutter,
           // A floating footer covers the end of the list, so the list has to
           // end above it
           paddingBottom: hideFooterOnScroll
@@ -246,7 +253,7 @@ function ScreenBase({
     <View
       style={[
         styles.fill,
-        { paddingHorizontal, paddingBottom: footer ? 0 : bottom },
+        { ...gutter, paddingBottom: footer ? 0 : bottom },
         contentContainerStyle,
       ]}>
       {children}
@@ -281,7 +288,7 @@ function ScreenBase({
             style={[
               styles.floatingFooter,
               {
-                paddingHorizontal,
+                ...gutter,
                 paddingBottom: bottom || space(2),
                 backgroundColor,
                 transform: [{ translateY: footerShift }],
@@ -290,7 +297,7 @@ function ScreenBase({
             {footer}
           </Animated.View>
         ) : (
-          <View style={{ paddingHorizontal, paddingBottom: bottom || space(2) }}>{footer}</View>
+          <View style={{ ...gutter, paddingBottom: bottom || space(2) }}>{footer}</View>
         )}
         </FooterSlotContext.Provider>
       )}

@@ -20,6 +20,7 @@ import { Text } from '../primitives/text'
 import { useInsets, useTheme } from '../theme/provider'
 import { useKeyboardVisible } from '../utils/keyboard'
 import { transitionDuration, useReducedMotion } from '../utils/motion'
+import { sidePadding } from '../utils/optional'
 
 export type ModalProps = {
   visible: boolean
@@ -165,16 +166,30 @@ function ModalBase({
     gap: space(3),
   }
 
+  // Turned on its side a phone reserves around 59pt each way for the sensor
+  // housing, and a surface laid out to the raw edge is cut off there
+  const sides = sidePadding(insets)
+
   const shape: ViewStyle =
     variant === 'sheet'
       ? {
           borderTopLeftRadius: radius.lg,
           borderTopRightRadius: radius.lg,
           paddingBottom: bottomInset + space(4),
+          ...sides,
         }
       : variant === 'center'
-        ? { borderRadius: radius.lg, marginHorizontal: space(5) }
-        : { flex: 1, paddingTop: insets.top + space(2), paddingBottom: bottomInset + space(4) }
+        ? {
+            borderRadius: radius.lg,
+            marginLeft: space(5) + insets.left,
+            marginRight: space(5) + insets.right,
+          }
+        : {
+            flex: 1,
+            paddingTop: insets.top + space(2),
+            paddingBottom: bottomInset + space(4),
+            ...sides,
+          }
 
   // A sheet travels its own height, so it is fully off screen before the
   // measurement lands and never flashes in place on first open.

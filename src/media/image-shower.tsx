@@ -18,6 +18,7 @@ import {
 
 import { Text } from '../primitives/text'
 import { useInsets, useTheme } from '../theme/provider'
+import { sidePadding } from '../utils/optional'
 import {
   clampTransform,
   distanceBetween,
@@ -236,7 +237,11 @@ function ImageShowerBase({
             pointerEvents="box-none"
             style={[
               styles.actions,
-              { paddingBottom: insets.bottom + space(3), paddingHorizontal: space(4), gap: space(2) },
+              {
+                paddingBottom: insets.bottom + space(3),
+                ...sidePadding(insets, space(4)),
+                gap: space(2),
+              },
             ]}>
             {actions.map((action) => {
               const item = pages[current]
@@ -270,7 +275,10 @@ function ImageShowerBase({
         {chrome && (
           <View
             pointerEvents="box-none"
-            style={[styles.chrome, { paddingTop: insets.top + space(2), paddingHorizontal: space(4) }]}>
+            style={[
+              styles.chrome,
+              { paddingTop: insets.top + space(2), ...sidePadding(insets, space(4)) },
+            ]}>
             {renderHeader ? (
               renderHeader({ index: current, total: pages.length, close: onClose })
             ) : (

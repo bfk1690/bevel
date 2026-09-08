@@ -5,6 +5,7 @@ import { Badge } from '../primitives/badge'
 import { Text } from '../primitives/text'
 import { resolveColor } from '../theme/color'
 import { useInsets, useTheme } from '../theme/provider'
+import { sidePadding } from '../utils/optional'
 import type { ColorInput } from '../theme/types'
 
 export type TabBarItem<T> = {
@@ -82,6 +83,7 @@ function TabBarBase<T>({
           // The bar sits on the home indicator, so its own padding has to
           // clear it - otherwise every label is a thumb's width too low
           paddingBottom: (respectSafeArea ? insets.bottom : 0) || space(2),
+          ...(respectSafeArea ? sidePadding(insets) : null),
           paddingTop: space(2),
           borderTopWidth: divider ? StyleSheet.hairlineWidth : 0,
           borderTopColor: colors.border,
