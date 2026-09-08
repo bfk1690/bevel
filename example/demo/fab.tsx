@@ -99,7 +99,7 @@ export function FabDemo() {
 
       <Demo
         title="Getting out of the way"
-        note="Scroll down and it drops off the edge; scroll up and it is back before the finger stops. The direction is not tracked in JavaScript: a clamped difference of the scroll offset grows going down and shrinks going up on its own, which keeps the whole thing on the native driver. It clears the home indicator without being told - the safe area comes from the provider, not from a guess.">
+        note="Scroll down and it drops off the edge; scroll up and it is back before the finger stops. Hidden or shown, and nothing in between - stop halfway through a scroll and it still commits, because a button left standing half off the bottom of the screen is cut in two by the edge. It clears the home indicator without being told: the safe area comes from the provider, not from a guess.">
         <Card padding={0} gap={0} style={{ overflow: 'hidden' }}>
           {Array.from({ length: 14 }, (_, index) => (
             <View key={index} style={{ paddingHorizontal: space(4) }}>

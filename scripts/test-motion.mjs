@@ -8,6 +8,7 @@ import assert from 'node:assert/strict'
 
 import {
   allowsAmbientMotion,
+  shouldHideOnScroll,
   transitionDuration,
   REDUCED_TRANSITION_MS,
 } from '../src/utils/motion.ts'
@@ -48,6 +49,34 @@ test('movement nobody asked for stops', () => {
   // A carousel advancing on its own happens AT the reader and cannot be
   // predicted, which is what makes it unbearable for some people
   assert.equal(allowsAmbientMotion(true), false)
+})
+
+test('a hiding control commits, it does not hover half off the edge', () => {
+  // Mapping the offset straight onto the travel looks right while a finger is
+  // moving and is wrong the moment it stops: the button is left cut in two by
+  // the bottom of the screen
+  assert.equal(shouldHideOnScroll({ offset: 400, delta: 40, hidden: false }), true)
+  assert.equal(shouldHideOnScroll({ offset: 400, delta: -40, hidden: true }), false)
+})
+
+test('stopping changes nothing', () => {
+  // A finger held still is not an instruction either way
+  assert.equal(shouldHideOnScroll({ offset: 400, delta: 0, hidden: true }), true)
+  assert.equal(shouldHideOnScroll({ offset: 400, delta: 0, hidden: false }), false)
+  assert.equal(shouldHideOnScroll({ offset: 400, delta: 3, hidden: false }), false, 'a wobble is not a scroll')
+  assert.equal(shouldHideOnScroll({ offset: 400, delta: -3, hidden: true }), true)
+})
+
+test('the top of a list always shows it', () => {
+  // Nothing to get out of the way of up there, and a button that vanishes on
+  // the first flick of a short page reads as a fault
+  assert.equal(shouldHideOnScroll({ offset: 0, delta: 40, hidden: true }), false)
+  assert.equal(shouldHideOnScroll({ offset: 20, delta: 40, hidden: true, minOffset: 56 }), false)
+  assert.equal(shouldHideOnScroll({ offset: 90, delta: 40, hidden: false, minOffset: 56 }), true)
+})
+
+test('the bounce past the top is not a scroll upwards', () => {
+  assert.equal(shouldHideOnScroll({ offset: -30, delta: -50, hidden: true }), false)
 })
 
 console.log(`motion: ${passed} passed, ${failed} failed`)

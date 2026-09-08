@@ -13,6 +13,7 @@ import {
 import { Text } from '../primitives/text'
 import { resolveColor } from '../theme/color'
 import { leadingSide, trailingSide } from '../theme/direction'
+import { shouldHideOnScroll, transitionDuration, useReducedMotion } from '../utils/motion'
 import { useInsets, useTheme } from '../theme/provider'
 import { shadow as shadowStyle } from '../theme/shadow'
 import type { ColorInput } from '../theme/types'
@@ -87,6 +88,7 @@ function FabBase({
 }: FabProps) {
   const { colors, space } = useTheme()
   const insets = useInsets()
+  const reducedMotion = useReducedMotion()
   const { y } = useScrollOffset()
 
   const diameter = size === 'lg' ? 64 : 56
@@ -95,18 +97,56 @@ function FabBase({
   const foreground = resolveColor(colors, fg, colors.onAccent)
 
   /**
-   * `diffClamp` grows while the screen scrolls down and shrinks the moment it
-   * scrolls back, which is the whole behaviour - no direction tracking in
-   * JavaScript, and it stays on the native driver.
+   * Hidden or shown, and nothing in between.
+   *
+   * This used to map the scroll offset straight onto the travel with
+   * `diffClamp`, which needs no direction tracking and stays on the native
+   * driver - and which is wrong the moment a finger stops moving. The button
+   * was left standing half off the bottom of the screen, cut in two by the
+   * edge, and it grew and shrank there as the label collapsed beside it.
+   *
+   * So the direction IS read in JavaScript now, and the answer is a decision
+   * rather than a fraction. The listener runs while a list scrolls, which is
+   * the price; the animation it starts still runs natively.
    */
-  const hide = useMemo(
+  const hide = useRef(new Animated.Value(0)).current
+  const hidden = useRef(false)
+  const lastOffset = useRef(0)
+
+  useEffect(() => {
+    if (!hideOnScroll) return
+
+    const id = y.addListener(({ value }) => {
+      const next = shouldHideOnScroll({
+        offset: value,
+        delta: value - lastOffset.current,
+        hidden: hidden.current,
+        // Nothing to get out of the way of until the list has moved by more
+        // than the button's own height
+        minOffset: diameter,
+      })
+      lastOffset.current = value
+
+      if (next === hidden.current) return
+      hidden.current = next
+      Animated.timing(hide, {
+        toValue: next ? 1 : 0,
+        duration: transitionDuration(200, reducedMotion),
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start()
+    })
+
+    return () => y.removeListener(id)
+  }, [diameter, hide, hideOnScroll, reducedMotion, y])
+
+  const travel = useMemo(
     () =>
-      Animated.diffClamp(y, 0, HIDE_DISTANCE).interpolate({
-        inputRange: [0, HIDE_DISTANCE],
+      hide.interpolate({
+        inputRange: [0, 1],
         outputRange: [0, diameter + bottom],
-        extrapolate: 'clamp',
       }),
-    [bottom, diameter, y],
+    [bottom, diameter, hide],
   )
 
   const [labelWidth, setLabelWidth] = useState(0)
@@ -182,7 +222,7 @@ function FabBase({
         placement,
         {
           bottom,
-          transform: hideOnScroll ? [{ translateY: hide }] : undefined,
+          transform: hideOnScroll ? [{ translateY: travel }] : undefined,
         },
         style,
       ]}>
@@ -257,8 +297,6 @@ function Plus({ color }: { color: string }) {
 
 /** Between the icon and the label. Inside the animated width, so it closes too */
 const LABEL_GAP = 8
-/** How far the screen must scroll for the button to be fully out of the way */
-const HIDE_DISTANCE = 90
 /** How long the screen must be still before an extended button takes its label back */
 const REST_DELAY = 220
 

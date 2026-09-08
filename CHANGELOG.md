@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.6
+
+### Fixed
+
+- **A `Fab` with `hideOnScroll` could rest half off the screen.** It mapped the
+  scroll offset straight onto the travel, which looks right while a finger is
+  moving and is wrong the moment it stops: the button was left cut in two by
+  the bottom edge, growing and shrinking there as its label collapsed beside
+  it. Hidden or shown now, and nothing in between — the direction is read in
+  JavaScript so the answer can be a decision rather than a fraction, and the
+  animation it starts still runs natively.
+
 ## 0.2.5
 
 ### Fixed

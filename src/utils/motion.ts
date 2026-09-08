@@ -92,3 +92,42 @@ export function useAppState(onForeground?: () => void): AppStateValue {
 
   return state
 }
+
+export type HideOnScrollInput = {
+  /** Where the list is now, in points */
+  offset: number
+  /** How far it moved since last time. Positive is downwards */
+  delta: number
+  /** Whether it is hidden at the moment */
+  hidden: boolean
+  /**
+   * Below this the control is always shown.
+   *
+   * There is nothing to get out of the way of at the top of a list, and a
+   * button that vanishes on the first flick of a short page reads as a bug.
+   */
+  minOffset?: number
+  /** Movement under this is a wobble, not an intention */
+  threshold?: number
+}
+
+/**
+ * Whether a control that hides on scroll should be hidden.
+ *
+ * Two resting places, never a continuum. Mapping the scroll offset straight
+ * onto the travel looks right while a finger is moving and is wrong the moment
+ * it stops: the control is left standing half off the bottom of the screen,
+ * cut in two by the edge. It has to commit to being somewhere.
+ */
+export function shouldHideOnScroll({
+  offset,
+  delta,
+  hidden,
+  minOffset = 0,
+  threshold = 6,
+}: HideOnScrollInput): boolean {
+  if (offset <= minOffset) return false
+  if (delta > threshold) return true
+  if (delta < -threshold) return false
+  return hidden
+}
