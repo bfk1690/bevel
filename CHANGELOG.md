@@ -1,6 +1,35 @@
 # Changelog
 
-## Unreleased
+## 0.2.4
+
+### Fixed
+
+- **A drag inside a scrolling page dragged the page too.** Refusing to hand the
+  responder back keeps the ROW, but on iOS the scroll view's recogniser is
+  native and runs beside the JavaScript responder system rather than under it.
+  `ScrollContext` gained `setScrollEnabled` — counted, not a flag — and
+  `ReorderableList` holds the page still for the length of a drag.
+- **The extended `Fab` had a gap on its trailing side.** The label was measured
+  inside the clip whose width that very measurement decides; on the first frame
+  that clip is zero wide, so the figure it reported was the label squeezed into
+  nothing, and the pill kept it for life.
+- **`KeyboardStickyFooter` did not notice a keyboard that was already up.**
+  Listeners only hear what happens next, so a bar mounted with a field already
+  focused — returning to a screen, a form that autofocuses — never lifted at
+  all. `Keyboard.metrics()` answers for the keyboard already there.
+
+## 0.2.3
+
+Everything below went out as a patch release, though it adds exports. Noted
+rather than corrected: the numbers on npm cannot be taken back, and a version
+nobody can install is worse than one numbered too modestly.
+
+### Fixed
+
+- **A `KeyboardStickyFooter` in `Screen`'s footer slot was padded twice.** Both
+  components apply the gutter and the bottom safe-area inset, because each also
+  has to work standing alone — roughly 80pt of dead space under the action on a
+  phone with a home indicator.
 
 ### New
 
