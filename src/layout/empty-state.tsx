@@ -17,6 +17,8 @@ export type EmptyStateProps = {
   secondaryLabel?: string
   onSecondary?: () => void
   compact?: boolean
+  /** Anything extra, below the actions - a detail line, a link, a form */
+  children?: ReactNode
   style?: StyleProp<ViewStyle>
 }
 
@@ -35,6 +37,7 @@ function EmptyStateBase({
   secondaryLabel,
   onSecondary,
   compact = false,
+  children,
   style,
 }: EmptyStateProps) {
   const { space } = useTheme()
@@ -65,6 +68,7 @@ function EmptyStateBase({
       {secondaryLabel != null && onSecondary != null && (
         <Button label={secondaryLabel} onPress={onSecondary} variant="ghost" full={false} size="sm" />
       )}
+      {children}
     </View>
   )
 }

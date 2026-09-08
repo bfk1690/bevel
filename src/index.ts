@@ -109,6 +109,7 @@ export { TabBar, type TabBarItem, type TabBarProps } from './layout/tab-bar'
 export { Table, type TableColumn, type TableProps } from './layout/table'
 export { TabView, type TabViewItem, type TabViewProps } from './layout/tab-view'
 export { Timeline, type TimelineEntry, type TimelineProps } from './layout/timeline'
+export { ErrorBoundary, type ErrorBoundaryProps } from './layout/error-boundary'
 export { Fab, type FabProps } from './layout/fab'
 export { Grid, type GridProps } from './layout/grid'
 export { Header, type HeaderProps } from './layout/header'
@@ -129,6 +130,12 @@ export {
   KeyboardStickyFooter,
   type KeyboardStickyFooterProps,
 } from './layout/keyboard-sticky-footer'
+export {
+  ReorderableList,
+  type DragHandle,
+  type ReorderableListProps,
+  type ReorderableRenderState,
+} from './layout/reorderable-list'
 export { Screen, type ScreenEdge, type ScreenProps } from './layout/screen'
 
 export { Carousel, type CarouselProps } from './media/carousel'
@@ -199,6 +206,12 @@ export {
   type PasswordScore,
   type SuggestionKey,
 } from './utils/password'
+export {
+  moveItem,
+  restingOffset,
+  slotShift,
+  targetIndex,
+} from './utils/reorder'
 export {
   allowsAmbientMotion,
   transitionDuration,

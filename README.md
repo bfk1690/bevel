@@ -67,7 +67,7 @@ defaults. A theme may declare any number of schemes, not just light and dark.
 | | |
 | --- | --- |
 | **Primitives** | `Text` `ExpandableText` `RelativeTime` `Countdown` `Button` `SegmentedControl` `Tabs` `Input` `PasswordField` `SearchField` `Autocomplete` `Select` `DateField` `Calendar` `TimeField` `TimePicker` `Checkbox` `Radio` `RadioGroup` `Switch` `Slider` `Stepper` `OtpInput` `Rating` `Chip` `ChipGroup` `Badge` `Avatar` `AvatarGroup` `Progress` `Skeleton` `Divider` |
-| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `Fab` `KeyboardStickyFooter` |
+| **Layout** | `Screen` `Header` `LargeTitle` `TabView` `TabBar` `Card` `ListItem` `DataList` `SwipeableRow` `ReorderableList` `FileRow` `Grid` `Table` `Timeline` `Steps` `StateView` `InfiniteList` `Accordion` `EmptyState` `ErrorBoundary` `Fab` `KeyboardStickyFooter` |
 | **Feedback** | `Modal` `Sheet` `ActionSheet` `Menu` `Popover` `Tooltip` `Banner` `Toaster` `DialogHost` + the imperative `toast` and `dialog` |
 | **Media** | `ImageShower` `Carousel` |
 
@@ -296,6 +296,29 @@ needs less travel than opening one.
 it quietly promotes whichever action happens to sit at the edge — right for
 deleting a message, wrong when the actions are equals.
 
+### Reordering
+
+```tsx
+<ReorderableList data={tracks} itemHeight={64} keyExtractor={(t) => t.id}
+  onReorder={setTracks}
+  renderItem={(track, { dragging, handle }) => (
+    <Row track={track} lifted={dragging} grip={<Grip {...handle} />} />
+  )} />
+```
+
+The gap opens **during** the drag, not on release: a list that rearranges only
+once the finger lifts asks the reader to hold a prediction in their head. The
+swap happens as the centres cross rather than a whole row later — waiting for a
+full row means the picture disagrees with where the item will land for half of
+every step.
+
+Rows are one height, deliberately. Mixed heights mean re-measuring every
+neighbour on every frame, and a list somebody reorders by hand is almost always
+a list of one repeated thing.
+
+Give `handle` to a grip rather than the whole row, or the list can never be
+scrolled — the first touch always becomes a drag.
+
 ### Grid
 
 ```tsx
@@ -477,7 +500,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — twenty-six suites, 332 assertions: color math,
+Tests cover the pure layer — twenty-seven suites, 343 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve

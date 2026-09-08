@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### New
+
+- **`ReorderableList`** — drag to reorder, with the gap opening as the finger
+  moves rather than after it lifts, and the swap happening as the centres cross
+  rather than a whole row later. Rows are one height on purpose.
+- **`ErrorBoundary`** — themed, with a retry and a `resetKey`, because a
+  boundary that has caught once otherwise stays broken for the life of the
+  screen. It catches renders and nothing else, and says so.
+- `EmptyState` takes `children`, below its actions.
+
 ### Accessibility
 
 - **Reduce motion, answered properly.** It was honoured in one place — the
@@ -160,7 +170,7 @@ fails the build for everyone who has not installed it.
 
 ### The pure layer
 
-Twenty-six suites over the pure layer, 332 tests aimed at the cases
+Twenty-seven suites over the pure layer, 343 tests aimed at the cases
 a device only shows by accident: colour math, masking, locale-safe casing,
 search folding, calendar and clock arithmetic, anchored placement, slider and
 rating scales, column widths and sorting, validation, view state, swipe and

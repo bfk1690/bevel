@@ -24,6 +24,7 @@ import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
 import { RatingDemo } from './rating'
 import { RelativeDemo } from './relative'
+import { ReorderDemo } from './reorder'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
 import { SheetDemo } from './sheet'
@@ -187,6 +188,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'Where you are in a flow, drawn or counted',
     group: 'Content',
     Component: StepsDemo,
+  },
+  {
+    key: 'reorder',
+    title: 'ReorderableList',
+    subtitle: 'Drag to reorder, with the gap opening as you go',
+    group: 'Content',
+    Component: ReorderDemo,
   },
   {
     key: 'table',

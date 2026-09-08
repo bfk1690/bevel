@@ -1,12 +1,35 @@
 import { useState } from 'react'
-import { Card, ListItem, SegmentedControl, SkeletonRows, StateView, Text, toast } from '@bfkk/bevel'
+import {
+  Card,
+  ErrorBoundary,
+  ListItem,
+  SegmentedControl,
+  SkeletonRows,
+  StateView,
+  Text,
+  toast,
+} from '@bfkk/bevel'
 
 import { Demo, Stack } from './ui'
 
 type Mode = 'ready' | 'loading' | 'empty' | 'error'
 
+/** Throws on demand, so the boundary below has something to catch */
+function Explodes({ broken }: { broken: boolean }) {
+  if (broken) throw new Error("Cannot read properties of undefined (reading 'title')")
+  return (
+    <Card>
+      <Text variant="caption" color="textMuted">
+        Drawing normally.
+      </Text>
+    </Card>
+  )
+}
+
 export function StateDemo() {
   const [mode, setMode] = useState<Mode>('loading')
+  const [broken, setBroken] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   return (
     <Stack>
@@ -67,6 +90,36 @@ export function StateDemo() {
             <Text>unused</Text>
           </StateView>
         </Card>
+      </Demo>
+      <Demo
+        title="When a render throws"
+        note="Catches what a render throws and keeps the rest of the app up - the one thing React still has no hook for, which is why this is a class. It catches renders and nothing else: a rejected promise, a failed request, a throw inside an event handler never reach it, and a screen relying on this for its error handling shows a blank space instead.">
+        <ErrorBoundary
+          resetKey={attempt}
+          showDetail
+          onError={(error) => toast.error(error.message)}>
+          <Explodes broken={broken} />
+        </ErrorBoundary>
+        <SegmentedControl
+          value={broken ? 'broken' : 'fine'}
+          onChange={(value) => {
+            setBroken(value === 'broken')
+            // The boundary is told to clear by a key change - without one it
+            // stays broken for the life of the screen, and navigating away and
+            // back lands on the same message
+            if (value === 'fine') setAttempt((count) => count + 1)
+          }}
+          options={[
+            { value: 'fine', label: 'Draws fine' },
+            { value: 'broken', label: 'Throws' },
+          ]}
+        />
+        <Text variant="caption" color="textFaint">
+          Try again re-renders the same broken child, so it fails again - which
+          is honest. Nothing retries on its own: a component that threw once
+          usually throws again, and a loop is harder to diagnose than a stuck
+          screen.
+        </Text>
       </Demo>
     </Stack>
   )
