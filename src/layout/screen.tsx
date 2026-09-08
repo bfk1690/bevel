@@ -14,6 +14,7 @@ import {
 } from 'react-native'
 
 import { resolveColor } from '../theme/color'
+import { FooterSlotContext } from './footer-slot'
 import { ScrollContext } from './scroll-context'
 import { useInsets, useTheme } from '../theme/provider'
 import { useKeyboardVisible } from '../utils/keyboard'
@@ -122,6 +123,20 @@ function ScreenBase({
   /** The last offset seen, because a native value cannot be read back */
   const current = useRef(0)
 
+  /**
+   * How many things are currently asking for the page to stay still.
+   *
+   * A count, not a flag: a drag ending while a sheet is still open would
+   * otherwise switch scrolling back on underneath it.
+   */
+  const holds = useRef(0)
+  const [scrollLocked, setScrollLocked] = useState(false)
+
+  const setScrollEnabled = useCallback((enabled: boolean) => {
+    holds.current = Math.max(0, holds.current + (enabled ? -1 : 1))
+    setScrollLocked(holds.current > 0)
+  }, [])
+
   const scrollTo = useCallback((y: number, animated = true) => {
     scroller.current?.scrollTo({ y: Math.max(0, y), animated })
   }, [])
@@ -132,8 +147,8 @@ function ScreenBase({
   )
 
   const offset = useMemo(
-    () => ({ y: scrollY, scrollToTop, scrollTo, scrollBy }),
-    [scrollBy, scrollTo, scrollToTop, scrollY],
+    () => ({ y: scrollY, scrollToTop, scrollTo, scrollBy, setScrollEnabled }),
+    [scrollBy, scrollTo, scrollToTop, scrollY, setScrollEnabled],
   )
 
   const onScroll = useMemo(
@@ -207,6 +222,9 @@ function ScreenBase({
       // the keyboard height as padding as well would leave a gap the size of a
       // keyboard at the end of every list.
       automaticallyAdjustKeyboardInsets={keyboardAware}
+      // Held still while something owns the vertical axis - a row being
+      // dragged to a new place, most of all
+      scrollEnabled={!scrollLocked}
       refreshControl={pull}
       contentContainerStyle={[
         {
@@ -251,8 +269,11 @@ function ScreenBase({
           </View>
         </View>
       )}
-      {footer != null &&
-        (hideFooterOnScroll ? (
+      {footer != null && (
+        // The footer slot owns the safe area; anything inside it must not add
+        // the inset a second time (see `footer-slot.ts`).
+        <FooterSlotContext.Provider value>
+        {hideFooterOnScroll ? (
           // Laid over the content rather than beside it: a bar that slides away
           // has to give its space back, and a bar in the layout never does.
           <Animated.View
@@ -270,7 +291,9 @@ function ScreenBase({
           </Animated.View>
         ) : (
           <View style={{ paddingHorizontal, paddingBottom: bottom || space(2) }}>{footer}</View>
-        ))}
+        )}
+        </FooterSlotContext.Provider>
+      )}
     </>
   )
 

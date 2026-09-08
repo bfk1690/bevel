@@ -12,6 +12,7 @@ import {
 import { useTheme } from '../theme/provider'
 import { shadow as shadowStyle } from '../theme/shadow'
 import { transitionDuration, useReducedMotion } from '../utils/motion'
+import { useScrollOffset } from './scroll-context'
 import { moveItem, slotShift, targetIndex } from '../utils/reorder'
 
 /** What a row needs to start a drag. Spread onto a handle, or onto the row */
@@ -55,6 +56,15 @@ export type ReorderableListProps<T> = {
   itemHeight: number
   /** Lifted while dragging, so the row reads as picked up */
   liftScale?: number
+  /**
+   * Told when a drag starts and stops.
+   *
+   * Inside a `Screen` the page is held still on its own. These are for a list
+   * in somebody else's scroll view, which has to be told to stop scrolling the
+   * same way - see the note on the component.
+   */
+  onDragStart?: (index: number) => void
+  onDragEnd?: (from: number, to: number) => void
   style?: StyleProp<ViewStyle>
 }
 
@@ -78,6 +88,15 @@ const SHIFT_MS = 160
  * takes the touch, the finger moves, the scroll view asks for the responder,
  * and the default answer is yes.
  *
+ * That refusal keeps the ROW, but it does not stop the page. On iOS the scroll
+ * view's recogniser is native and runs beside the JavaScript responder system
+ * rather than under it, so without more the row follows the finger and the
+ * page scrolls behind it at the same time. Inside a `Screen` this list holds
+ * the page still for the length of the drag, through the scroll context. In
+ * somebody else's scroll view, use `onDragStart` and `onDragEnd` to set
+ * `scrollEnabled` yourself - there is no way to reach a scroll view this
+ * component was not told about.
+ *
  * Everything given to it is rendered, which is right for the length of list
  * anybody actually reorders by hand.
  */
@@ -88,10 +107,13 @@ export function ReorderableList<T>({
   keyExtractor,
   itemHeight,
   liftScale = 1.03,
+  onDragStart,
+  onDragEnd,
   style,
 }: ReorderableListProps<T>) {
   const { colors } = useTheme()
   const reducedMotion = useReducedMotion()
+  const { setScrollEnabled } = useScrollOffset()
 
   const [dragging, setDragging] = useState<number | null>(null)
   const [target, setTarget] = useState<number | null>(null)
@@ -160,6 +182,8 @@ export function ReorderableList<T>({
       setDragging(null)
       setTarget(null)
       travelled.current = 0
+      setScrollEnabled(true)
+      onDragEnd?.(from, to)
 
       // Every row goes back to no offset HERE, before the reorder lands.
       // Left to the effect, the rows would take their drag-time offsets into
@@ -170,7 +194,7 @@ export function ReorderableList<T>({
       // the reorder puts it there for real in the same commit
       if (from !== to) onReorder(moveItem(data, from, to), from, to)
     },
-    [data, offsets, onReorder],
+    [data, offsets, onDragEnd, onReorder, setScrollEnabled],
   )
 
   const handleFor = useCallback(
@@ -182,6 +206,10 @@ export function ReorderableList<T>({
         origin.current = event.nativeEvent.pageY
         travelled.current = 0
         offsetFor(key).setValue(0)
+        // Before anything moves: a scroll that has already begun is not
+        // cancelled by turning scrolling off
+        setScrollEnabled(false)
+        onDragStart?.(index)
         setDragging(index)
         setTarget(index)
       },
@@ -199,7 +227,7 @@ export function ReorderableList<T>({
       onResponderTerminate: () => finish(index, index),
       onResponderTerminationRequest: () => false,
     }),
-    [data.length, finish, itemHeight, offsetFor],
+    [data.length, finish, itemHeight, offsetFor, onDragStart, setScrollEnabled],
   )
 
   return (

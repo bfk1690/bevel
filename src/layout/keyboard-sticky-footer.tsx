@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useContext, useEffect, useRef, type ReactNode } from 'react'
 import {
   Animated,
   Easing,
@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 
 import { resolveColor } from '../theme/color'
+import { FooterSlotContext } from './footer-slot'
 import { useInsets, useTheme } from '../theme/provider'
 import type { ColorInput } from '../theme/types'
 
@@ -47,6 +48,11 @@ export function KeyboardStickyFooter({
   const { colors, space } = useTheme()
   const insets = useInsets()
   const lift = useRef(new Animated.Value(0)).current
+  /**
+   * Inside `Screen`'s footer slot the gutter and the bottom inset are already
+   * applied, so adding them here would double them.
+   */
+  const inSlot = useContext(FooterSlotContext)
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
@@ -87,9 +93,9 @@ export function KeyboardStickyFooter({
         {
           transform: [{ translateY: lift }],
           backgroundColor,
-          paddingHorizontal: padding ?? space(4),
+          paddingHorizontal: inSlot ? (padding ?? 0) : (padding ?? space(4)),
           paddingTop: space(3),
-          paddingBottom: insets.bottom + space(3),
+          paddingBottom: inSlot ? 0 : insets.bottom + space(3),
           borderTopWidth: divider ? StyleSheet.hairlineWidth : 0,
           borderTopColor: colors.border,
         },

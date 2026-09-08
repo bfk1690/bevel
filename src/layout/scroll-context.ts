@@ -23,6 +23,19 @@ export type ScrollOffset = {
    * currently is.
    */
   scrollBy: (delta: number, animated?: boolean) => void
+  /**
+   * Holds the page still.
+   *
+   * For a gesture that owns the vertical axis while it runs - dragging a row
+   * to a new place, most of all. Refusing to hand the responder back is not
+   * enough on its own: on iOS the scroll view's recogniser is native and runs
+   * beside the JavaScript responder system rather than under it, so the row
+   * follows the finger AND the page scrolls behind it.
+   *
+   * Counted rather than boolean, so two things asking at once cannot have one
+   * of them switch scrolling back on while the other still needs it off.
+   */
+  setScrollEnabled: (enabled: boolean) => void
 }
 
 /**
@@ -41,6 +54,7 @@ export const ScrollContext = createContext<ScrollOffset>({
   scrollToTop: () => {},
   scrollTo: () => {},
   scrollBy: () => {},
+  setScrollEnabled: () => {},
 })
 
 export function useScrollOffset(): ScrollOffset {
