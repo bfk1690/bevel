@@ -3,17 +3,18 @@ import {
   Animated,
   Easing,
   StyleSheet,
+  useWindowDimensions,
   View,
   type GestureResponderEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native'
 
-import { useTheme } from '../theme/provider'
+import { useInsets, useTheme } from '../theme/provider'
 import { shadow as shadowStyle } from '../theme/shadow'
 import { transitionDuration, useReducedMotion } from '../utils/motion'
 import { useScrollOffset } from './scroll-context'
-import { moveItem, slotShift, targetIndex } from '../utils/reorder'
+import { autoScrollStep, moveItem, slotShift, targetIndex } from '../utils/reorder'
 
 /** What a row needs to start a drag. Spread onto a handle, or onto the row */
 export type DragHandle = {
@@ -57,6 +58,11 @@ export type ReorderableListProps<T> = {
   /** Lifted while dragging, so the row reads as picked up */
   liftScale?: number
   /**
+   * How deep the band at each edge of the screen reaches, where dragging
+   * scrolls the page. `0` turns it off.
+   */
+  autoScrollEdge?: number
+  /**
    * Told when a drag starts and stops.
    *
    * Inside a `Screen` the page is held still on its own. These are for a list
@@ -70,6 +76,8 @@ export type ReorderableListProps<T> = {
 
 /** How long a displaced row takes to slide out of the way */
 const SHIFT_MS = 160
+/** How often the page is nudged while a row is held at an edge */
+const TICK_MS = 16
 
 /**
  * A list whose order is the point.
@@ -107,13 +115,16 @@ export function ReorderableList<T>({
   keyExtractor,
   itemHeight,
   liftScale = 1.03,
+  autoScrollEdge = 80,
   onDragStart,
   onDragEnd,
   style,
 }: ReorderableListProps<T>) {
   const { colors } = useTheme()
+  const insets = useInsets()
+  const window = useWindowDimensions()
   const reducedMotion = useReducedMotion()
-  const { setScrollEnabled } = useScrollOffset()
+  const { setScrollEnabled, scrollBy, y } = useScrollOffset()
 
   const [dragging, setDragging] = useState<number | null>(null)
   const [target, setTarget] = useState<number | null>(null)
@@ -124,6 +135,27 @@ export function ReorderableList<T>({
   const travelled = useRef(0)
   /** Whether OUR hold on the page is outstanding, so it is released exactly once */
   const holding = useRef(false)
+  /** Where the finger is now, in window coordinates, for the edge bands */
+  const pointer = useRef(0)
+  /** The page's own offset, mirrored: an animated value cannot be read back */
+  const scrolled = useRef(0)
+  const scrolledAtStart = useRef(0)
+  const ticker = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
+
+  const stopTicking = useCallback(() => {
+    if (ticker.current != null) clearInterval(ticker.current)
+    ticker.current = undefined
+  }, [])
+
+  // Tracked for the whole life of the list rather than only during a drag: the
+  // offset at the moment a drag STARTS is needed, and subscribing then would
+  // be a frame too late
+  useEffect(() => {
+    const id = y.addListener(({ value }) => {
+      scrolled.current = value
+    })
+    return () => y.removeListener(id)
+  }, [y])
 
   const hold = useCallback(
     (wanted: boolean) => {
@@ -137,6 +169,7 @@ export function ReorderableList<T>({
   // A list unmounted mid-drag - a route change, a filter applied - would
   // otherwise leave the page unable to scroll for the rest of its life
   useEffect(() => () => hold(false), [hold])
+  useEffect(() => stopTicking, [stopTicking])
 
   /**
    * One animated value per row, used for BOTH jobs: the slide that opens the
@@ -194,6 +227,7 @@ export function ReorderableList<T>({
 
   const finish = useCallback(
     (from: number, to: number) => {
+      stopTicking()
       setDragging(null)
       setTarget(null)
       travelled.current = 0
@@ -209,7 +243,20 @@ export function ReorderableList<T>({
       // the reorder puts it there for real in the same commit
       if (from !== to) onReorder(moveItem(data, from, to), from, to)
     },
-    [data, hold, offsets, onDragEnd, onReorder],
+    [data, hold, offsets, onDragEnd, onReorder, stopTicking],
+  )
+
+  /**
+   * How far the row has come in CONTENT space.
+   *
+   * The finger's travel plus whatever the page scrolled underneath it. Without
+   * the second term an auto-scrolling drag leaves the row behind: the content
+   * moves up, the row's slot moves up with it, and the finger is left holding
+   * nothing.
+   */
+  const travelOf = useCallback(
+    () => pointer.current - origin.current + (scrolled.current - scrolledAtStart.current),
+    [],
   )
 
   const handleFor = useCallback(
@@ -219,6 +266,8 @@ export function ReorderableList<T>({
         // Captured here rather than sniffed for on the first move: a finger
         // can legitimately land at zero, and a sentinel would eat that drag
         origin.current = event.nativeEvent.pageY
+        pointer.current = event.nativeEvent.pageY
+        scrolledAtStart.current = scrolled.current
         travelled.current = 0
         offsetFor(key).setValue(0)
         // Before anything moves: a scroll that has already begun is not
@@ -227,11 +276,38 @@ export function ReorderableList<T>({
         onDragStart?.(index)
         setDragging(index)
         setTarget(index)
+
+        if (autoScrollEdge <= 0) return
+
+        /**
+         * The page follows the finger into the edges.
+         *
+         * On a ticker rather than on movement, because the finger held STILL
+         * at the bottom of the screen is the whole point: a list longer than
+         * the screen cannot be crossed by dragging alone, and without this a
+         * row has to be carried down in several goes.
+         */
+        ticker.current = setInterval(() => {
+          const step = autoScrollStep({
+            pointerY: pointer.current,
+            top: insets.top,
+            bottom: window.height - insets.bottom,
+            edge: autoScrollEdge,
+          })
+          if (step === 0) return
+
+          scrollBy(step, false)
+          const travel = travelOf()
+          travelled.current = travel
+          offsetFor(key).setValue(travel)
+          setTarget(targetIndex(index, travel, itemHeight, data.length))
+        }, TICK_MS)
       },
       onResponderMove: (event) => {
+        pointer.current = event.nativeEvent.pageY
         // Measured against where the finger STARTED, because the row itself is
-        // moving underneath it
-        const travel = event.nativeEvent.pageY - origin.current
+        // moving underneath it - and against the page, which may be moving too
+        const travel = travelOf()
         travelled.current = travel
         offsetFor(key).setValue(travel)
         setTarget(targetIndex(index, travel, itemHeight, data.length))
@@ -242,7 +318,20 @@ export function ReorderableList<T>({
       onResponderTerminate: () => finish(index, index),
       onResponderTerminationRequest: () => false,
     }),
-    [data.length, finish, hold, itemHeight, offsetFor, onDragStart],
+    [
+      autoScrollEdge,
+      data.length,
+      finish,
+      hold,
+      insets.bottom,
+      insets.top,
+      itemHeight,
+      offsetFor,
+      onDragStart,
+      scrollBy,
+      travelOf,
+      window.height,
+    ],
   )
 
   return (

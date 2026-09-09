@@ -337,6 +337,12 @@ Rows are one height, deliberately. Mixed heights mean re-measuring every
 neighbour on every frame, and a list somebody reorders by hand is almost always
 a list of one repeated thing.
 
+Hold a row against the top or bottom edge and the page comes to meet it —
+otherwise a list longer than the screen has to be crossed in several goes. The
+speed ramps with how deep into the edge the finger is: one speed cannot serve
+both jobs, since fast enough to cross a long list is far too fast for placing a
+row three places down. `autoScrollEdge={0}` turns it off.
+
 Give `handle` to a grip rather than the whole row, or the list can never be
 scrolled — the first touch always becomes a drag. Spread **all** of it: it
 carries a refusal to hand the gesture back, without which the scroll view takes
@@ -570,7 +576,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — thirty-three suites, 391 assertions: color math,
+Tests cover the pure layer — thirty-three suites, 397 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve

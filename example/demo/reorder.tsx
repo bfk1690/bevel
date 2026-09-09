@@ -6,12 +6,20 @@ import { Demo, Spec, Stack } from './ui'
 
 const ROW = 64
 
+/** Long enough to run off the screen, which is the case that needs the edges */
 const PLAYLIST = [
   { id: 'a', title: 'Karaköy at six', note: '3:12' },
   { id: 'b', title: 'The long way round', note: '4:48' },
   { id: 'c', title: 'Ferry weather', note: '2:57' },
   { id: 'd', title: 'Nothing on the radio', note: '5:20' },
   { id: 'e', title: 'Back before dark', note: '3:41' },
+  { id: 'f', title: 'Someone else’s summer', note: '4:02' },
+  { id: 'g', title: 'Two stops early', note: '3:28' },
+  { id: 'h', title: 'The tea is cold', note: '2:44' },
+  { id: 'i', title: 'Everything at once', note: '5:56' },
+  { id: 'j', title: 'A quiet Tuesday', note: '3:15' },
+  { id: 'k', title: 'Last one home', note: '4:33' },
+  { id: 'l', title: 'Morning, eventually', note: '3:07' },
 ]
 
 export function ReorderDemo() {
@@ -74,6 +82,19 @@ export function ReorderDemo() {
             {lastMove}
           </Text>
         </Spec>
+      </Demo>
+
+      <Demo
+        title="Carrying a row past the bottom of the screen"
+        note="Hold a row against the top or bottom edge and the page comes to meet it. Without this a list longer than the screen has to be crossed in several goes: drag to the edge, let go, scroll, pick it up again. The speed ramps with how deep into the edge the finger is - one speed cannot serve both jobs, since fast enough to cross a long list is far too fast for placing a row three places down, and depth is the only thing a held finger is saying about urgency.">
+        <Card>
+          <Text variant="caption" color="textMuted">
+            The row keeps up with the page as it moves. Its travel is measured
+            against the content, not the screen: without that the content
+            slides up, the row's slot goes with it, and the finger is left
+            holding nothing.
+          </Text>
+        </Card>
       </Demo>
 
       <Demo

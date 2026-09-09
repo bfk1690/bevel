@@ -7,7 +7,13 @@
  */
 import assert from 'node:assert/strict'
 
-import { moveItem, restingOffset, slotShift, targetIndex } from '../src/utils/reorder.ts'
+import {
+  autoScrollStep,
+  moveItem,
+  restingOffset,
+  slotShift,
+  targetIndex,
+} from '../src/utils/reorder.ts'
 
 let passed = 0
 let failed = 0
@@ -104,6 +110,49 @@ test('a dropped row settles where it landed, not where it began', () => {
   assert.equal(restingOffset(0, 2, H), 2 * H)
   assert.equal(restingOffset(4, 1, H), -3 * H)
   assert.equal(restingOffset(2, 2, H), 0)
+})
+
+const VIEW = { top: 100, bottom: 800 }
+
+test('the middle of the screen does not scroll', () => {
+  // Which is most of the screen, and most of a drag
+  assert.equal(autoScrollStep({ pointerY: 400, ...VIEW }), 0)
+  assert.equal(autoScrollStep({ pointerY: 200, ...VIEW }), 0)
+  assert.equal(autoScrollStep({ pointerY: 700, ...VIEW }), 0)
+})
+
+test('the edges pull the page towards the finger', () => {
+  assert.ok(autoScrollStep({ pointerY: 110, ...VIEW }) < 0, 'near the top it goes up')
+  assert.ok(autoScrollStep({ pointerY: 790, ...VIEW }) > 0, 'near the bottom it goes down')
+})
+
+test('it speeds up the deeper the finger goes', () => {
+  // One speed cannot work: fast enough to cross a long list is far too fast
+  // for placing a row three places down
+  const shallow = autoScrollStep({ pointerY: 175, ...VIEW })
+  const deep = autoScrollStep({ pointerY: 105, ...VIEW })
+  assert.ok(Math.abs(deep) > Math.abs(shallow), `${deep} is not faster than ${shallow}`)
+  assert.ok(Math.abs(shallow) >= 1, 'and inside the band it always moves at all')
+})
+
+test('past the edge it does not keep accelerating', () => {
+  // A finger dragged off the top of the screen is still just "up"
+  const atEdge = autoScrollStep({ pointerY: 100, ...VIEW, maxSpeed: 14 })
+  const beyond = autoScrollStep({ pointerY: -400, ...VIEW, maxSpeed: 14 })
+  assert.equal(beyond, atEdge)
+  assert.equal(Math.abs(beyond), 14)
+})
+
+test('the two bands never meet in the middle', () => {
+  // On a short list they would overlap and the row would scroll wherever it
+  // was put, with the direction decided by which test ran first
+  const shortView = { top: 0, bottom: 100 }
+  assert.equal(autoScrollStep({ pointerY: 50, ...shortView, edge: 80 }), 0)
+})
+
+test('a viewport that has not been measured does not scroll', () => {
+  assert.equal(autoScrollStep({ pointerY: 400, top: 0, bottom: 0 }), 0)
+  assert.equal(autoScrollStep({ pointerY: 400, ...VIEW, edge: 0 }), 0)
 })
 
 console.log(`reorder: ${passed} passed, ${failed} failed`)

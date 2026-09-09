@@ -55,3 +55,53 @@ export function slotShift(index: number, from: number, to: number, itemHeight: n
 export function restingOffset(from: number, to: number, itemHeight: number): number {
   return (to - from) * itemHeight
 }
+
+export type AutoScrollInput = {
+  /** Where the finger is, in window coordinates */
+  pointerY: number
+  /** Top of the area that scrolls */
+  top: number
+  /** Bottom of it */
+  bottom: number
+  /** How deep the band at each edge reaches */
+  edge?: number
+  /** Points per tick at the very edge */
+  maxSpeed?: number
+}
+
+/**
+ * How far to scroll while a row is being dragged near an edge, per tick.
+ *
+ * Negative is upwards. Zero anywhere in the middle, which is most of the
+ * screen and most of the time.
+ *
+ * The speed RAMPS with how deep into the band the finger is. A single speed
+ * cannot work: fast enough to cross a long list is far too fast for placing a
+ * row three places down, and slow enough to place carefully never gets you
+ * anywhere. Depth is the only thing the finger is saying about urgency.
+ */
+export function autoScrollStep({
+  pointerY,
+  top,
+  bottom,
+  edge = 80,
+  maxSpeed = 14,
+}: AutoScrollInput): number {
+  if (edge <= 0 || bottom <= top) return 0
+
+  // A band taller than half the space would have the two overlap in the
+  // middle, and the row would scroll wherever it was put
+  const band = Math.min(edge, (bottom - top) / 2)
+
+  if (pointerY < top + band) {
+    const depth = Math.min(1, (top + band - pointerY) / band)
+    return -Math.max(1, Math.round(depth * maxSpeed))
+  }
+
+  if (pointerY > bottom - band) {
+    const depth = Math.min(1, (pointerY - (bottom - band)) / band)
+    return Math.max(1, Math.round(depth * maxSpeed))
+  }
+
+  return 0
+}
