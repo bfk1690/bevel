@@ -492,6 +492,28 @@ Not a checklist item here, and a few of the decisions are load-bearing:
   and reachable through the row's own accessibility actions in the meantime —
   a gesture nobody can perform is not an interface.
 
+## Responsive
+
+```tsx
+const columns = useResponsive({ compact: 2, medium: 3, expanded: 5 }) ?? 2
+const orientation = useOrientation()
+```
+
+Named widths — `compact`, `medium`, `expanded` — because a layout decision is
+about how much room there is, not about a particular phone.
+
+**It falls down the scale, never up.** A layout naming `compact` and
+`expanded`, opened at `medium`, gets the compact one: the narrow answer fits in
+a wide space and the wide one does not fit in a narrow space, so falling
+upwards would overflow the screen rather than leave room on it. Name only
+`expanded` and a phone gets nothing, deliberately — there is no safe way to
+shrink a shape nobody designed.
+
+Orientation comes from the **window**, not the device, and needs no native
+module. They disagree more often than it seems: a phone lying flat has an
+orientation and no useful shape, and an app in a split view is portrait-shaped
+on a landscape tablet.
+
 ## Landscape
 
 Insets are not just top and bottom. Turned on its side a phone reserves around
@@ -548,7 +570,7 @@ component, each showing every variant, state and edge case with the reasoning
 next to it. Metro watches the package source, so editing a component
 reloads the example without a publish step.
 
-Tests cover the pure layer — thirty-one suites, 376 assertions: color math,
+Tests cover the pure layer — thirty-three suites, 391 assertions: color math,
 masking, casing, calendar and clock arithmetic, swipe and step decisions,
 relative time, grid division, the dialog queue, and the theme engine itself —
 how a partial theme merges into a complete one, and how style sheets resolve

@@ -24,6 +24,7 @@ import { PopoverDemo } from './popover'
 import { ProgressDemo } from './progress'
 import { RatingDemo } from './rating'
 import { RelativeDemo } from './relative'
+import { ResponsiveDemo } from './responsive'
 import { ReorderDemo } from './reorder'
 import { SegmentedDemo } from './segmented'
 import { SelectDemo } from './select'
@@ -337,6 +338,13 @@ export const DEMOS: readonly DemoEntry[] = [
     subtitle: 'A timestamp in words, redrawn only when it changes',
     group: 'Foundation',
     Component: RelativeDemo,
+  },
+  {
+    key: 'responsive',
+    title: 'Responsive',
+    subtitle: 'Named widths, and the window rather than the device',
+    group: 'Foundation',
+    Component: ResponsiveDemo,
   },
   {
     key: 'hooks',

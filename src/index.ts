@@ -252,6 +252,15 @@ export {
   type DurationStyle,
 } from './utils/duration'
 export {
+  breakpointFor,
+  orientationFor,
+  pickResponsive,
+  BREAKPOINTS,
+  type Breakpoint,
+  type Orientation,
+} from './utils/layout'
+export { useBreakpoint, useOrientation, useResponsive } from './utils/use-layout'
+export {
   resolveGrid,
   rowsOf,
   type GridInput,
