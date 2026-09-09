@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.9
+
+### Fixed
+
+- **Every sheet rendered with its content flush to the screen edges.** `Modal`
+  called `sidePadding(insets)` without a gutter, so in portrait — where the
+  side insets are zero — it resolved to `{ paddingLeft: 0, paddingRight: 0 }`.
+  Because `shape` is spread after `surface`, those two longhand values
+  overrode the surface's shorthand `padding`, and the gutter disappeared. It
+  passes `space(4)` now, which is what the helper's own contract asks for: the
+  inset is *added* to the design's gutter, never a substitute for it. A
+  regression from 0.2.8's inset work; reported from a device.
+
+- **One sheet leading to another froze the app.** `ActionSheet` ran the chosen
+  action immediately after `onClose()`, and `onClose` only *starts* a 200ms
+  exit. A handler that opened a second sheet therefore presented it while the
+  first was still dismissing — on iOS that presentation is dropped and the user
+  is left under a scrim that will not respond. The action is now held until the
+  sheet has genuinely left the tree. `Modal` gained `onClosed` for this: it
+  fires from an effect keyed on the mounted flag rather than from the animation
+  callback, because the callback runs *before* React has committed the unmount
+  and a consumer opening a modal there would still overlap.
+
 ## 0.2.8
 
 ### Fixed

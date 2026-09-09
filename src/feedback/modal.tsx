@@ -49,6 +49,17 @@ export type ModalProps = {
   /** Adds keyboard avoidance - required when the modal contains a text field */
   keyboardAware?: boolean
   /**
+   * Fires once the exit animation has finished AND the modal has left the
+   * tree - not when `onClose` was called.
+   *
+   * The distinction matters for anything that opens a second modal: on iOS a
+   * presentation that begins while another is still dismissing is dropped,
+   * and the app is left under a scrim it cannot tap away. Handing consumers a
+   * point that is provably after the unmount is the only way they can chain
+   * two sheets safely.
+   */
+  onClosed?: () => void
+  /**
    * Drag affordance at the top of a sheet, and the thing you drag.
    *
    * The gesture is deliberately limited to this strip: a sheet that closes
@@ -78,6 +89,7 @@ function ModalBase({
   maxHeightRatio = 0.6,
   keyboardAware = false,
   handle = true,
+  onClosed,
   style,
 }: ModalProps) {
   const { colors, radius, space } = useTheme()
@@ -126,6 +138,27 @@ function ModalBase({
     })
   }, [progress, visible])
 
+  /**
+   * `onClosed` fires from an effect on `mounted`, not from the animation
+   * callback.
+   *
+   * The animation callback runs BEFORE React has committed the unmount, so a
+   * consumer opening another modal there would still overlap this one. An
+   * effect keyed on `mounted` runs after that commit, when this modal is
+   * genuinely gone from the tree.
+   *
+   * The callback is held in a ref so a new function identity on every render
+   * does not re-run the effect.
+   */
+  const closed = useRef(onClosed)
+  closed.current = onClosed
+  const wasMounted = useRef(mounted)
+
+  useEffect(() => {
+    if (wasMounted.current && !mounted) closed.current?.()
+    wasMounted.current = mounted
+  }, [mounted])
+
   const onSurfaceLayout = useCallback((event: LayoutChangeEvent) => {
     setSurfaceHeight(event.nativeEvent.layout.height)
   }, [])
@@ -166,9 +199,18 @@ function ModalBase({
     gap: space(3),
   }
 
-  // Turned on its side a phone reserves around 59pt each way for the sensor
-  // housing, and a surface laid out to the raw edge is cut off there
-  const sides = sidePadding(insets)
+  /**
+   * Horizontal padding, gutter INCLUDED.
+   *
+   * ⚠️ This used to be `sidePadding(insets)`, with the helper's default gutter
+   * of zero. In portrait the insets are zero too, so it resolved to
+   * `{ paddingLeft: 0, paddingRight: 0 }` - and because `shape` is spread
+   * after `surface`, those two longhand values overrode the surface's
+   * `padding: space(4)`. Every sheet rendered with its content flush to the
+   * screen edges, which is exactly what the helper's own doc warns against:
+   * the inset is ADDED to the design's gutter, it does not replace it.
+   */
+  const sides = sidePadding(insets, space(4))
 
   const shape: ViewStyle =
     variant === 'sheet'

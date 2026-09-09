@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import { Button } from '../primitives/button'
@@ -29,8 +30,15 @@ export type ActionSheetProps = {
  * Grouped with them it becomes a fourth option to read past; separated, it is
  * where the thumb already expects a way out.
  *
- * Choosing an action closes the sheet first, so a handler that opens another
- * one is not fighting a sheet on its way down.
+ * ⚠️ An action runs AFTER the sheet has left the tree, not when it is tapped.
+ *
+ * It used to run immediately after `onClose()`, and the comment here claimed
+ * that closing first kept a handler from "fighting a sheet on its way down" -
+ * the opposite of what happened. `onClose` only starts a 200ms exit, so a
+ * handler that opened a second sheet presented it while this one was still
+ * dismissing. On iOS that presentation is dropped and the app is left under a
+ * scrim it cannot tap away: the freeze people hit when one sheet leads to
+ * another.
  */
 export function ActionSheet({
   visible,
@@ -41,9 +49,20 @@ export function ActionSheet({
   cancelLabel = 'Cancel',
 }: ActionSheetProps) {
   const { space } = useTheme()
+  /** The chosen action, held until the sheet has finished leaving. */
+  const pending = useRef<(() => void) | null>(null)
 
   return (
-    <Modal visible={visible} onClose={onClose} variant="sheet" handle={false}>
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      variant="sheet"
+      handle={false}
+      onClosed={() => {
+        const run = pending.current
+        pending.current = null
+        run?.()
+      }}>
       {(title != null || message != null) && (
         <View style={[styles.head, { gap: space(1), paddingBottom: space(1) }]}>
           {title != null && (
@@ -67,8 +86,8 @@ export function ActionSheet({
             variant={action.destructive ? 'danger' : 'secondary'}
             disabled={action.disabled}
             onPress={() => {
+              pending.current = action.onPress
               onClose()
-              action.onPress()
             }}
           />
         ))}
@@ -76,7 +95,15 @@ export function ActionSheet({
 
       {cancelLabel != null && (
         <View style={{ paddingTop: space(1) }}>
-          <Button label={cancelLabel} variant="ghost" onPress={onClose} />
+          <Button
+            label={cancelLabel}
+            variant="ghost"
+            onPress={() => {
+              // Cancelling clears any action left from a previous open.
+              pending.current = null
+              onClose()
+            }}
+          />
         </View>
       )}
     </Modal>

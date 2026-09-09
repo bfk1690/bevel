@@ -55,6 +55,15 @@ test('no gutter asked for, just the safe area', () => {
   assert.deepEqual(sidePadding(LANDSCAPE), { paddingLeft: 59, paddingRight: 59 })
 })
 
+test('without a gutter, portrait gets no horizontal padding at all', () => {
+  // The trap that shipped in 0.2.8. `Modal` spread this over a style that set
+  // shorthand `padding`, and these two longhand zeros overrode it: every sheet
+  // rendered with its buttons flush to the screen edges. A caller that has its
+  // own gutter must pass it in - the inset is added to the gutter, it is not a
+  // substitute for one.
+  assert.deepEqual(sidePadding(PORTRAIT), { paddingLeft: 0, paddingRight: 0 })
+})
+
 test('a nonsense inset is not subtracted from the gutter', () => {
   const odd = { top: 0, right: -20, bottom: 0, left: -5 }
   assert.deepEqual(sidePadding(odd, 16), { paddingLeft: 16, paddingRight: 16 })
