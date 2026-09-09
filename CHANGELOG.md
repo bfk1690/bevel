@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.2.8
+
+### Fixed
+
+- **The selected segment could not be told from its track in dark mode.**
+  `SegmentedControl` painted its indicator `canvas` over a `sunk` track — white
+  on grey in light, and pure *black on near-black* in dark, where the selected
+  segment was the darkest thing on the screen. It is `sheet` now, the only rung
+  that separates from the track in both schemes (1.13 light, 1.34 dark, against
+  canvas's 1.07 in dark). Reported from a device, and worked around downstream
+  by wrapping the component.
+- **The slider's thumb had the same pairing** and the same failure: a black
+  circle on a near-black track.
+- **The switch's knob turned black in dark mode.** It rides on the track's own
+  fill, which is what `onAccent` names, and it is white in both schemes — as it
+  is on every platform.
+- A test now walks every scheme and asserts the surfaces that must read by fill
+  alone actually do. The ladder is not one direction of luminance — `raised` is
+  darker than `canvas` in light and lighter in dark — so a pair chosen by eye
+  in one scheme can invert in the other.
+
 ## 0.2.7
 
 ### Fixed

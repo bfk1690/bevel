@@ -218,9 +218,9 @@ export function Slider(props: SliderProps) {
         />
 
         {isRange && (
-          <Thumb x={startX} size={thumb} color={colors.canvas} radius={radius.pill} media={colors.media} />
+          <Thumb x={startX} size={thumb} color={colors.sheet} radius={radius.pill} media={colors.media} />
         )}
-        <Thumb x={endX} size={thumb} color={colors.canvas} radius={radius.pill} media={colors.media} />
+        <Thumb x={endX} size={thumb} color={colors.sheet} radius={radius.pill} media={colors.media} />
       </View>
     </View>
   )

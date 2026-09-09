@@ -29,7 +29,16 @@ export type SegmentedControlProps<T> = {
   onChange: (value: T) => void
   options: readonly SegmentOption<T>[]
   size?: SizeToken
-  /** Background of the moving indicator */
+  /**
+   * Background of the moving indicator.
+   *
+   * `sheet` - the top of the surface ladder - because it is the only rung that
+   * separates from the `sunk` track in BOTH schemes. `canvas` was the obvious
+   * choice and read correctly in light, where it is white on grey; in dark it
+   * is pure black on near-black, so the selected segment was the darkest thing
+   * on the screen and could not be told from the track at all. Reported from a
+   * device.
+   */
   tone?: ColorInput
   trackColor?: ColorInput
   radius?: RadiusToken | number
@@ -53,7 +62,7 @@ export function SegmentedControl<T>({
   onChange,
   options,
   size = 'md',
-  tone = 'canvas',
+  tone = 'sheet',
   trackColor = 'sunk',
   radius,
   disabled = false,

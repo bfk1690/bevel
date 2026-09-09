@@ -134,7 +134,11 @@ function SwitchBase({
           width: thumb,
           height: thumb,
           borderRadius: thumb / 2,
-          backgroundColor: colors.canvas,
+          // The knob rides ON the track's fill, which is what `onAccent` names
+          // - and it is white in both schemes, as it is on every platform. As
+          // `canvas` it turned black in dark mode: legible on blue, but not a
+          // switch anybody recognises
+          backgroundColor: colors.onAccent,
           transform: [
             { translateX: position.interpolate({ inputRange: [0, 1], outputRange: [0, travel] }) },
           ],
